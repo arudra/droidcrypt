@@ -148,7 +148,6 @@ public class common
             Random rn = new Random();
 
 
-
 			mask = (1 << (height - 2)) - 1;
 			bop = (1 << (height - 1)) + 1;
 			if((1 << (height - 2)) < width) {

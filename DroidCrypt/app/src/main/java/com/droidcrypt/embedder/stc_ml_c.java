@@ -1,6 +1,10 @@
 package com.droidcrypt.embedder;
 
+import android.util.Log;
+
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Random;
 
 /**
  * Created by arudra on 24/02/15.
@@ -8,6 +12,7 @@ import java.util.BitSet;
 public class stc_ml_c
 {
     private static float F_INF = Float.POSITIVE_INFINITY;
+    private static double D_INF = Double.POSITIVE_INFINITY;
 
     float stc_pm1_pls_embed( Integer cover_length, int[] cover, float[] costs, int message_length, BitSet message, // input variables
                              int stc_constraint_height, float wet_cost, // other input parameters
@@ -168,7 +173,7 @@ public class stc_ml_c
             p20[i] = p[i] + p[i + n]; // p20 = p(1,:)+p(2,:);         % probability of 2nd LSB of stego equal 0
         num_msg_bits[1] = (int) Math.floor( binary_entropy_array( cover_length, p20 ) ); // msg_bits(2) = floor(sum(binary_entropy(p20)));    % number of msg bits embedded into 2nd LSBs
         try {
-            stc_embed_trial( cover_length, p20, message, stc_constraint_height, num_msg_bits[1], perm2, stego2, trial, max_trials, "cost2.txt" );
+            stc_embed_trial( cover_length, p20, message, stc_constraint_height, num_msg_bits[1], perm2, stego2, trial, max_trials[0], "cost2.txt" );
         } catch ( Exception e ) {
             e.printStackTrace();
         }
@@ -181,8 +186,8 @@ public class stc_ml_c
                 p10[i] = p[i + 2 * n] / (p[i + 2 * n] + p[i + 3 * n]); // p10(i) = p(3,i)/(p(3,i)+p(4,i));
         num_msg_bits[0] = m_actual - num_msg_bits[1]; // msg_bits(1) = m_actual-msg_bits(2); % number of msg bits embedded into 1st LSBs
         try {
-            stc_embed_trial( cover_length, p10, message + num_msg_bits[1], stc_constraint_height, num_msg_bits[0], perm1, stego1, trial,
-                    max_trials, "cost1.txt" );
+            stc_embed_trial( cover_length, p10, message.get(num_msg_bits[1], message.length() - 1), stc_constraint_height, num_msg_bits[0], perm1, stego1, trial,
+                    max_trials[0], "cost1.txt" );
         } catch ( Exception e ) {
             e.printStackTrace();
         }
@@ -284,7 +289,7 @@ public class stc_ml_c
     float calc_distortion( int n, int k, float[] costs, float lambda )
     {
         /*
-        __m128 eps = _mm_set1_ps( std::numeric_limits< float >::epsilon() );
+        __m128 eps = _mm_set1_ps( Math.ulp(1.0) ); //std::numeric_limits< float >::epsilon() );
         __m128 v_lambda = _mm_set1_ps( -lambda );
         __m128 z, d, rho, p, dist, mask;
 
@@ -373,4 +378,160 @@ public class stc_ml_c
         }
         return lambda1 + (lambda3 - lambda1) / 2;
     }
+
+    float binary_entropy_array( int n, float[] prob ) {
+
+        float h = 0;
+        float LOG2 = (float)Math.log( 2.0f );
+        float EPS = (float)Math.ulp(1.0); //std::numeric_limits< float >::epsilon();
+
+        for (int i = 0; i < n; i++ )
+            if ( (prob[i] > EPS) && (1 - prob[i] > EPS) ) h -= prob[i] * Math.log(prob[i]) + (1 - prob[i]) * Math.log(1 - prob[i]);
+
+        return h / LOG2;
+    }
+
+    void stc_embed_trial( int n, float[] cover_bit_prob0, BitSet message, int stc_constraint_height, int num_msg_bits, int[] perm, byte[] stego,
+                          int trial, int max_trials, String debugging_file ) {
+
+        if(debugging_file=="") debugging_file= "cost.txt";
+        boolean success = false;
+        byte[] cover = new byte[n];
+        double[] cost = new double[n];
+        while ( !success ) {
+            randperm( n, num_msg_bits, perm );
+            for ( int i = 0; i < n; i++ ) {
+                cover[perm[i]] = (byte)((cover_bit_prob0[i] < 0.5) ? 1 : 0);
+                cost[perm[i]] = -Math.log((1 / Math.max(cover_bit_prob0[i], 1 - cover_bit_prob0[i])) - 1);
+                if ( cost[perm[i]] != cost[perm[i]] ) // if p20[i]>1 due to numerical error (this is possible due to float data type)
+                    cost[perm[i]] = D_INF; // then cost2[i] is NaN, it should be Inf
+            }
+            stego = Arrays.copyOf(cover, n);// initialize stego array by cover array
+            // debugging
+            // write_vector_to_file<double>(n, cost, debugging_file);
+            try {
+                if ( num_msg_bits != 0 ) stc_embed( cover, n, message, num_msg_bits, cost, true, stego, stc_constraint_height );
+                success = true;
+            } catch ( Exception e ) {
+                e.printStackTrace();
+                num_msg_bits--; // by decreasing the number of  bits, we change the permutation used to shuffle the bits
+                trial++;
+                if ( trial > max_trials ) {
+                    Log.d("Trials","Maximum number of trials in layered construction exceeded.");
+                }
+            }
+        }
+    }
+
+
+    /* Generates random permutation of length n based on the MT random number generator with seed 'seed'. */
+    void randperm( int n, int seed, int[] perm )
+    {
+
+        /*boost::mt19937 *generator = new boost::mt19937( seed );
+        boost::variate_generator< boost::mt19937, boost::uniform_int< > > *randi = new boost::variate_generator< boost::mt19937,
+                boost::uniform_int< > >( *generator, boost::uniform_int< >( 0, INT_MAX ) ); */
+        Random rn = new Random();
+        rn.setSeed(seed);
+
+        // generate random permutation - this is used to shuffle cover pixels to randomize the effect of different neighboring pixels
+        for ( int i = 0; i < n; i++ )
+            perm[i] = i;
+        for ( int i = 0; i < n; i++ ) {
+            int j = rn.nextInt(32768) % (n-i); //(*randi)() % (n - i);
+            int tmp = perm[i];
+            perm[i] = perm[i + j];
+            perm[i + j] = tmp;
+        }
+    }
+
+    // algorithm for embedding into 1 layer, both payload- and distortion-limited case
+    float stc_ml1_embed( int cover_length, int[] cover, short[] direction, float[] costs, int message_length, BitSet message,
+                         float target_distortion,// input variables
+                         int stc_constraint_height, float expected_coding_loss, // other input parameters
+                         int[] stego, int[] num_msg_bits, int[] max_trials, float[] coding_loss ) { // output variables
+
+        float distortion=0, lambda=0, m_max=0;
+        boolean success = false;
+        int m_actual=0;
+        int n = cover_length + 4 - (cover_length % 4); // cover length rounded to multiple of 4
+        int[] perm1 = new int[n];
+
+        float[] c = new float[2*n]; //align_new< float > ( 2 * n, 16 );
+        //std::fill_n( c, 2 * n, F_INF );
+        //std::fill_n( c, n, 0.0f );
+
+        for(int i = 0 ; i < 4*n; i++)
+        {
+            c[i] = F_INF;
+        }
+        for(int j = 0; j < n; j++)
+        {
+            c[j] = 0.0f;
+        }
+
+
+        for ( int i = 0; i < cover_length; i++ ) { // copy and transpose data for better reading via SSE instructions
+            c[ (cover[i] % 2) * n + i] = 0; // cost of not changing the element
+            c[( (cover[i] + 1) % 2 ) * n + i] = costs[i]; // cost of changing the element
+        }
+
+        if ( target_distortion != F_INF ) { // distortion-limited sender
+            lambda = get_lambda_distortion( n, 2, c, target_distortion, 2 , 0, 0); //
+            m_max = (1 - expected_coding_loss) * calc_entropy( n, 2, c, lambda ); //
+            m_actual = Math.min(message_length, (int) Math.floor(m_max)); //
+        }
+        if ( (target_distortion == F_INF) || (m_actual < Math.floor(m_max)) ) { // payload-limited sender
+            m_actual = Math.min(cover_length, message_length); // or distortion-limited sender with
+        }
+
+    /* SINGLE LAYER OF 1ST LSBs */
+        num_msg_bits[0] = m_actual;
+        int trial = 0;
+        byte[] cover1 = new byte[cover_length];
+        double[] cost1 = new double[cover_length];
+        byte[] stego1 = new byte[cover_length];
+        while ( !success ) {
+            randperm( cover_length, num_msg_bits[0], perm1 );
+            for ( int i = 0; i < cover_length; i++ ) {
+                cover1[perm1[i]] =  (byte)(cover[i] % 2);
+                cost1[perm1[i]] = costs[i];
+                if ( cost1[perm1[i]] != cost1[perm1[i]] ) cost1[perm1[i]] = D_INF;
+            }
+            stego1 = Arrays.copyOf(cover1, cover_length); // initialize stego array by cover array
+            // debugging
+            // write_vector_to_file<double>(n, cost, debugging_file);
+            try {
+                if ( num_msg_bits[0] != 0 ) stc_embed( cover1, cover_length, message, num_msg_bits[0], cost1, true, stego1,
+                        stc_constraint_height );
+                success = true;
+            } catch ( Exception e ) {
+                e.printStackTrace();
+                num_msg_bits[0]--; // by decreasing the number of  bits, we change the permutation used to shuffle the bits
+                trial++;
+                if ( trial > max_trials[0] ) {
+                    Log.d( "Trial", "Maximum number of trials in layered construction exceeded.");
+                }
+            }
+        }
+
+    /* FINAL CALCULATIONS */
+        distortion = 0;
+        for ( int i = 0; i < cover_length; i++ ) {
+            stego[i] = (stego1[perm1[i]] == cover1[perm1[i]]) ? cover[i] : cover[i] + direction[i];
+            distortion += (stego1[perm1[i]] == cover1[perm1[i]]) ? 0 : costs[i];
+        }
+        if ( coding_loss[0] != 0 )
+        {
+            float lambda_dist = get_lambda_distortion( n, 2, c, distortion, lambda, 0, 20 ); // use 20 iterations to make lambda_dist precise
+            float max_payload = calc_entropy( n, 2, c, lambda_dist );
+            coding_loss[0] = (max_payload - m_actual) / max_payload; // fraction of max_payload lost due to practical coding scheme
+        }
+        max_trials[0] = trial;
+
+        return distortion;
+    }
+
+
+
 }
