@@ -1,5 +1,7 @@
 package com.droidcrypt;
 
+import android.graphics.Bitmap;
+
 import java.io.FileInputStream;
 import java.security.MessageDigest;
 
