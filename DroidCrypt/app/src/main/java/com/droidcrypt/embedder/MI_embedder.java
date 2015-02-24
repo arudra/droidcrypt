@@ -1,4 +1,4 @@
-package com.droidcypt.embedder;
+package com.droidcrypt.embedder;
 
 import com.droidcrypt.*;
 
@@ -43,8 +43,9 @@ public class MI_embedder {
         int message_length = msg.length();
 
         // convert String to bit array
-        byte [] messageData = new byte[message_length]; // each byte represents a bit
+        byte [] messageData = null;
 
+/*
 
 //        unsigned char *message = new unsigned char[message_length+1];
 //        memcpy(message, msg.data(), message_length);
@@ -115,7 +116,7 @@ public class MI_embedder {
         delete[] extracted_message;
         delete[] num_msg_bits;
 
-        return stego;
+        return stego;*/
         return null;
     }
 
