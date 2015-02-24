@@ -8,19 +8,29 @@ public abstract class base_cost_model_config {
     private boolean verbose;
     private Integer stc_constr_height;
     private int randSeed;
+    private String message;
 
     base_cost_model_config() {
 
     }
 
-    public base_cost_model_config(float payload, boolean verbose, Integer stc_constr_height, int randSeed) {
+    public base_cost_model_config(float payload, boolean verbose, Integer stc_constr_height, int randSeed, String msg) {
         this.payload = payload;
         this.verbose = verbose;
         this.stc_constr_height = stc_constr_height;
         this.randSeed = randSeed;
+        this.message = msg;
     }
 
     // getters and setters
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     public int getRandSeed() {
         return randSeed;
     }

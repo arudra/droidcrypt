@@ -1,15 +1,17 @@
 package com.droidcrypt;
 
+import com.droidcypt.embedder.MI_embedder;
+
 import java.util.Random;
 
 /**
  * Created by dkmiyani on 15-02-24.
  */
 public abstract class base_cost_model {
-    float [] costs;
-    base_cost_model_config config;
-    Mat2D cover;
-    int rows, cols;
+    public float [] costs;
+    public base_cost_model_config config;
+    public Mat2D cover;
+    public int rows, cols;
 
     public base_cost_model() {}
 
@@ -24,7 +26,7 @@ public abstract class base_cost_model {
     // values are pass by reference...
     // mat2D<int> * base_cost_model::Embed(float &alpha_out, float &coding_loss_out, unsigned int &stc_trials_used, float &distortion)
 
-    Mat2D Embed(float[] alpha_out, float[] coding_loss_out, Integer stc_trials_used, float[] distortion){
+    Mat2D Embed(float[] alpha_out, float[] coding_loss_out, int[] stc_trials_used, float[] distortion){
         // Tomas Filler's segment
         float pls_lambda = -1; // this is initial value
 //        boost::mt19937 generator(this->config->randSeed);
@@ -39,7 +41,7 @@ public abstract class base_cost_model {
         {
             // use STCs
             int stc_max_trials = 10; // maximum number of trials for ML STCs
-//            stego = mi_emb_stc_pls_embedding(this, config.getPayload(), rand.nextInt(), config.getStc_constr_height(), stc_max_trials, distortion, alpha_out, coding_loss_out, stc_trials_used );
+            stego = MI_embedder.mi_emb_stc_pls_embedding(this, config.getPayload(), rand.nextInt(), config.getStc_constr_height(), stc_max_trials, distortion, alpha_out, coding_loss_out, stc_trials_used );
         }
 
         return stego;
