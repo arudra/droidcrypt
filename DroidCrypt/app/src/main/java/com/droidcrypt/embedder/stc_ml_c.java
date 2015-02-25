@@ -1,7 +1,6 @@
 package com.droidcrypt.embedder;
 
 import android.util.Log;
-
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Random;
@@ -28,7 +27,7 @@ public class stc_ml_c
                              int[] stego, int[] num_msg_bits, int[] max_trials, float[] coding_loss ) { // output variables
 
         check_costs( cover_length, 3, costs );
-        float dist = 0;
+        float dist;
 
         int[] stego_values = new int[4 * cover_length];
         float[] costs_ml2 = new float[4 * cover_length];
@@ -163,8 +162,8 @@ public class stc_ml_c
         int trial = 0;
         float[] p10 = new float[cover_length];
         float[] p20 = new float[cover_length];
-        byte[] stego1 = new byte[cover_length];
-        byte[] stego2 = new byte[cover_length];
+        BitSet stego1 = new BitSet(cover_length);
+        BitSet stego2 = new BitSet(cover_length);
         int[]perm1 = new int[cover_length];
         int[]perm2 = new int[cover_length];
 
@@ -180,7 +179,7 @@ public class stc_ml_c
 
     /* LAYER OF 1ST LSBs */
         for ( int i = 0; i < cover_length; i++ ) //
-            if ( stego2[perm2[i]] == 0 ) // % conditional probability of 1st LSB of stego equal 0 given LSB2=0
+            if ( !stego2.get(perm2[i]) ) // % conditional probability of 1st LSB of stego equal 0 given LSB2=0
                 p10[i] = p[i] / (p[i] + p[i + n]); // p10(i) = p(1,i)/(p(1,i)+p(2,i));
             else // % conditional probability of 1st LSB of stego equal 0 given LSB2=1
                 p10[i] = p[i + 2 * n] / (p[i + 2 * n] + p[i + 3 * n]); // p10(i) = p(3,i)/(p(3,i)+p(4,i));
@@ -196,13 +195,13 @@ public class stc_ml_c
     /* FINAL CALCULATIONS */
         distortion = 0;
         for ( int i = 0; i < cover_length; i++ ) {
-            stego[i] = stego_values[4 * i + 2 * stego2[perm2[i]] + stego1[perm1[i]]];
-            distortion += costs[4 * i + 2 * stego2[perm2[i]] + stego1[perm1[i]]];
+            stego[i] = stego_values[4 * i + 2 * stego2.toByteArray()[perm2[i]] + stego1.toByteArray()[perm1[i]]];
+            distortion += costs[4 * i + 2 * stego2.toByteArray()[perm2[i]] + stego1.toByteArray()[perm1[i]]];
         }
         if ( coding_loss[0] != 0 ) {
             dist_coding_loss = 0;
             for ( int i = 0; i < cover_length; i++ )
-                dist_coding_loss += c[i + n * (2 * stego2[perm2[i]] + stego1[perm1[i]])];
+                dist_coding_loss += c[i + n * (2 * stego2.toByteArray()[perm2[i]] + stego1.toByteArray()[perm1[i]])];
             float lambda_dist = get_lambda_distortion( n, 4, c, dist_coding_loss, lambda, 0, 20 ); // use 20 iterations to make lambda_dist precise
             float max_payload = calc_entropy( n, 4, c, lambda_dist );
             (coding_loss[0]) = (max_payload - m_actual) / max_payload; // fraction of max_payload lost due to practical coding scheme
@@ -391,7 +390,7 @@ public class stc_ml_c
         return h / LOG2;
     }
 
-    void stc_embed_trial( int n, float[] cover_bit_prob0, BitSet message, int stc_constraint_height, int num_msg_bits, int[] perm, byte[] stego,
+    void stc_embed_trial( int n, float[] cover_bit_prob0, BitSet message, int stc_constraint_height, int num_msg_bits, int[] perm, BitSet stego,
                           int trial, int max_trials, String debugging_file ) {
 
         if(debugging_file=="") debugging_file= "cost.txt";
@@ -406,11 +405,21 @@ public class stc_ml_c
                 if ( cost[perm[i]] != cost[perm[i]] ) // if p20[i]>1 due to numerical error (this is possible due to float data type)
                     cost[perm[i]] = D_INF; // then cost2[i] is NaN, it should be Inf
             }
-            stego = Arrays.copyOf(cover, n);// initialize stego array by cover array
+            //stego = Arrays.copyOf(cover, n);// initialize stego array by cover array
+
+            for(int i = 0; i < n; i++)
+            {
+                if(cover[i] == 0)
+                    stego.clear(i);
+                else
+                    stego.set(i);
+            }
+
             // debugging
             // write_vector_to_file<double>(n, cost, debugging_file);
+            stc_embed_c stcEmbedC = new stc_embed_c();
             try {
-                if ( num_msg_bits != 0 ) stc_embed( cover, n, message, num_msg_bits, cost, true, stego, stc_constraint_height );
+                if ( num_msg_bits != 0 ) stcEmbedC.stc_embed(cover, n, message, num_msg_bits, cost, true, stego, stc_constraint_height);
                 success = true;
             } catch ( Exception e ) {
                 e.printStackTrace();
@@ -490,7 +499,7 @@ public class stc_ml_c
         int trial = 0;
         byte[] cover1 = new byte[cover_length];
         double[] cost1 = new double[cover_length];
-        byte[] stego1 = new byte[cover_length];
+        BitSet stego1 = new BitSet(cover_length);
         while ( !success ) {
             randperm( cover_length, num_msg_bits[0], perm1 );
             for ( int i = 0; i < cover_length; i++ ) {
@@ -498,12 +507,21 @@ public class stc_ml_c
                 cost1[perm1[i]] = costs[i];
                 if ( cost1[perm1[i]] != cost1[perm1[i]] ) cost1[perm1[i]] = D_INF;
             }
-            stego1 = Arrays.copyOf(cover1, cover_length); // initialize stego array by cover array
+            //stego1 = Arrays.copyOf(cover1, cover_length); // initialize stego array by cover array
+            for(int i = 0; i < cover_length; i++)
+            {
+                if(cover1[i] == 0)
+                    stego1.clear(i);
+                else
+                    stego1.set(i);
+            }
+
             // debugging
             // write_vector_to_file<double>(n, cost, debugging_file);
+            stc_embed_c stcEmbedC = new stc_embed_c();
             try {
-                if ( num_msg_bits[0] != 0 ) stc_embed( cover1, cover_length, message, num_msg_bits[0], cost1, true, stego1,
-                        stc_constraint_height );
+                if ( num_msg_bits[0] != 0 ) stcEmbedC.stc_embed(cover1, cover_length, message, num_msg_bits[0], cost1, true, stego1,
+                        stc_constraint_height);
                 success = true;
             } catch ( Exception e ) {
                 e.printStackTrace();
@@ -518,8 +536,8 @@ public class stc_ml_c
     /* FINAL CALCULATIONS */
         distortion = 0;
         for ( int i = 0; i < cover_length; i++ ) {
-            stego[i] = (stego1[perm1[i]] == cover1[perm1[i]]) ? cover[i] : cover[i] + direction[i];
-            distortion += (stego1[perm1[i]] == cover1[perm1[i]]) ? 0 : costs[i];
+            stego[i] = (stego1.toByteArray()[perm1[i]] == cover1[perm1[i]]) ? cover[i] : cover[i] + direction[i];
+            distortion += (stego1.toByteArray()[perm1[i]] == cover1[perm1[i]]) ? 0 : costs[i];
         }
         if ( coding_loss[0] != 0 )
         {
@@ -532,6 +550,29 @@ public class stc_ml_c
         return distortion;
     }
 
+    // EXTRACTION ALGORITHMS **********************************************************************************************************
+    void stc_ml_extract( int stego_length, int[] stego, int num_of_layers, int[] num_msg_bits, // input variables
+                         int stc_constraint_height, // other input parameters
+                         BitSet message ) { // output variables
 
+        BitSet stego_bits = new BitSet(stego_length);
+        BitSet msg_ptr = message;
+        int [] perm = new int[stego_length];
+
+        stc_extract_c stcExtractC = new stc_extract_c();
+        for ( int l = num_of_layers; l > 0; l-- ) { // extract message from every layer starting from most significant ones
+            // extract bits from l-th LSB plane
+            if ( num_msg_bits[l - 1] > 0 ) {
+                randperm( stego_length, num_msg_bits[l - 1], perm );
+                for ( int i = 0; i < stego_length; i++ ) {
+                    stego_bits.toByteArray()[perm[i]] = (byte)((stego[i] % (1 << l)) >> (l - 1));
+                }
+                stcExtractC.stc_extract(stego_bits, stego_length, msg_ptr, num_msg_bits[l - 1], stc_constraint_height);
+                //msg_ptr += num_msg_bits[l - 1];
+                msg_ptr = msg_ptr.get(num_msg_bits[l-1], msg_ptr.length());
+            }
+        }
+
+    }
 
 }

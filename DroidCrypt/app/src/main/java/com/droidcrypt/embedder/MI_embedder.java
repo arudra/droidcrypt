@@ -68,10 +68,11 @@ public class MI_embedder {
 
         stc_trails_used[0] = stc_max_trails;
         int [] num_msg_bits = new int[2]; // this array contains number of bits embedded into first and second layer
+        stc_ml_c newSTC = new stc_ml_c();
 
         try
         {
-            distortion[0] = stc_pm1_pls_embed( n, cover_px, m.costs, message_length, message, stc_constr_height, Float.POSITIVE_INFINITY, stego_px, num_msg_bits,
+            distortion[0] = newSTC.stc_pm1_pls_embed( n, cover_px, m.costs, message_length, message, stc_constr_height, Float.POSITIVE_INFINITY, stego_px, num_msg_bits,
                     stc_trails_used, coding_loss_out);
         }
         catch (Exception e)
@@ -86,7 +87,7 @@ public class MI_embedder {
         // extract message from 'stego_array' into 'extracted_message' and use STCs with constr. height h
 //        unsigned char *extracted_message = new unsigned char[message_length];
         BitSet extracted_message = new BitSet(message_length);
-        stc_ml_extract( n, stego_px, 2, num_msg_bits, stc_constr_height, (extracted_message) );
+        newSTC.stc_ml_extract( n, stego_px, 2, num_msg_bits, stc_constr_height, (extracted_message) );
 //        std::cout << "Checking the extracted message " << msg << " with "<< num_msg_bits[0] << " - " << num_msg_bits[1] << " :  ";
 //        for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
 //            printf("%x", extracted_message[k]);

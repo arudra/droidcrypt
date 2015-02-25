@@ -130,9 +130,9 @@ public class common
 	};
 
 	
-	public Integer[] getMatrix (int width, int height)
+	public int[] getMatrix (int width, int height)
 	{
-		Integer[] cols = new Integer[width];
+		int[] cols = new int[width];
 		//cols = (u32*)malloc(width * sizeof(u32));
 
 		if(width >= 2 && width <= 20 && height >= 7 && height <= 12) { // get it from the array
