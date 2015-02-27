@@ -156,7 +156,8 @@ public class stc_ml_c
                 x = _mm_div_ps( x, sum );
                 _mm_store_ps( p + j * n + 4 * i, x );
             }
-        } */
+        }
+        */
         // this is for debugging purposes
         // float payload_dbg = entropy_array(4*n, p);
 
@@ -315,20 +316,24 @@ public class stc_ml_c
     //TODO: FIX THIS
     float calc_entropy( int n, int k, float[] costs, float lambda ) {
 
-        float LOG2 = (float)Math.log( 2.0f );/*
-        __m128 inf = _mm_set1_ps( F_INF );
-        __m128 v_lambda = _mm_set1_ps( -lambda );
-        __m128 z, d, rho, p, entr, mask;
+        float LOG2 = (float)Math.log( 2.0f );
 
-        entr = _mm_setzero_ps();
+
+        float inf = Float.POSITIVE_INFINITY;
+
+        float v_lambda = -lambda;
+        float z, d, rho, p, entr, mask;
+
+        entr = 0.0f;
         for ( int i = 0; i < n / 4; i++ ) {
-            z = _mm_setzero_ps();
-            d = _mm_setzero_ps();
+            z = 0.0f;
+            d = 0.0f;
             for ( int j = 0; j < k; j++ ) {
-                rho = _mm_load_ps( costs + j * n + 4 * i ); // costs array must be aligned in memory
-                p = exp_ps( _mm_mul_ps( v_lambda, rho ) );
+                rho =
+//                rho = _mm_load_ps( costs + j * n + 4 * i ); // costs array must be aligned in memory
+                p = (float)Math.pow(2, v_lambda*rho);
+                //p = exp_ps( _mm_mul_ps( v_lambda, rho ) );
                 z = _mm_add_ps( z, p );
-
                 mask = _mm_cmpeq_ps( rho, inf ); // if p<eps, then do not accumulate it to d since x*exp(-x) tends to zero
                 p = _mm_mul_ps( rho, p );
                 p = _mm_andnot_ps( mask, p ); // apply mask
@@ -337,8 +342,40 @@ public class stc_ml_c
             entr = _mm_sub_ps( entr, _mm_div_ps( _mm_mul_ps( v_lambda, d ), z ) );
             entr = _mm_add_ps( entr, log_ps( z ) );
         }
-        return sum_inplace( entr ) / LOG2; */
-        return 0;
+
+//        entr = _mm_setzero_ps();
+//        for ( int i = 0; i < n / 4; i++ ) {
+//            z = _mm_setzero_ps();
+//            d = _mm_setzero_ps();
+//            for ( int j = 0; j < k; j++ ) {
+//                rho = _mm_load_ps( costs + j * n + 4 * i ); // costs array must be aligned in memory
+//                p = exp_ps( _mm_mul_ps( v_lambda, rho ) );
+//                z = _mm_add_ps( z, p );
+//
+//                mask = _mm_cmpeq_ps( rho, inf ); // if p<eps, then do not accumulate it to d since x*exp(-x) tends to zero
+//                p = _mm_mul_ps( rho, p );
+//                p = _mm_andnot_ps( mask, p ); // apply mask
+//                d = _mm_add_ps( d, p );
+//            }
+//            entr = _mm_sub_ps( entr, _mm_div_ps( _mm_mul_ps( v_lambda, d ), z ) );
+//            entr = _mm_add_ps( entr, log_ps( z ) );
+//        }
+        return sum_inplace( entr ) / LOG2;
+    }
+
+    // binary entropy function in single precision
+    public static float bin_entropyf(float x) {
+
+        float LOG2 = (float) Math.log(2.0f);
+        float EPS = (float)Math.ulp(1.0);
+        float z;
+
+        if ((x<EPS) || ((1-x)<EPS)) {
+            return 0;
+        } else {
+            z = (float)(-x*Math.log(x)-(1-x)*Math.log(1-x))/LOG2;
+            return z;
+        }
     }
 
     float get_lambda_entropy( int n, int k, float[] costs, float payload) {
@@ -410,7 +447,8 @@ public class stc_ml_c
             // debugging
             // write_vector_to_file<double>(n, cost, debugging_file);
             try {
-                if ( num_msg_bits != 0 ) stc_embed( cover, n, message, num_msg_bits, cost, true, stego, stc_constraint_height );
+                // TODO: uncomment this line
+//                if ( num_msg_bits != 0 ) stc_embed( cover, n, message, num_msg_bits, cost, true, stego, stc_constraint_height );
                 success = true;
             } catch ( Exception e ) {
                 e.printStackTrace();
@@ -502,8 +540,9 @@ public class stc_ml_c
             // debugging
             // write_vector_to_file<double>(n, cost, debugging_file);
             try {
-                if ( num_msg_bits[0] != 0 ) stc_embed( cover1, cover_length, message, num_msg_bits[0], cost1, true, stego1,
-                        stc_constraint_height );
+                // TODO: uncomment this
+//                if ( num_msg_bits[0] != 0 ) stc_embed( cover1, cover_length, message, num_msg_bits[0], cost1, true, stego1,
+//                        stc_constraint_height );
                 success = true;
             } catch ( Exception e ) {
                 e.printStackTrace();

@@ -1,6 +1,8 @@
 package com.droidcrypt;
 
-import com.droidcypt.embedder.MI_embedder;
+import android.util.Log;
+
+import com.droidcrypt.embedder.MI_embedder;
 
 import java.util.Random;
 
@@ -41,7 +43,11 @@ public abstract class base_cost_model {
         {
             // use STCs
             int stc_max_trials = 10; // maximum number of trials for ML STCs
-            stego = MI_embedder.mi_emb_stc_pls_embedding(this, config.getPayload(), rand.nextInt(), config.getStc_constr_height(), stc_max_trials, distortion, alpha_out, coding_loss_out, stc_trials_used );
+            try {
+            stego = MI_embedder.mi_emb_stc_pls_embedding(this, config.getPayload(), rand.nextInt(), config.getStc_constr_height(), stc_max_trials, distortion, alpha_out, coding_loss_out, stc_trials_used);
+            } catch (Exception e) {
+                Log.e("Base_Cost_model","ERROR embbedding " + e);
+            }
         }
 
         return stego;
