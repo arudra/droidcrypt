@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cfloat>
 #include <limits>
-#include <emmintrin.h>
+//#include <emmintrin.h>
 #include <cstdio>
 #include <sstream>
 #include "stc_embed_c.h"
@@ -24,7 +24,7 @@ void aligned_free( void *vptr ) {
     free( ptr - ptr[-1] );
     return;
 }
-
+/*
 inline __m128i maxLessThan255( const __m128i v1, const __m128i v2 ) {
     register __m128i mask = _mm_set1_epi32( 0xffffffff );
     return _mm_max_epu8( _mm_andnot_si128( _mm_cmpeq_epi8( v1, mask ), v1 ), _mm_andnot_si128( _mm_cmpeq_epi8( v2, mask ), v2 ) );
@@ -51,7 +51,7 @@ inline u8 min16B( __m128i minp ) {
     if ( mtemp[1] < mtemp[0] ) return mtemp[1];
     else return mtemp[0];
 }
-
+*/
 double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int syndromelength, const void *pricevectorv, bool usefloat,
         u8 *stego, int matrixheight ) {
     int height, i, k, l, index, index2, parts, m, sseheight, altm, pathindex;
@@ -143,7 +143,8 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
 
         sseheight = height >> 2;
         ssedone = (u8*) malloc( sseheight * sizeof(u8) );
-        prices = (float*) aligned_malloc( height * sizeof(float), 16 );
+        //prices = (float*) aligned_malloc( height * sizeof(float), 16 );
+        prices = (float*) malloc( height * sizeof(float));
 
         {
             //__m128 fillval = _mm_set1_ps( inf );
@@ -194,13 +195,13 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
 
                         altm = (m ^ (column >> 2));
                         v1[0] = prices[m << 2];
-                        v1[1] = prices[m << 2 + 1];
-                        v1[2] = prices[m << 2 + 2];
-                        v1[3] = prices[m << 2 + 3];
+                        v1[1] = prices[(m << 2) + 1];
+                        v1[2] = prices[(m << 2) + 2];
+                        v1[3] = prices[(m << 2) + 3];
                         v2[0] = prices[altm << 2];
-                        v2[1] = prices[altm << 2 + 1];
-                        v2[2] = prices[altm << 2 + 2];
-                        v2[3] = prices[altm << 2 + 3];
+                        v2[1] = prices[(altm << 2) + 1];
+                        v2[2] = prices[(altm << 2) + 2];
+                        v2[3] = prices[(altm << 2) + 3];
 
                         v3[0] = v1[0]; v3[1] = v1[1]; v3[2] = v1[2]; v3[3] = v1[3];
                         v4[0] = v2[0]; v4[1] = v2[1]; v4[2] = v2[2]; v4[3] = v2[3];
@@ -311,14 +312,14 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
                         //v4 = _mm_min_ps( v3, v4 );
 
                         prices[m << 2] = v1[0];
-                        prices[m << 2 + 1] = v1[1];
-                        prices[m << 2 + 2] = v1[2];
-                        prices[m << 2 + 3] = v1[3];
+                        prices[(m << 2) + 1] = v1[1];
+                        prices[(m << 2) + 2] = v1[2];
+                        prices[(m << 2) + 3] = v1[3];
 
                         prices[altm << 2] = v4[0];
-                        prices[altm << 2 + 1] = v4[1];
-                        prices[altm << 2 + 2] = v4[2];
-                        prices[altm << 2 + 3] = v4[3];
+                        prices[(altm << 2) + 1] = v4[1];
+                        prices[(altm << 2) + 2] = v4[2];
+                        prices[(altm << 2) + 3] = v4[3];
 
                         //_mm_store_ps( &prices[m << 2], v1 );
                         //_mm_store_ps( &prices[altm << 2], v4 );
@@ -370,10 +371,12 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
 
             if ( syndrome[index2] == 0 ) {
                 for ( i = 0, l = 0; i < sseheight; i += 2, l += 4 ) {
-                    _mm_store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0x88) );
+                    // TODO: update this line
+                    store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0x88) );
                 }
             } else {
                 for ( i = 0, l = 0; i < sseheight; i += 2, l += 4 ) {
+                    // TODO: update this line
                     _mm_store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0xdd) );
                 }
             }
@@ -381,9 +384,13 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
             if ( syndromelength - index2 <= matrixheight ) colmask >>= 1;
 
             {
-                register __m128 fillval = _mm_set1_ps( inf );
+//                register __m128 fillval = _mm_set1_ps( inf );
                 for ( l >>= 2; l < sseheight; l++ ) {
-                    _mm_store_ps( &prices[l << 2], fillval );
+                    prices[(l << 2)]  = inf;
+                    prices[(l << 2)+1]  = inf;
+                    prices[(l << 2)+2]  = inf;
+                    prices[(l << 2)+3]  = inf;
+//                    _mm_store_ps( &prices[l << 2], fillval );
                 }
             }
         }
