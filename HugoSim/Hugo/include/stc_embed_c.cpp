@@ -264,21 +264,29 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
         /*
          SSE UINT8 VERSION
          */
+        /*
         int pathindex16 = 0, subprice = 0;
         u8 maxc = 0, minc = 0;
         u8 *prices, *pricevector = (u8*) pricevectorv;
         u16 *path16 = (u16 *) path;
-        __m128i *prices16B;
+//        __m128i *prices16B;
+        unsigned char * prices16B;
 
         sseheight = height >> 4;
         ssedone = (u8*) malloc( sseheight * sizeof(u8) );
-        prices = (u8*) aligned_malloc( height * sizeof(u8), 16 );
-        prices16B = (__m128i *) prices;
+//        prices = (u8*) aligned_malloc( height * sizeof(u8), 16 );
+        prices = (u8*) malloc(height* sizeof(u8));
+//        prices16B = (__m128i *) prices;
+        prices16B = prices;
 
         {
-            __m128i napln = _mm_set1_epi32( 0xffffffff );
+//            __m128i napln = _mm_set1_epi32( 0xffffffff );
+            int napln [4] = {-1, -1, -1, -1};
             for ( i = 0; i < sseheight; i++ ) {
-                _mm_store_si128( &prices16B[i], napln );
+//                _mm_store_si128( &prices16B[i], napln );
+                for (int ii=0; ii<4; ii++) {
+                    
+                }
                 ssedone[i] = 0;
             }
         }
@@ -386,7 +394,9 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
             }
 
             {
-                register __m128i mask = _mm_set1_epi32( 0x00ff00ff );
+                //register __m128i mask = _mm_set1_epi32( 0x00ff00ff );
+                
+                float mask[4] = [0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff];
 
                 if ( minc == 255 ) {
                     aligned_free( path );
@@ -401,8 +411,10 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
 
                 if ( syndrome[index2] == 0 ) {
                     for ( i = 0, l = 0; i < sseheight; i += 2, l++ ) {
+                        
                         _mm_store_si128( &prices16B[l], _mm_packus_epi16( _mm_and_si128( _mm_load_si128( &prices16B[i] ), mask ),
                                 _mm_and_si128( _mm_load_si128( &prices16B[i + 1] ), mask ) ) );
+                        
                     }
                 } else {
                     for ( i = 0, l = 0; i < sseheight; i += 2, l++ ) {
@@ -423,6 +435,7 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
 
         aligned_free( prices );
         free( ssedone );
+         */
     }
 
     if ( stego != NULL ) {
