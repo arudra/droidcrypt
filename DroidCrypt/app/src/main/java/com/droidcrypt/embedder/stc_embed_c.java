@@ -100,24 +100,37 @@ public class stc_embed_c
             prices = new float[height]; //aligned_malloc( height * sizeof(float), 16 );
 
             {
+                for (i=0; i < height; i += 4)
+                {
+                    prices[i] = inf;
+                    prices[i+1] = inf;
+                    prices[i+2] = inf;
+                    prices[i+3] = inf;
+                    ssedone.clear(i >> 2);
+                }
+
+                /*
                 __m128 fillval = _mm_set1_ps( inf );
                 for ( i = 0; i < height; i += 4 ) {
                     _mm_store_ps( &prices[i], fillval );
                     ssedone.clear(i >> 2);// [i >> 2] = 0;
-                }
+                } */
             }
 
             prices[0] = 0.0f;
 
             for ( index = 0, index2 = 0; index2 < syndromelength; index2++ ) {
-                register __m128 c1, c2;
+                //register __m128 c1, c2;
+                float[] c1 = new float[4];
 
                 for ( k = 0; k < widths[index2]; k++, index++ ) {
                     column = columns[matrices[index2]][k] & colmask;
 
                     if ( vector[index] == 0 ) {
-                        c1 = _mm_setzero_ps();
+                        //c1 = _mm_setzero_ps();
                         c2 = _mm_set1_ps( (float) pricevector[index] );
+                        c1[0] = 0; c1[1] = 0; c1[2] = 0; c1[3] = 0;
+
                     } else {
                         c1 = _mm_set1_ps( (float) pricevector[index] );
                         c2 = _mm_setzero_ps();
