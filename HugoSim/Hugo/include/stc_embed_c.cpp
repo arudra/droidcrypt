@@ -146,9 +146,13 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
         prices = (float*) aligned_malloc( height * sizeof(float), 16 );
 
         {
-            __m128 fillval = _mm_set1_ps( inf );
+            //__m128 fillval = _mm_set1_ps( inf );
             for ( i = 0; i < height; i += 4 ) {
-                _mm_store_ps( &prices[i], fillval );
+                prices[i] = inf;
+                prices[i+1] = inf;
+                prices[i+2] = inf;
+                prices[i+3] = inf;
+                //_mm_store_ps( &prices[i], fillval );
                 ssedone[i >> 2] = 0;
             }
         }
@@ -156,65 +160,202 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
         prices[0] = 0.0f;
 
         for ( index = 0, index2 = 0; index2 < syndromelength; index2++ ) {
-            register __m128 c1, c2;
+            //register __m128 c1, c2;
+            float c1[4], c2[4];
 
             for ( k = 0; k < widths[index2]; k++, index++ ) {
                 column = columns[matrices[index2]][k] & colmask;
 
                 if ( vector[index] == 0 ) {
-                    c1 = _mm_setzero_ps();
-                    c2 = _mm_set1_ps( (float) pricevector[index] );
+                    for(int r = 0; r < 4; r++)
+                    {
+                        c1[r] = 0;
+                        c2[r] = pricevector[index];
+                    }
+
+                    //c1 = _mm_setzero_ps();
+                    //c2 = _mm_set1_ps( (float) pricevector[index] );
                 } else {
-                    c1 = _mm_set1_ps( (float) pricevector[index] );
-                    c2 = _mm_setzero_ps();
+                    for(int r = 0; r < 4; r++)
+                    {
+                        c1[r] = pricevector[index];
+                        c2[r] = 0;
+                    }
+                    //c1 = _mm_set1_ps( (float) pricevector[index] );
+                    //c2 = _mm_setzero_ps();
                 }
 
                 total += pricevector[index];
 
                 for ( m = 0; m < sseheight; m++ ) {
                     if ( !ssedone[m] ) {
-                        register __m128 v1, v2, v3, v4;
+                        //register __m128 v1, v2, v3, v4;
+                        float v1[4], v2[4], v3[4], v4[4];
+
                         altm = (m ^ (column >> 2));
-                        v1 = _mm_load_ps( &prices[m << 2] );
-                        v2 = _mm_load_ps( &prices[altm << 2] );
-                        v3 = v1;
-                        v4 = v2;
+                        v1[0] = prices[m << 2];
+                        v1[1] = prices[m << 2 + 1];
+                        v1[2] = prices[m << 2 + 2];
+                        v1[3] = prices[m << 2 + 3];
+                        v2[0] = prices[altm << 2];
+                        v2[1] = prices[altm << 2 + 1];
+                        v2[2] = prices[altm << 2 + 2];
+                        v2[3] = prices[altm << 2 + 3];
+
+                        v3[0] = v1[0]; v3[1] = v1[1]; v3[2] = v1[2]; v3[3] = v1[3];
+                        v4[0] = v2[0]; v4[1] = v2[1]; v4[2] = v2[2]; v4[3] = v2[3];
+
+                        //v1 = _mm_load_ps( &prices[m << 2] );
+                        //v2 = _mm_load_ps( &prices[altm << 2] );
+                        //v3 = v1;
+                        //v4 = v2;
                         ssedone[m] = 1;
                         ssedone[altm] = 1;
+
+                        //Swapper tmp variable
+                        int tmp;
+
                         switch ( column & 3 ) {
                             case 0:
                                 break;
                             case 1:
-                                v2 = _mm_shuffle_ps(v2, v2, 0xb1);
-                                v3 = _mm_shuffle_ps(v3, v3, 0xb1);
+                                //Swap indexes 0 & 1 + indexes 2 & 3
+                                tmp = v2[0];
+                                v2[0] = v2[1];
+                                v2[1] = tmp;
+                                tmp = v2[2];
+                                v2[2] = v2[3];
+                                v2[3] = tmp;
+
+                                tmp = v3[0];
+                                v3[0] = v3[1];
+                                v3[1] = tmp;
+                                tmp = v3[2];
+                                v3[2] = v3[3];
+                                v3[3] = tmp;
+                                //v2 = _mm_shuffle_ps(v2, v2, 0xb1);
+                                //v3 = _mm_shuffle_ps(v3, v3, 0xb1);
                                 break;
                             case 2:
-                                v2 = _mm_shuffle_ps(v2, v2, 0x4e);
-                                v3 = _mm_shuffle_ps(v3, v3, 0x4e);
+                                //Swap indexes 0 & 2 + indexes 1 & 3
+                                tmp = v2[0];
+                                v2[0] = v2[2];
+                                v2[2] = tmp;
+                                tmp = v2[1];
+                                v2[1] = v2[3];
+                                v2[3] = tmp;
+
+                                tmp = v3[0];
+                                v3[0] = v3[2];
+                                v3[2] = tmp;
+                                tmp = v3[1];
+                                v3[1] = v3[3];
+                                v3[3] = tmp;
+                                //v2 = _mm_shuffle_ps(v2, v2, 0x4e);
+                                //v3 = _mm_shuffle_ps(v3, v3, 0x4e);
                                 break;
                             case 3:
-                                v2 = _mm_shuffle_ps(v2, v2, 0x1b);
-                                v3 = _mm_shuffle_ps(v3, v3, 0x1b);
+                                //Swap indexes 0 & 3 + indexes 1 & 2
+                                tmp = v2[0];
+                                v2[0] = v2[3];
+                                v2[3] = tmp;
+                                tmp = v2[1];
+                                v2[1] = v2[2];
+                                v2[2] = tmp;
+
+                                tmp = v3[0];
+                                v3[0] = v3[3];
+                                v3[3] = tmp;
+                                tmp = v3[1];
+                                v3[1] = v3[2];
+                                v3[2] = tmp;
+                                //v2 = _mm_shuffle_ps(v2, v2, 0x1b);
+                                //v3 = _mm_shuffle_ps(v3, v3, 0x1b);
                                 break;
                         }
-                        v1 = _mm_add_ps( v1, c1 );
-                        v2 = _mm_add_ps( v2, c2 );
-                        v3 = _mm_add_ps( v3, c2 );
-                        v4 = _mm_add_ps( v4, c1 );
+                        v1[0] += c1[0];
+                        v1[1] += c1[1];
+                        v1[2] += c1[2];
+                        v1[3] += c1[3];
 
-                        v1 = _mm_min_ps( v1, v2 );
-                        v4 = _mm_min_ps( v3, v4 );
+                        v2[0] += c2[0];
+                        v2[1] += c2[1];
+                        v2[2] += c2[2];
+                        v2[3] += c2[3];
 
-                        _mm_store_ps( &prices[m << 2], v1 );
-                        _mm_store_ps( &prices[altm << 2], v4 );
+                        v3[0] += c2[0];
+                        v3[1] += c2[1];
+                        v3[2] += c2[2];
+                        v3[3] += c2[3];
+
+                        v4[0] += c1[0];
+                        v4[1] += c1[1];
+                        v4[2] += c1[2];
+                        v4[3] += c1[3];
+                        //v1 = _mm_add_ps( v1, c1 );
+                        //v2 = _mm_add_ps( v2, c2 );
+                        //v3 = _mm_add_ps( v3, c2 );
+                        //v4 = _mm_add_ps( v4, c1 );
+
+                        v1[0] = fmin(v1[0], v2[0]);
+                        v1[1] = fmin(v1[1], v2[1]);
+                        v1[2] = fmin(v1[2], v2[2]);
+                        v1[3] = fmin(v1[3], v2[3]);
+
+                        v4[0] = fmin(v4[0], v3[0]);
+                        v4[1] = fmin(v4[1], v3[1]);
+                        v4[2] = fmin(v4[2], v3[2]);
+                        v4[3] = fmin(v4[3], v3[3]);
+
+                        //v1 = _mm_min_ps( v1, v2 );
+                        //v4 = _mm_min_ps( v3, v4 );
+
+                        prices[m << 2] = v1[0];
+                        prices[m << 2 + 1] = v1[1];
+                        prices[m << 2 + 2] = v1[2];
+                        prices[m << 2 + 3] = v1[3];
+
+                        prices[altm << 2] = v4[0];
+                        prices[altm << 2 + 1] = v4[1];
+                        prices[altm << 2 + 2] = v4[2];
+                        prices[altm << 2 + 3] = v4[3];
+
+                        //_mm_store_ps( &prices[m << 2], v1 );
+                        //_mm_store_ps( &prices[altm << 2], v4 );
 
                         if ( stego != NULL ) {
-                            v2 = _mm_cmpeq_ps( v1, v2 );
-                            v3 = _mm_cmpeq_ps( v3, v4 );
-                            path8[pathindex8 + (m >> 1)] = (path8[pathindex8 + (m >> 1)] & mask[m & 1]) | (_mm_movemask_ps( v2 ) << shift[m
-                                    & 1]);
-                            path8[pathindex8 + (altm >> 1)] = (path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) | (_mm_movemask_ps( v3 )
-                                    << shift[altm & 1]);
+                            v2[0] = (v1[0] == v2[0]) ? 0xffffffff : 0;
+                            v2[1] = (v1[1] == v2[1]) ? 0xffffffff : 0;
+                            v2[2] = (v1[2] == v2[2]) ? 0xffffffff : 0;
+                            v2[3] = (v1[3] == v2[3]) ? 0xffffffff : 0;
+
+                            v3[0] = (v3[0] == v4[0]) ? 0xffffffff : 0;
+                            v3[1] = (v3[1] == v4[1]) ? 0xffffffff : 0;
+                            v3[2] = (v3[2] == v4[2]) ? 0xffffffff : 0;
+                            v3[3] = (v3[3] == v4[3]) ? 0xffffffff : 0;
+
+                            //v2 = _mm_cmpeq_ps( v1, v2 );
+                            //v3 = _mm_cmpeq_ps( v3, v4 );
+                            int sign[4];
+                            int signmask=0;
+                            sign[0] = v2[0]<0 ? 1:0;
+                            sign[1] = (v2[1]<0 ? 1:0) << 1;
+                            sign[2] = (v2[2]<0 ? 1:0) << 2;
+                            sign[3] = (v2[3]<0 ? 1:0) << 3;
+                            signmask = sign[3] | sign[2] | sign[1] | sign[0];
+
+
+                            path8[pathindex8 + (m >> 1)] = (path8[pathindex8 + (m >> 1)] & mask[m & 1]) | ( signmask/*_mm_movemask_ps( v2 )*/
+                                << shift[m& 1]);
+
+                            sign[0] = v3[0]<0 ? 1:0;
+                            sign[1] = (v3[1]<0 ? 1:0) << 1;
+                            sign[2] = (v3[2]<0 ? 1:0) << 2;
+                            sign[3] = (v3[3]<0 ? 1:0) << 3;
+                            signmask = sign[3] | sign[2] | sign[1] | sign[0];
+
+                            path8[pathindex8 + (altm >> 1)] = (path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) | ( signmask/*_mm_movemask_ps( v3 )*/
+                                << shift[altm & 1]);
                         }
                     }
                 }
