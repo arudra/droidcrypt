@@ -3,19 +3,20 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
+#include <iostream>
 #include <sstream>
 #include <fstream>
 #include <iomanip>
 #include <string.h> // due to memcpy
-#include <mmintrin.h>  // for SSE
-#include <xmmintrin.h> // for SSE
+//#include <mmintrin.h>  // for SSE
+//#include <xmmintrin.h> // for SSE
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
 #include "stc_embed_c.h"
 #include "stc_extract_c.h"
-#include "fast_math.h"
+//#include "fast_math.h"
 
 // #include "sse_mathfun.h"    // library with optimized functions obtained from http://gruntthepeon.free.fr/ssemath/
 
@@ -96,7 +97,9 @@ void randperm( uint n, uint seed, uint* perm ) {
     delete randi;
 }
 
+
 /* Other functions */
+/*
 inline float sum_inplace( __m128 x ) {
     float y;
     // add all 4 terms from x together
@@ -105,9 +108,46 @@ inline float sum_inplace( __m128 x ) {
     _mm_store_ss( &y, x );
     return y;
 }
-
+*/
 float calc_entropy( uint n, uint k, float* costs, float lambda ) {
 
+    int b=4;
+    float const LOG2 = log( 2.0f );
+    float inf = std::numeric_limits<float>::infinity();
+    float z[b], d[b], rho[b], p[b], entr[b];
+    float sum=0;
+    
+    for (int l=0; l<b; l++) {
+        entr[l] = 0;
+    }
+    for (int i=0; i<n/b; i++) {
+        for (int l=0; l<b; l++) {
+            z[l] = 0;
+            d[l] = 0;
+        }
+        for (int j=0; j<k; j++) {
+            for (int l=0; l<b; l++) {
+                rho[l] = costs[j * n + 4 * i + l];
+                p[l] = pow(2, -lambda*rho[l]);
+                z[l] += p[l];
+                p[l] = p[l]*rho[l];
+                if (rho[l] != inf) {
+                    d[l] += p[l];
+                }
+            }
+        }
+        for (int l=0; l<b; l++) {
+            entr[l] = entr[l] - (-lambda*d[l]/z[l]);
+            entr[l] += log2f(z[l]);
+        }
+    }
+    for (int l=0; l<b;l++) {
+        sum += entr[l];
+    }
+    return sum/LOG2;
+    
+    // -------------------------
+    /*
     float const LOG2 = log( 2.0f );
     __m128 inf = _mm_set1_ps( F_INF );
     __m128 v_lambda = _mm_set1_ps( -lambda );
@@ -131,6 +171,7 @@ float calc_entropy( uint n, uint k, float* costs, float lambda ) {
         entr = _mm_add_ps( entr, log_ps( z ) );
     }
     return sum_inplace( entr ) / LOG2;
+     */
 }
 
 float get_lambda_entropy( uint n, uint k, float *costs, float payload, float initial_lambda = 10 ) {
@@ -172,6 +213,38 @@ float get_lambda_entropy( uint n, uint k, float *costs, float payload, float ini
 
 float calc_distortion( uint n, uint k, float* costs, float lambda ) {
 
+    int b=4;
+    float eps[b], v_lambda[b], z[b], d[b], rho[b], p[b], dist[b];
+    float sum=0;
+    for (int l=0; l<b; l++) {
+        eps[l] = std::numeric_limits< float >::epsilon();
+        v_lambda[l] = -lambda;
+        dist[l] = 0;
+    }
+    for (int i=0; i<n/b; i++) {
+        for (int l=0; l<b; l++) {
+            z[l] = 0;
+            d[l] = 0;
+        }
+        for (int j=0; j<k; j++) {
+            for (int l=0; l<b; l++) {
+                rho[l] = costs[j * n + 4 * i + k];
+                p[l] = pow(2, v_lambda[l]*rho[l]);
+                z[l] += p[l];
+                p[l] = p[l]*rho[l];
+                if (p[l] >= eps[l]) {
+                    d[l] += p[l];
+                }
+            }
+        }
+        for (int l=0; l<b; l++) {
+            dist[l] += (d[l]*z[l]);
+        }
+    }
+    for (int l=0; l<b;l++) sum += dist[l];
+    return sum;
+    // --------------
+    /*
     __m128 eps = _mm_set1_ps( std::numeric_limits< float >::epsilon() );
     __m128 v_lambda = _mm_set1_ps( -lambda );
     __m128 z, d, rho, p, dist, mask;
@@ -192,6 +265,7 @@ float calc_distortion( uint n, uint k, float* costs, float lambda ) {
         dist = _mm_add_ps( dist, _mm_div_ps( d, z ) );
     }
     return sum_inplace( dist );
+     */
 }
 
 float get_lambda_distortion( uint n, uint k, float *costs, float distortion, float initial_lambda = 10, float precision = 1e-3,
@@ -537,7 +611,7 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
             }
         lsb1_only &= ((n_finite_costs <= 2) & (lsb_xor == 1));
     }
-    if ( lsb1_only ) { // use stc_ml1_embed method
+    if ( false ) { // use stc_ml1_embed method
         distortion = 0;
         int *cover = new int[cover_length];
         short *direction = new short[cover_length];
@@ -559,6 +633,7 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
                     direction[i] = stego_values[4 * i + j] - cover[i];
                 }
         }
+        
 
         distortion += stc_ml1_embed( cover_length, cover, direction, costs_ml1, message_length, message, target_distortion,
                 stc_constraint_height, expected_coding_loss, stego, num_msg_bits, max_trials, coding_loss );
@@ -568,6 +643,9 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
         return distortion;
     }
 
+    
+//    std::cout << "CANNOT USE stc_ml1_embed method" << std::endl;
+    
     // copy and transpose data for faster reading via SSE instructions
     float* c = align_new< float > ( 4 * n, 16 );
     std::fill_n( c, 4 * n, F_INF );
@@ -592,10 +670,11 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
         m_actual = std::min( 2 * cover_length, message_length );
         lambda = get_lambda_entropy( n, 4, c, (float)m_actual, 2 );
     }
-    /* 
+    /*
      p = exp(-lambda*costs);
      p = p./(ones(4,1)*sum(p));
      */
+    /*
     float* p = align_new< float > ( 4 * n, 16 );
     __m128 v_lambda = _mm_set1_ps( -lambda );
     for ( uint i = 0; i < n / 4; i++ ) {
@@ -612,6 +691,76 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
             _mm_store_ps( p + j * n + 4 * i, x );
         }
     }
+     */
+    
+     int bs = 4; // block size
+     float* p = new float [bs * n];
+     float* v_lambda = new float[bs];
+     //initializeZero(v_lambda, 4);
+    
+     for ( uint i = 0; i < n / bs; i++ ) {
+     //__m128 sum = _mm_setzero_ps();
+         float sum[bs];// = new float[4];
+         float x[bs];// = new float[4];
+         for(int k=0; k<bs; k++) {
+             sum[k] = 0;
+         }
+         for ( uint j = 0; j < bs; j++ ) {
+             
+             //__m128 x = _mm_load_ps( c + j * n + 4 * i );
+             
+             for (int k=0; k<bs; k++) {
+                 x[k] = c[j * n + bs * i + k];
+             }
+             //x = exp_ps( _mm_mul_ps( v_lambda, x ) );
+             //sum = _mm_add_ps( sum, x );
+             for (int k=0; k<bs; k++) {
+                 x[k] = pow(2, -lambda*x[k]);
+                 sum[k] += x[k];
+             }
+             //_mm_store_ps( p + j * n + 4 * i, x );
+             for (int k=0; k<bs; k++) {
+                 p[j * n + bs * i + k] = x[k];
+             }
+         }
+         for ( uint j = 0; j < bs; j++ ) {
+             //__m128 x = _mm_load_ps( p + j * n + 4 * i );
+             for (int k=0; k<bs; k++) {
+                 x[k] = p[j * n + bs * i + k];
+             }
+             //x = _mm_div_ps( x, sum );
+             for (int k=0; k<bs; k++) {
+                 x[k] = x[k]/sum[k];
+             }
+             
+             //_mm_store_ps( p + j * n + 4 * i, x );
+             for (int k=0; k<bs; k++) {
+                 p[j * n + 4 * i + k] = x[k];
+             }
+             
+         }
+     }
+     
+     
+    /*
+    int floatsize = 4*n;
+    float *p = new float[floatsize];
+    float sum = 0;
+    for (int i=0; i<floatsize;i++) {
+        p[i] = pow(2, -lambda*c[i]);
+        sum += p[i];
+        if (i%4==0) {
+            for (int j=i-4; j<i && j>0; j++) {
+                p[j] = p[j]/sum;
+            }
+            sum = 0;
+        }
+    }
+     */
+//    for (int i=0; i<floatsize;i++) {
+//        p[i] = p[i]/sum;
+//    }
+    
     // this is for debugging purposes
     // float payload_dbg = entropy_array(4*n, p);
 
@@ -728,6 +877,7 @@ float stc_ml3_embed( uint cover_length, float* costs, int* stego_values, uint me
      p = exp(-lambda*costs);
      p = p./(ones(8,1)*sum(p));
      */
+    /*
     float* p = align_new< float > ( 8 * n, 16 );
     __m128 v_lambda = _mm_set1_ps( -lambda );
     for ( uint i = 0; i < n / 4; i++ ) {
@@ -744,6 +894,53 @@ float stc_ml3_embed( uint cover_length, float* costs, int* stego_values, uint me
             _mm_store_ps( p + j * n + 4 * i, x );
         }
     }
+     */
+    int bs = 8; // block size
+    float* p = new float [bs * n];
+    
+    for ( uint i = 0; i < n / 4; i++ ) {
+        //__m128 sum = _mm_setzero_ps();
+        float sum[bs];// = new float[4];
+        float x[bs];// = new float[4];
+        for(int k=0; k<bs; k++) {
+            sum[k] = 0;
+        }
+        for ( uint j = 0; j < bs; j++ ) {
+            
+            //__m128 x = _mm_load_ps( c + j * n + 4 * i );
+            
+            for (int k=0; k<bs; k++) {
+                x[k] = c[j * n + 4 * i + k];
+            }
+            //x = exp_ps( _mm_mul_ps( v_lambda, x ) );
+            //sum = _mm_add_ps( sum, x );
+            for (int k=0; k<bs; k++) {
+                x[k] = pow(2, -lambda*x[k]);
+                sum[k] += x[k];
+            }
+            //_mm_store_ps( p + j * n + 4 * i, x );
+            for (int k=0; k<bs; k++) {
+                p[j * n + 4 * i + k] = x[k];
+            }
+        }
+        for ( uint j = 0; j < bs; j++ ) {
+            //__m128 x = _mm_load_ps( p + j * n + 4 * i );
+            for (int k=0; k<bs; k++) {
+                x[k] = p[j * n + 4 * i + k];
+            }
+            //x = _mm_div_ps( x, sum );
+            for (int k=0; k<bs; k++) {
+                x[k] = x[k]/sum[k];
+            }
+            
+            //_mm_store_ps( p + j * n + 4 * i, x );
+            for (int k=0; k<bs; k++) {
+                p[j * n + 4 * i + k] = x[k];
+            }
+            
+        }
+    }
+    
     // this is for debugging
     // float payload_dbg = entropy_array(8*n, p);
 

@@ -33,6 +33,19 @@ void printInfo(){
 	std::cout << "usage: HUGO_like -I input-dir -O output-dir -a payload [-v] [-g gamma] [-s sigma] [-h STC-height] \n\n";
 }
 
+void gen_random(char *s, const int len) {
+    static const char alphanum[] =
+    "0123456789"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz";
+    
+    for (int i = 0; i < len; ++i) {
+        s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+    
+    s[len] = 0;
+}
+
 int main(int argc, char** argv)
 {
 	try { 
@@ -99,7 +112,12 @@ int main(int argc, char** argv)
         }
 
 		clock_t begin=clock();
-        std::string message = "1234567890";
+        int len = 12;
+        char* msg = new char[len];
+        gen_random(msg, len);
+        std::string message(msg);
+//        std::string message = "1234567890";
+        
 		cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stc_constr_height, randSeed, message);
 
 		for (int imageIndex=0; imageIndex<(int)images.size(); imageIndex++)
