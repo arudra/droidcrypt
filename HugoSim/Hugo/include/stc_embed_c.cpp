@@ -3,9 +3,10 @@
 #include <cmath>
 #include <cfloat>
 #include <limits>
-//#include <emmintrin.h>
+#include <emmintrin.h>
 #include <cstdio>
 #include <sstream>
+#include <math.h>
 #include "stc_embed_c.h"
 
 void *aligned_malloc( unsigned int bytes, int align ) {
@@ -52,6 +53,20 @@ inline u8 min16B( __m128i minp ) {
     else return mtemp[0];
 }
 */
+
+inline bool isEqual(float x, float y)
+{
+  const float epsilon = 0.005f;
+  return fabs(x - y) < epsilon;
+}
+
+inline bool isLessthanZero(float x)
+{
+  const float epsilon = 0.005f;
+  const float zero = 0.00f;
+  return fabs(zero - x) > epsilon;
+}
+
 double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int syndromelength, const void *pricevectorv, bool usefloat,
         u8 *stego, int matrixheight ) {
     int height, i, k, l, index, index2, parts, m, sseheight, altm, pathindex;
@@ -298,15 +313,15 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
                         //v3 = _mm_add_ps( v3, c2 );
                         //v4 = _mm_add_ps( v4, c1 );
 
-                        v1[0] = fmin(v1[0], v2[0]);
-                        v1[1] = fmin(v1[1], v2[1]);
-                        v1[2] = fmin(v1[2], v2[2]);
-                        v1[3] = fmin(v1[3], v2[3]);
+                        v1[0] = fminf(v1[0], v2[0]);
+                        v1[1] = fminf(v1[1], v2[1]);
+                        v1[2] = fminf(v1[2], v2[2]);
+                        v1[3] = fminf(v1[3], v2[3]);
 
-                        v4[0] = fmin(v4[0], v3[0]);
-                        v4[1] = fmin(v4[1], v3[1]);
-                        v4[2] = fmin(v4[2], v3[2]);
-                        v4[3] = fmin(v4[3], v3[3]);
+                        v4[0] = fminf(v4[0], v3[0]);
+                        v4[1] = fminf(v4[1], v3[1]);
+                        v4[2] = fminf(v4[2], v3[2]);
+                        v4[3] = fminf(v4[3], v3[3]);
 
                         //v1 = _mm_min_ps( v1, v2 );
                         //v4 = _mm_min_ps( v3, v4 );
@@ -325,37 +340,38 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
                         //_mm_store_ps( &prices[altm << 2], v4 );
 
                         if ( stego != NULL ) {
-                            v2[0] = (v1[0] == v2[0]) ? 0xffffffff : 0;
-                            v2[1] = (v1[1] == v2[1]) ? 0xffffffff : 0;
-                            v2[2] = (v1[2] == v2[2]) ? 0xffffffff : 0;
-                            v2[3] = (v1[3] == v2[3]) ? 0xffffffff : 0;
+                            unsigned int val = 0xFFFFFFFF;
+                            v2[0] = isEqual(v1[0],v2[0]) ? (float)val : 0;
+                            v2[1] = isEqual(v1[1],v2[1]) ? (float)val : 0;
+                            v2[2] = isEqual(v1[2],v2[2]) ? (float)val : 0;
+                            v2[3] = isEqual(v1[3],v2[3]) ? (float)val : 0;
 
-                            v3[0] = (v3[0] == v4[0]) ? 0xffffffff : 0;
-                            v3[1] = (v3[1] == v4[1]) ? 0xffffffff : 0;
-                            v3[2] = (v3[2] == v4[2]) ? 0xffffffff : 0;
-                            v3[3] = (v3[3] == v4[3]) ? 0xffffffff : 0;
+                            v3[0] = isEqual(v3[0],v4[0]) ? (float)val : 0;
+                            v3[1] = isEqual(v3[1],v4[1]) ? (float)val : 0;
+                            v3[2] = isEqual(v3[2],v4[2]) ? (float)val : 0;
+                            v3[3] = isEqual(v3[3],v4[3]) ? (float)val : 0;
 
                             //v2 = _mm_cmpeq_ps( v1, v2 );
                             //v3 = _mm_cmpeq_ps( v3, v4 );
                             int sign[4];
                             int signmask=0;
-                            sign[0] = v2[0]<0 ? 1:0;
-                            sign[1] = (v2[1]<0 ? 1:0) << 1;
-                            sign[2] = (v2[2]<0 ? 1:0) << 2;
-                            sign[3] = (v2[3]<0 ? 1:0) << 3;
+                            sign[0] = isLessthanZero(v2[0]) ? 1:0;
+                            sign[1] = (isLessthanZero(v2[1]) ? 1:0) << 1;
+                            sign[2] = (isLessthanZero(v2[2]) ? 1:0) << 2;
+                            sign[3] = (isLessthanZero(v2[3]) ? 1:0) << 3;
                             signmask = sign[3] | sign[2] | sign[1] | sign[0];
 
 
-                            path8[pathindex8 + (m >> 1)] = (path8[pathindex8 + (m >> 1)] & mask[m & 1]) | ( signmask/*_mm_movemask_ps( v2 )*/
+                            path8[pathindex8 + (m >> 1)] = (path8[pathindex8 + (m >> 1)] & mask[m & 1]) | ( signmask&0xF /*_mm_movemask_ps( v2 )*/
                                 << shift[m& 1]);
 
-                            sign[0] = v3[0]<0 ? 1:0;
-                            sign[1] = (v3[1]<0 ? 1:0) << 1;
-                            sign[2] = (v3[2]<0 ? 1:0) << 2;
-                            sign[3] = (v3[3]<0 ? 1:0) << 3;
+                            sign[0] = isLessthanZero(v3[0]) ? 1:0;
+                            sign[1] = (isLessthanZero(v3[1]) ? 1:0) << 1;
+                            sign[2] = (isLessthanZero(v3[2]) ? 1:0) << 2;
+                            sign[3] = (isLessthanZero(v3[3]) ? 1:0) << 3;
                             signmask = sign[3] | sign[2] | sign[1] | sign[0];
 
-                            path8[pathindex8 + (altm >> 1)] = (path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) | ( signmask/*_mm_movemask_ps( v3 )*/
+                            path8[pathindex8 + (altm >> 1)] = (path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) | ( signmask&0xF /*_mm_movemask_ps( v3 )*/
                                 << shift[altm & 1]);
                         }
                     }
@@ -371,13 +387,19 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
 
             if ( syndrome[index2] == 0 ) {
                 for ( i = 0, l = 0; i < sseheight; i += 2, l += 4 ) {
-                    // TODO: update this line
-                    store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0x88) );
+                    prices[l] = prices[(i+1) << 2];
+                    prices[l+1] = prices[((i+1) << 2) + 2];
+                    prices[l+2] = prices[i << 2];
+                    prices[l+3] = prices[(i << 2) + 2];
+                    //_mm_store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0x88) );
                 }
             } else {
                 for ( i = 0, l = 0; i < sseheight; i += 2, l += 4 ) {
-                    // TODO: update this line
-                    _mm_store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0xdd) );
+                    prices[l] = prices[((i+1) << 2) + 1];
+                    prices[l+1] = prices[((i+1) << 2) + 3];
+                    prices[l+2] = prices[(i << 2) + 1];
+                    prices[l+3] = prices[(i << 2) + 3];
+                    //_mm_store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0xdd) );
                 }
             }
 
