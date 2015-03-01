@@ -69,7 +69,7 @@ inline bool isLessthanZero(float x)
 
 double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int syndromelength, const void *pricevectorv, bool usefloat,
         u8 *stego, int matrixheight ) {
-    int height, i, k, l, index, index2, parts, m, sseheight, altm, pathindex;
+    int height, i, k, l, index, index2, parts, m, sseheight, altm, pathindex=0;
     u32 column, colmask, state;
     double totalprice;
 
@@ -143,7 +143,7 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
         }
     }
 
-    if ( usefloat ) {
+    if ( true ) {
         /*
          SSE FLOAT VERSION
          */
