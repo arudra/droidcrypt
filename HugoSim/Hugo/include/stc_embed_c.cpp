@@ -6,6 +6,7 @@
 #include <emmintrin.h>
 #include <cstdio>
 #include <sstream>
+#include <iostream>
 #include "stc_embed_c.h"
 
 void *aligned_malloc( unsigned int bytes, int align ) {
@@ -24,7 +25,7 @@ void aligned_free( void *vptr ) {
     free( ptr - ptr[-1] );
     return;
 }
-/*
+
 inline __m128i maxLessThan255( const __m128i v1, const __m128i v2 ) {
     register __m128i mask = _mm_set1_epi32( 0xffffffff );
     return _mm_max_epu8( _mm_andnot_si128( _mm_cmpeq_epi8( v1, mask ), v1 ), _mm_andnot_si128( _mm_cmpeq_epi8( v2, mask ), v2 ) );
@@ -51,7 +52,20 @@ inline u8 min16B( __m128i minp ) {
     if ( mtemp[1] < mtemp[0] ) return mtemp[1];
     else return mtemp[0];
 }
-*/
+
+float * shuffle(float*v1, float*v2, int num) {
+    int a[4];
+    float* out = new float[4];
+    for (int i=0; i < 4; i++) {
+        a[i] = num&0x3;
+        num = num >> 2;
+    }
+    out[3] = v2[a[3]];
+    out[2] = v2[a[2]];
+    out[1] = v1[a[1]];
+    out[0] = v1[a[0]];
+    return out;
+}
 
 inline void swapFloats(float * x, float * y)
 {
@@ -140,6 +154,7 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
         /*
          SSE FLOAT VERSION
          */
+        
         int pathindex8 = 0;
         int shift[2] = { 0, 4 };
         u8 mask[2] = { 0xf0, 0x0f };
@@ -216,36 +231,68 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
                         }
                         ssedone[m] = 1;
                         ssedone[altm] = 1;
-
+                        float* tmp;
                         switch ( column & 3 ) {
                             case 0:
                                 break;
                             case 1:
-                                //v2 = _mm_shuffle_ps(v2, v2, 0xb1);
+                                //v2 = _mm_shuffle_ps(v2, v2, 0xb1); // 10 11 00 01 = 2 3 0 1
                                 //v3 = _mm_shuffle_ps(v3, v3, 0xb1);
                                 //Swap indexes 0 & 1 + indexes 2 & 3
-                                swapFloats(&v2[0],&v2[1]);
-                                swapFloats(&v2[2],&v2[3]);
-                                swapFloats(&v3[0],&v3[1]);
-                                swapFloats(&v3[2],&v3[3]);
+                                tmp = shuffle(v2, v2, 0xb1);
+                                for (int ir = 0; ir <4; ir++) {
+                                    v2[ir] = tmp[ir];
+                                }
+                                free(tmp);
+                                tmp = shuffle(v3, v3, 0xb1);
+                                for (int ir = 0; ir <4; ir++) {
+                                    v3[ir] = tmp[ir];
+                                }
+                                free(tmp);
+//                                swapFloats(&v2[0],&v2[1]);
+//                                swapFloats(&v2[2],&v2[3]);
+//                                swapFloats(&v3[0],&v3[1]);
+//                                swapFloats(&v3[2],&v3[3]);
                                 break;
                             case 2:
                                 //v2 = _mm_shuffle_ps(v2, v2, 0x4e);
                                 //v3 = _mm_shuffle_ps(v3, v3, 0x4e);
                                 //Swap indexes 0 & 2 + indexes 1 & 3
-                                swapFloats(&v2[0],&v2[2]);
-                                swapFloats(&v2[1],&v2[3]);
-                                swapFloats(&v3[0],&v3[2]);
-                                swapFloats(&v3[1],&v3[3]);
+//                                swapFloats(&v2[0],&v2[2]);
+//                                swapFloats(&v2[1],&v2[3]);
+//                                swapFloats(&v3[0],&v3[2]);
+//                                swapFloats(&v3[1],&v3[3]);
+                                tmp = shuffle(v2, v2, 0x4e);
+                                for (int ir = 0; ir <4; ir++) {
+                                    v2[ir] = tmp[ir];
+                                }
+                                free(tmp);
+                                tmp = shuffle(v3, v3, 0x4e);
+                                for (int ir = 0; ir <4; ir++) {
+                                    v3[ir] = tmp[ir];
+                                }
+                                free(tmp);
+                                
                                 break;
                             case 3:
                                 //v2 = _mm_shuffle_ps(v2, v2, 0x1b);
                                 //v3 = _mm_shuffle_ps(v3, v3, 0x1b);
                                 //Swap indexes 0 & 3 + indexes 1 & 2
-                                swapFloats(&v2[0],&v2[3]);
-                                swapFloats(&v2[1],&v2[2]);
-                                swapFloats(&v3[0],&v3[3]);
-                                swapFloats(&v3[1],&v3[2]);
+//                                swapFloats(&v2[0],&v2[3]);
+//                                swapFloats(&v2[1],&v2[2]);
+//                                swapFloats(&v3[0],&v3[3]);
+//                                swapFloats(&v3[1],&v3[2]);
+                                tmp = shuffle(v2, v2, 0x1b);
+                                for (int ir = 0; ir <4; ir++) {
+                                    v2[ir] = tmp[ir];
+                                }
+                                free(tmp);
+                                tmp = shuffle(v3, v3, 0x1b);
+                                for (int ir = 0; ir <4; ir++) {
+                                    v3[ir] = tmp[ir];
+                                }
+                                free(tmp);
+                                
                                 break;
                         }
 
@@ -266,7 +313,7 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
                         for(int r = 0; r < 4; r++)
                         {
                             v1[r] = fminf(v1[r],v2[r]);
-                            v4[r] = fminf(v4[r],v3[r]);
+                            v4[r] = fminf(v3[r],v4[r]);
                         }
 
                         //_mm_store_ps( &prices[m << 2], v1 );
@@ -283,33 +330,36 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
                             //v3 = _mm_cmpeq_ps( v3, v4 );
                             for(int r = 0; r < 4; r++)
                             {
-                                //If not equal, assign 0
-                                if(std::islessgreater(v1[r],v2[r])) {
-                                    v2[r] = 0.0f;
+                                //check if v1 == v2
+                                if (v1[r] == v2[r]) {
+                                    v2[r] = 0x1;
+                                }
+                                else {
+                                    v2[r] = 0x0;
                                 }
 
-                                //If not equal, assign 0
-                                if (std::islessgreater(v3[r],v4[r])) {
-                                    v3[r] = 0.0f;
+                                // check if v3 == v4
+                                if (v3[r] == v4[r]) {
+                                    v3[r] = 0x1;
+                                }
+                                else {
+                                    v3[r] = 0x0;
                                 }
                             }
 
                             //Setup for MOVEMASK_PS
-                            int signmask = 0;
-                            for(int r = 0; r < 4; r++)
-                            {
-                                //check v2 signbit, if negative OR bit 1 and if positive OR bit 0
-                                signmask = signmask | ((std::signbit(v2[r]) ? 1:0) << r);
-                            }
-                            path8[pathindex8 + (m >> 1)] = (path8[pathindex8 + (m >> 1)] & mask[m & 1]) | (signmask&0xF /*_mm_movemask_ps( v2 )*/ << shift[m& 1]);
-
-                            signmask = 0;
-                            for(int r = 0; r < 4; r++)
-                            {
-                                //check v3 signbit, if negative OR bit 1 and if positive OR bit 0
-                                signmask = signmask | ((std::signbit(v3[r]) ? 1:0) << r);
-                            }
-                            path8[pathindex8 + (altm >> 1)] = (path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) | (signmask&0xF /*_mm_movemask_ps( v3 )*/ << shift[altm & 1]);
+                            //(_mm_movemask_ps( v2 ) << shift[m& 1]);
+                            int tmp = 0x0;
+                            tmp = (int)(v2[3])<<3 | (int)(v2[2])<<2 | ((int)v2[1]<<1) | (int)(v2[0]);
+                            
+                            path8[pathindex8 + (m >> 1)] = (path8[pathindex8 + (m >> 1)] & mask[m & 1]) |
+                                                tmp << shift[m & 1];
+                            
+                            tmp = 0;
+                            tmp = (int)(v3[3])<<3 | (int)(v3[2])<<2 | ((int)v3[1]<<1) | (int)(v3[0]);
+                            
+                            path8[pathindex8 + (altm >> 1)] = (path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) |
+                                        (tmp << shift[altm & 1]);
                         }
                     }
                 }
@@ -324,18 +374,40 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
 
             if ( syndrome[index2] == 0 ) {
                 for ( i = 0, l = 0; i < sseheight; i += 2, l += 4 ) {
-                    prices[l] = prices[(i+1) << 2];
-                    prices[l+1] = prices[((i+1) << 2) + 2];
-                    prices[l+2] = prices[i << 2];
-                    prices[l+3] = prices[(i << 2) + 2];
+                    float *tmp;
+                    float v1[4], v2[4];
+                    for (int ir = 0; ir <4; ir++) {
+                        v1[ir] = prices[(i<<2)+ir];
+                        v2[ir] = prices[((i + 1) << 2)+ir];
+                    }
+                    tmp = shuffle(v1, v2, 0x88);
+                    for (int ir = 0; ir <4; ir++) {
+                        prices[l+ir] = tmp[ir];
+                    }
+                    free(tmp);
+//                    prices[l] = prices[(i+1) << 2];
+//                    prices[l+1] = prices[((i+1) << 2) + 2];
+//                    prices[l+2] = prices[i << 2];
+//                    prices[l+3] = prices[(i << 2) + 2];
                     //_mm_store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0x88) );
                 }
             } else {
                 for ( i = 0, l = 0; i < sseheight; i += 2, l += 4 ) {
-                    prices[l] = prices[((i+1) << 2) + 1];
-                    prices[l+1] = prices[((i+1) << 2) + 3];
-                    prices[l+2] = prices[(i << 2) + 1];
-                    prices[l+3] = prices[(i << 2) + 3];
+                    float *tmp;
+                    float v1[4], v2[4];
+                    for (int ir = 0; ir <4; ir++) {
+                        v1[ir] = prices[(i<<2)+ir];
+                        v2[ir] = prices[((i + 1) << 2)+ir];
+                    }
+                    tmp = shuffle(v1, v2, 0xdd);
+                    for (int ir = 0; ir <4; ir++) {
+                        prices[l+ir] = tmp[ir];
+                    }
+                    free(tmp);
+//                    prices[l] = prices[((i+1) << 2) + 1];
+//                    prices[l+1] = prices[((i+1) << 2) + 3];
+//                    prices[l+2] = prices[(i << 2) + 1];
+//                    prices[l+3] = prices[(i << 2) + 3];
                     //_mm_store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0xdd) );
                 }
             }
@@ -356,7 +428,7 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
 
         totalprice = prices[0];
 
-        aligned_free( prices );
+        free( prices );
         free( ssedone );
 
         if ( totalprice >= total ) {
@@ -367,6 +439,7 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
             if ( stego != NULL ) free( path );
             throw stc_exception( "No solution exist.", 4 );
         }
+        
     } else {
         /*
          SSE UINT8 VERSION

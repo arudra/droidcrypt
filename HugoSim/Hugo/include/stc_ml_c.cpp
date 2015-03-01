@@ -611,7 +611,7 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
             }
         lsb1_only &= ((n_finite_costs <= 2) & (lsb_xor == 1));
     }
-    if ( false ) { // use stc_ml1_embed method
+    if ( lsb1_only ) { // use stc_ml1_embed method
         distortion = 0;
         int *cover = new int[cover_length];
         short *direction = new short[cover_length];
