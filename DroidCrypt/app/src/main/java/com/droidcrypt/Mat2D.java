@@ -17,7 +17,6 @@ public class Mat2D
     public int cols;
     private ArrayList<Integer> vector;
 
-
     public Mat2D (int rows, int cols)
     {
         this.rows = rows;

@@ -1,6 +1,8 @@
 package com.droidcrypt;
 
 
+import android.graphics.drawable.Drawable;
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,24 +37,30 @@ public class HUGO
 
         //  Load Cover
         // create config
-        float payload, gamma, sigma;
-        int randSeed;
+        float payload=0.4f, gamma=2, sigma=0.5f;
+        int randSeed = 12345;
         boolean verbose = false;
-        int stcHeight = 0;
-
+        int stcHeight = 10;
+        String message = "Hello World!";
 
         //cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stcHeight, randSeed, message);
-
+        cost_model_config config = new cost_model_config(payload, verbose, gamma, sigma, stcHeight, randSeed, message);
 
         //  -> call function Load_Image from Mat2D and put inside Mat2D variable "cover"
         Mat2D cover = loadImage(inputImage);
 
-        //base_cost_model *model = (base_cost_model *)new cost_model(cover,config);
+//        base_cost_model *model = (base_cost_model *)new cost_model(cover,config);
+
+        cost_model model = new cost_model(cover, config);
 
         //  Embed Image
-        final float alpha, code = 0, distortion = 0;
-        final int stcTrials = 0;
-        Mat2D stego = null; //= model->Embed(alpha, code, stcTrials, distortion);
+        float []alpha_out, code_out, distortion_out;
+        int []stcTrials_out;
+        alpha_out = new float[1];
+        code_out = new float[1];
+        distortion_out = new float[1];
+        stcTrials_out = new int[1];
+        Mat2D stego = model.Embed(alpha_out, code_out, stcTrials_out, distortion_out);
 
         //Save stego
         saveImage(outputImage, stego);
