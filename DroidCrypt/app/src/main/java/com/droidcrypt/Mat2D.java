@@ -16,7 +16,7 @@ public class Mat2D
     public int rows;
     public int cols;
     private ArrayList<Integer> vector;
-    private Bitmap image;
+    public Bitmap image;
 
     public Mat2D (int rows, int cols, Bitmap input)
     {
@@ -32,7 +32,7 @@ public class Mat2D
 
     public Integer Read (int row, int col)
     {
-        return image.getPixel(row, col);
+        return image.getPixel(col, row);
     }
 
     public void Write (int row, int col, Integer val)

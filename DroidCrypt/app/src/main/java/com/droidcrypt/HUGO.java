@@ -35,8 +35,8 @@ public class HUGO
         image = inputImage;
         this.context = context;
 
-        MD5hash md5hash = new MD5hash();
-        outputImage = md5hash.generateHash(imagePath);
+//        MD5hash md5hash = new MD5hash();
+//        outputImage = md5hash.generateHash(imagePath);
     }
 
 
@@ -74,7 +74,7 @@ public class HUGO
         Mat2D stego = model.Embed(alpha_out, code_out, stcTrials_out, distortion_out);
 
         //Save stego
-        saveImage(outputImage, stego);
+//        saveImage(outputImage, stego);
 
     }
 

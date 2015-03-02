@@ -14,11 +14,10 @@ public class mainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Drawable image1 = getResources().getDrawable(R.drawable.image1);
+        Drawable image1 = getResources().getDrawable(R.drawable.image5);
         HUGO hugo = new HUGO("", "Hello World!", image1, this);
         hugo.execute();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
