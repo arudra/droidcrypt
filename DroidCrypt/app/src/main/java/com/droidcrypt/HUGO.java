@@ -101,8 +101,6 @@ public class HUGO
 
         } catch (Exception e) { e.printStackTrace(); }
 
-
-
         return img;
     }
 

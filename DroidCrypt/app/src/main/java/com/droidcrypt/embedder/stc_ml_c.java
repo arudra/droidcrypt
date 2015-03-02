@@ -138,8 +138,7 @@ public class stc_ml_c
      p = exp(-lambda*costs);
      p = p./(ones(4,1)*sum(p));
      */
-        //TODO: FIX THIS
-        float[] p = new float[4*n]; //align_new< float > ( 4 * n, 16 );
+//        float[] p = new float[4*n]; //align_new< float > ( 4 * n, 16 );
         /*
         __m128 v_lambda = _mm_set1_ps( -lambda );
         for ( int i = 0; i < n / 4; i++ ) {
@@ -159,6 +158,56 @@ public class stc_ml_c
         */
         // this is for debugging purposes
         // float payload_dbg = entropy_array(4*n, p);
+
+
+        int bs = 4; // block size
+        float[] p = new float [bs * n];
+        float[] v_lambda = new float[bs];
+        //initializeZero(v_lambda, 4);
+
+        for ( int i = 0; i < n / bs; i++ ) {
+            //__m128 sum = _mm_setzero_ps();
+            float [] sum = new float[4];
+            float [] x = new float[4];
+            for(int k=0; k<bs; k++) {
+                sum[k] = 0;
+            }
+            for ( int j = 0; j < bs; j++ ) {
+
+                //__m128 x = _mm_load_ps( c + j * n + 4 * i );
+
+                for (int k=0; k<bs; k++) {
+                    x[k] = c[j * n + bs * i + k];
+                }
+                //x = exp_ps( _mm_mul_ps( v_lambda, x ) );
+                //sum = _mm_add_ps( sum, x );
+                for (int k=0; k<bs; k++) {
+                    x[k] = (float)Math.pow(2, -lambda*x[k]);
+                    sum[k] += x[k];
+                }
+                //_mm_store_ps( p + j * n + 4 * i, x );
+                for (int k=0; k<bs; k++) {
+                    p[j * n + bs * i + k] = x[k];
+                }
+            }
+            for ( int j = 0; j < bs; j++ ) {
+                //__m128 x = _mm_load_ps( p + j * n + 4 * i );
+                for (int k=0; k<bs; k++) {
+                    x[k] = p[j * n + bs * i + k];
+                }
+                //x = _mm_div_ps( x, sum );
+                for (int k=0; k<bs; k++) {
+                    x[k] = x[k]/sum[k];
+                }
+
+                //_mm_store_ps( p + j * n + 4 * i, x );
+                for (int k=0; k<bs; k++) {
+                    p[j * n + 4 * i + k] = x[k];
+                }
+
+            }
+        }
+
 
         int trial = 0;
         float[] p10 = new float[cover_length];
@@ -285,9 +334,46 @@ public class stc_ml_c
         return lambda1 + (lambda3 - lambda1) / 2;
     }
 
-    //TODO: FIX THIS
     float calc_distortion( int n, int k, float[] costs, float lambda )
     {
+        int b=4;
+        float [] eps, v_lambda, z, d, rho, p, dist;
+        float sum=0;
+        eps = new float[4];
+        v_lambda = new float[4];
+        z = new float[4];
+        d = new float[4];
+        rho = new float[4];
+        p = new float[4];
+        dist = new float[4];
+        for (int l=0; l<b; l++) {
+            eps[l] = Math.ulp(1.0f);
+            v_lambda[l] = -lambda;
+            dist[l] = 0;
+        }
+        for (int i=0; i<n/b; i++) {
+            for (int l=0; l<b; l++) {
+                z[l] = 0;
+                d[l] = 0;
+            }
+            for (int j=0; j<k; j++) {
+                for (int l=0; l<b; l++) {
+                    rho[l] = costs[j * n + 4 * i + k];
+                    p[l] = (float)Math.pow(2, v_lambda[l]*rho[l]);
+                    z[l] += p[l];
+                    p[l] = p[l]*rho[l];
+                    if (p[l] >= eps[l]) {
+                        d[l] += p[l];
+                    }
+                }
+            }
+            for (int l=0; l<b; l++) {
+                dist[l] += (d[l]*z[l]);
+            }
+        }
+        for (int l=0; l<b;l++) sum += dist[l];
+        return sum;
+
         /*
         __m128 eps = _mm_set1_ps( Math.ulp(1.0) ); //std::numeric_limits< float >::epsilon() );
         __m128 v_lambda = _mm_set1_ps( -lambda );
@@ -309,38 +395,50 @@ public class stc_ml_c
             dist = _mm_add_ps( dist, _mm_div_ps( d, z ) );
         }
         return sum_inplace( dist ); */
-        return 0;
     }
 
-    //TODO: FIX THIS
     float calc_entropy( int n, int k, float[] costs, float lambda ) {
 
-        float LOG2 = (float)Math.log( 2.0f );
 
-
+        int b=4;
+        final float LOG2 = (float) Math.log( 2.0f );
         float inf = Float.POSITIVE_INFINITY;
+        float [] z, d, rho, p, entr;
+        float sum=0;
+        z = new float[4];
+        d = new float[4];
+        rho = new float[4];
+        p = new float[4];
+        entr = new float[4];
 
-        float v_lambda = -lambda;
-        float z, d, rho, p, entr, mask;
-
-        entr = 0.0f;
-        for ( int i = 0; i < n / 4; i++ ) {
-            z = 0.0f;
-            d = 0.0f;
-            for ( int j = 0; j < k; j++ ) {
-                rho =
-//                rho = _mm_load_ps( costs + j * n + 4 * i ); // costs array must be aligned in memory
-                p = (float)Math.pow(2, v_lambda*rho);
-                //p = exp_ps( _mm_mul_ps( v_lambda, rho ) );
-                z = _mm_add_ps( z, p );
-                mask = _mm_cmpeq_ps( rho, inf ); // if p<eps, then do not accumulate it to d since x*exp(-x) tends to zero
-                p = _mm_mul_ps( rho, p );
-                p = _mm_andnot_ps( mask, p ); // apply mask
-                d = _mm_add_ps( d, p );
-            }
-            entr = _mm_sub_ps( entr, _mm_div_ps( _mm_mul_ps( v_lambda, d ), z ) );
-            entr = _mm_add_ps( entr, log_ps( z ) );
+        for (int l=0; l<b; l++) {
+            entr[l] = 0;
         }
+        for (int i=0; i<n/b; i++) {
+            for (int l=0; l<b; l++) {
+                z[l] = 0;
+                d[l] = 0;
+            }
+            for (int j=0; j<k; j++) {
+                for (int l=0; l<b; l++) {
+                    rho[l] = costs[j * n + 4 * i + l];
+                    p[l] = (float) Math.pow(2, -lambda*rho[l]);
+                    z[l] += p[l];
+                    p[l] = p[l]*rho[l];
+                    if (rho[l] != inf) {
+                        d[l] += p[l];
+                    }
+                }
+            }
+            for (int l=0; l<b; l++) {
+                entr[l] = entr[l] - (-lambda*d[l]/z[l]);
+                entr[l] += (float) (Math.log(z[l])/Math.log(2));
+            }
+        }
+        for (int l=0; l<b;l++) {
+            sum += entr[l];
+        }
+        return sum/LOG2;
 
 //        entr = _mm_setzero_ps();
 //        for ( int i = 0; i < n / 4; i++ ) {
@@ -359,7 +457,7 @@ public class stc_ml_c
 //            entr = _mm_sub_ps( entr, _mm_div_ps( _mm_mul_ps( v_lambda, d ), z ) );
 //            entr = _mm_add_ps( entr, log_ps( z ) );
 //        }
-        return sum_inplace( entr ) / LOG2;
+//        return sum_inplace( entr ) / LOG2;
     }
 
     // binary entropy function in single precision
