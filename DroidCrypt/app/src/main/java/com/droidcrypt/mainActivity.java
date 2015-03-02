@@ -1,5 +1,6 @@
 package com.droidcrypt;
 
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,7 +14,9 @@ public class mainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        Drawable image1 = getResources().getDrawable(R.drawable.image1);
+        HUGO hugo = new HUGO("", "Hello World!", image1, this);
+        hugo.execute();
     }
 
 

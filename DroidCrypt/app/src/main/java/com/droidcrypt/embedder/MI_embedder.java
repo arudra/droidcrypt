@@ -117,7 +117,7 @@ public class MI_embedder {
                 stego_pixels[i] = cover_px[i];
         }
 
-        Mat2D stego = new Mat2D(m.rows, m.cols);
+        Mat2D stego = new Mat2D(m.rows, m.cols, null);
         for ( int i = 0; i < m.rows; i++ )
         {
             for ( int j = 0; j < m.cols; j++ )

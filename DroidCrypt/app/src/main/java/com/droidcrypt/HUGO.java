@@ -1,8 +1,14 @@
 package com.droidcrypt;
 
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,25 +20,30 @@ public class HUGO
 {
   
     //INPUTS: input image path, Password
-    private String inputImage, password;
+    private String imagePath, password;
 
     // output image path which holds hash of JPEG
     private String outputImage;
 
-    public HUGO (String input, String pass)
+    private Drawable image;
+    private Context context;
+
+    public HUGO (String input, String pass, Drawable inputImage, Context context)
     {
-        inputImage = input;
+        imagePath = input;
         password = pass;
+        image = inputImage;
+        this.context = context;
 
         MD5hash md5hash = new MD5hash();
-        outputImage = md5hash.generateHash(inputImage);
+        outputImage = md5hash.generateHash(imagePath);
     }
 
 
     public void execute ()
     {
         //convert to PGM
-        //String image = convertToPGM(inputImage);
+        //String image = convertToPGM(imagePath);
 
 
         //  Load Cover
@@ -41,15 +52,15 @@ public class HUGO
         int randSeed = 12345;
         boolean verbose = false;
         int stcHeight = 10;
-        String message = "Hello World!";
+        String message = password;
 
         //cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stcHeight, randSeed, message);
         cost_model_config config = new cost_model_config(payload, verbose, gamma, sigma, stcHeight, randSeed, message);
 
         //  -> call function Load_Image from Mat2D and put inside Mat2D variable "cover"
-        Mat2D cover = loadImage(inputImage);
+        Mat2D cover = loadGrayImage(image);
 
-//        base_cost_model *model = (base_cost_model *)new cost_model(cover,config);
+        //base_cost_model *model = (base_cost_model *)new cost_model(cover,config);
 
         cost_model model = new cost_model(cover, config);
 
@@ -67,12 +78,40 @@ public class HUGO
 
     }
 
+    public Bitmap toGrayscale(Bitmap bmpOriginal)
+    {
+        int width, height;
+        height = bmpOriginal.getHeight();
+        width = bmpOriginal.getWidth();
+
+        Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        Canvas c = new Canvas(bmpGrayscale);
+        Paint paint = new Paint();
+        ColorMatrix cm = new ColorMatrix();
+        cm.setSaturation(0);
+        ColorMatrixColorFilter f = new ColorMatrixColorFilter(cm);
+        paint.setColorFilter(f);
+        c.drawBitmap(bmpOriginal, 0, 0, paint);
+        return bmpGrayscale;
+    }
+
+    public Mat2D loadGrayImage (Drawable input)
+    {
+        Bitmap grayBitmap = toGrayscale(((BitmapDrawable) input).getBitmap());
+
+        int width = grayBitmap.getWidth();
+        int height = grayBitmap.getHeight();
+
+        return new Mat2D(height, width, grayBitmap);
+    }
+
     public Mat2D loadImage (String imagePath)
     {
         FileInputStream fileInputStream = null;
         Mat2D img = null;
+
         try {
-            fileInputStream = new FileInputStream(imagePath);
+            fileInputStream = new FileInputStream(convertToPGM(imagePath));
 
 
             Scanner scan = new Scanner(fileInputStream);
@@ -82,7 +121,7 @@ public class HUGO
             int height = scan.nextInt();
             int max = scan.nextInt();
 
-            img = new Mat2D(height, width);
+            img = new Mat2D(height, width, null);
 
             fileInputStream.close();
 
@@ -145,6 +184,8 @@ public class HUGO
     {
         File inputFile = new File(input);
         String output = null;
+
+
 
 
 
