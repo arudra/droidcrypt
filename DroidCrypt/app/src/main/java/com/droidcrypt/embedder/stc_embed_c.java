@@ -9,16 +9,31 @@ import com.droidcrypt.common;
  */
 public class stc_embed_c
 {
+    private float [] shuffle(float[] v1, float[] v2, int num) {
+    int[] a = {0};
+    float[] out = new float[4];
+
+        for (int i=0; i < 4; i++)
+        {
+            a[i] = num&0x3;
+            num = num >> 2;
+        }
+        out[3] = v2[a[3]];
+        out[2] = v2[a[2]];
+        out[1] = v1[a[1]];
+        out[0] = v1[a[0]];
+        return out;
+    }
 
     double stc_embed( byte[] vector, int vectorlength, BitSet syndrome, int syndromelength, double[] pricevectorv, boolean usefloat,
                       BitSet stego, int matrixheight ) {
-        int height, i, k, l, index, index2, parts, m, sseheight, altm, pathindex;
+        int height, i, k, l, index=0, index2=0, parts, m, sseheight, altm, pathindex=0;
         int column, colmask, state;
-        double totalprice;
+        double totalprice = 0.0;
 
         BitSet ssedone;
-        int[] path;
-        int[][] columns;
+        int[] path = {0};
+        int[][] columns = {{0}};
         int[] matrices, widths;
 
         if ( matrixheight > 31 )
@@ -122,66 +137,156 @@ public class stc_embed_c
             for ( index = 0, index2 = 0; index2 < syndromelength; index2++ ) {
                 //register __m128 c1, c2;
                 float[] c1 = new float[4];
+                float[] c2 = new float[4];
 
                 for ( k = 0; k < widths[index2]; k++, index++ ) {
                     column = columns[matrices[index2]][k] & colmask;
 
                     if ( vector[index] == 0 ) {
                         //c1 = _mm_setzero_ps();
-                        c2 = _mm_set1_ps( (float) pricevector[index] );
-                        c1[0] = 0; c1[1] = 0; c1[2] = 0; c1[3] = 0;
+                        //c2 = _mm_set1_ps( (float) pricevector[index] );
+                        for(int r = 0; r < 4; r++)
+                        {
+                            c1[r] = 0;
+                            c2[r] = (float)pricevector[index + r];
+                        }
 
-                    } else {
-                        c1 = _mm_set1_ps( (float) pricevector[index] );
-                        c2 = _mm_setzero_ps();
+                    }
+                    else
+                    {
+                        //c1 = _mm_set1_ps( (float) pricevector[index] );
+                        //c2 = _mm_setzero_ps();
+                        for(int r = 0; r < 4; r++)
+                        {
+                            c1[r] = (float)pricevector[index + r];
+                            c2[r] = 0;
+                        }
                     }
 
                     total += pricevector[index];
 
                     for ( m = 0; m < sseheight; m++ ) {
-                        if ( !ssedone[m] ) {
-                            register __m128 v1, v2, v3, v4;
+                        if ( !ssedone.get(m) ) {
+                            //register __m128 v1, v2, v3, v4;
+                            float[] v1 = new float[4], v2 = new float[4];
+                            float[] v3 = new float[4], v4 = new float[4];
+
                             altm = (m ^ (column >> 2));
-                            v1 = _mm_load_ps( &prices[m << 2] );
-                            v2 = _mm_load_ps( &prices[altm << 2] );
-                            v3 = v1;
-                            v4 = v2;
+                            for(int r = 0; r < 4; r++) {
+                                //v1 = _mm_load_ps( &prices[m << 2] );
+                                //v2 = _mm_load_ps( &prices[altm << 2] );
+                                v1[r] = prices[(m << 2) + r];
+                                v2[r] = prices[(altm << 2) + r];
+
+                                //v3 = v1;
+                                //v4 = v2;
+                                v3[r] = v1[r];
+                                v4[r] = v2[r];
+                            }
                             ssedone.set(m);// [m] = 1;
                             ssedone.set(altm); //[altm] = 1;
+                            float[] tmp;
                             switch ( column & 3 ) {
                                 case 0:
                                     break;
                                 case 1:
-                                    v2 = _mm_shuffle_ps(v2, v2, 0xb1);
-                                    v3 = _mm_shuffle_ps(v3, v3, 0xb1);
+                                    //v2 = _mm_shuffle_ps(v2, v2, 0xb1);
+                                    //v3 = _mm_shuffle_ps(v3, v3, 0xb1);
+                                    tmp = shuffle(v2, v2, 0xb1);
+                                    System.arraycopy(tmp, 0, v2, 0, tmp.length);
+
+                                    tmp = shuffle(v3, v3, 0xb1);
+                                    System.arraycopy(tmp, 0, v3, 0, tmp.length);
                                     break;
                                 case 2:
-                                    v2 = _mm_shuffle_ps(v2, v2, 0x4e);
-                                    v3 = _mm_shuffle_ps(v3, v3, 0x4e);
+                                    //v2 = _mm_shuffle_ps(v2, v2, 0x4e);
+                                    //v3 = _mm_shuffle_ps(v3, v3, 0x4e);
+                                    tmp = shuffle(v2, v2, 0x4e);
+                                    System.arraycopy(tmp, 0, v2, 0, tmp.length);
+
+                                    tmp = shuffle(v3, v3, 0x4e);
+                                    System.arraycopy(tmp, 0, v3, 0, tmp.length);
                                     break;
                                 case 3:
-                                    v2 = _mm_shuffle_ps(v2, v2, 0x1b);
-                                    v3 = _mm_shuffle_ps(v3, v3, 0x1b);
+                                    //v2 = _mm_shuffle_ps(v2, v2, 0x1b);
+                                    //v3 = _mm_shuffle_ps(v3, v3, 0x1b);
+                                    tmp = shuffle(v2, v2, 0x1b);
+                                    System.arraycopy(tmp, 0, v2, 0, tmp.length);
+
+                                    tmp = shuffle(v3, v3, 0x1b);
+                                    System.arraycopy(tmp, 0, v3, 0, tmp.length);
                                     break;
                             }
+                            /*
                             v1 = _mm_add_ps( v1, c1 );
                             v2 = _mm_add_ps( v2, c2 );
                             v3 = _mm_add_ps( v3, c2 );
-                            v4 = _mm_add_ps( v4, c1 );
+                            v4 = _mm_add_ps( v4, c1 ); */
+                            for(int r = 0; r < 4; r++)
+                            {
+                                v1[r] += c1[r];
+                                v2[r] += c2[r];
+                                v3[r] += c2[r];
+                                v4[r] += c1[r];
+                            }
 
-                            v1 = _mm_min_ps( v1, v2 );
-                            v4 = _mm_min_ps( v3, v4 );
+                            //v1 = _mm_min_ps( v1, v2 );
+                            //v4 = _mm_min_ps( v3, v4 );
+                            for(int r = 0; r < 4; r++)
+                            {
+                                //Put Min value into v1
+                                if(Float.compare(v1[r], v2[r]) >= 0) {
+                                    v1[r] = v2[r];
+                                }
 
-                            _mm_store_ps( &prices[m << 2], v1 );
-                            _mm_store_ps( &prices[altm << 2], v4 );
+                                //Put Min value into v4
+                                if(Float.compare(v3[r], v4[r]) < 0) {
+                                    v4[r] = v3[r];
+                                }
+                            }
+
+                            //_mm_store_ps( &prices[m << 2], v1 );
+                            //_mm_store_ps( &prices[altm << 2], v4 );
+                            for(int r = 0; r < 4; r++)
+                            {
+                                prices[(m << 2) + r] = v1[r];
+                                prices[(altm << 2) + r] = v4[r];
+                            }
 
                             if ( stego != null ) {
-                                v2 = _mm_cmpeq_ps( v1, v2 );
-                                v3 = _mm_cmpeq_ps( v3, v4 );
-                                path8[pathindex8 + (m >> 1)] = (path8[pathindex8 + (m >> 1)] & mask[m & 1]) | (_mm_movemask_ps( v2 ) << shift[m
-                                        & 1]);
-                                path8[pathindex8 + (altm >> 1)] = (path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) | (_mm_movemask_ps( v3 )
-                                        << shift[altm & 1]);
+                                //v2 = _mm_cmpeq_ps( v1, v2 );
+                                //v3 = _mm_cmpeq_ps( v3, v4 );
+                                for (int r = 0; r < 4; r++)
+                                {
+                                    //check if v1 == v2
+                                    if (v1[r] == v2[r]){
+                                        v2[r] = 0x1;
+                                    }
+                                    else {
+                                        v2[r] = 0x0;
+                                    }
+
+                                    //check if v3 == v4
+                                    if (v3[r] == v4[r]) {
+                                        v3[r] = 0x1;
+                                    }
+                                    else {
+                                        v3[r] = 0x0;
+                                    }
+                                }
+
+                                //Setup for MOVEMASK_PS
+                                //(_mm_movemask_ps(v2) << shift[m &1]);
+                                int tmp2 = 0x0;
+                                tmp2 = (int)(v2[3])<<3 | (int)(v2[2])<<2 | ((int)v2[1]<<1) | (int)(v2[0]);
+
+                                path8[pathindex8 + (m >> 1)] = (byte)((path8[pathindex8 + (m >> 1)] & mask[m & 1]) |
+                                                                tmp2 << shift[m & 1]);
+
+                                tmp2 = 0;
+                                tmp2 = (int)(v3[3])<<3 | (int)(v3[2])<<2 | ((int)v3[1]<<1) | (int)(v3[0]);
+                                path8[pathindex8 + (altm >> 1)] = (byte)((path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) |
+                                                                tmp2 << shift[altm & 1]);
                             }
                         }
                     }
@@ -194,22 +299,45 @@ public class stc_embed_c
                     pathindex8 += parts << 2;
                 }
 
-                if ( !syndrome.get(index2) ) {
+                if ( !syndrome.get(index2) )
+                {
                     for ( i = 0, l = 0; i < sseheight; i += 2, l += 4 ) {
-                        _mm_store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0x88) );
+                        float [] tmp;
+                        float[] v1 = new float[4], v2 = new float[4];
+                        System.arraycopy(prices, (i << 2), v1, 0, 4);
+                        System.arraycopy(prices, (i + 1)<<2, v2, 0, 4);
+
+                        tmp = shuffle(v1, v2, 0x88);
+                        System.arraycopy(tmp, 0, prices, l, 4);
+                        //_mm_store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0x88) );
                     }
-                } else {
-                    for ( i = 0, l = 0; i < sseheight; i += 2, l += 4 ) {
-                        _mm_store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0xdd) );
+                }
+                else
+                {
+                    for ( i = 0, l = 0; i < sseheight; i += 2, l += 4 )
+                    {
+                        float [] tmp;
+                        float [] v1 = new float[4], v2 = new float[4];
+                        System.arraycopy(prices, (i << 2), v1, 0, 4);
+                        System.arraycopy(prices, (i + 1) << 2, v2, 0, 4);
+
+                        tmp = shuffle(v1, v2, 0xdd);
+                        System.arraycopy(tmp, 0, prices, l, 4);
+
+                        //_mm_store_ps( &prices[l], _mm_shuffle_ps(_mm_load_ps(&prices[i << 2]), _mm_load_ps(&prices[(i + 1) << 2]), 0xdd) );
                     }
                 }
 
                 if ( syndromelength - index2 <= matrixheight ) colmask >>= 1;
 
                 {
-                    register __m128 fillval = _mm_set1_ps( inf );
+                    //register __m128 fillval = _mm_set1_ps( inf );
                     for ( l >>= 2; l < sseheight; l++ ) {
-                        _mm_store_ps( &prices[l << 2], fillval );
+                        prices[(l << 2)] = inf;
+                        prices[(l << 2)+1] = inf;
+                        prices[(l << 2)+2] = inf;
+                        prices[(l << 2)+3] = inf;
+                        //_mm_store_ps( &prices[l << 2], fillval );
                     }
                 }
             }
@@ -219,10 +347,13 @@ public class stc_embed_c
             if ( totalprice >= total ) {
                 Log.e("Error", "No solution exist.");
             }
-        } else {
+        }
+        else
+        {
         /*
          SSE UINT8 VERSION
          */
+            /*
             int pathindex16 = 0, subprice = 0;
             byte maxc = 0, minc = 0;
             byte [] prices;
@@ -373,7 +504,7 @@ public class stc_embed_c
                 }
             }
 
-            totalprice = subprice + prices[0];
+            totalprice = subprice + prices[0]; */
         }
 
         if ( stego != null ) {
@@ -389,7 +520,7 @@ public class stc_embed_c
             for ( ; index2 >= 0; index2-- ) {
                 for ( k = widths[index2] - 1; k >= 0; k--, index-- ) {
                     if ( k == widths[index2] - 1 ) {
-                        state = (state << 1) | syndrome.toByteArray()[index2];
+                        state = (state << 1) | (syndrome.get(index2) ? 1 : 0);
                         if ( syndromelength - index2 <= matrixheight ) colmask = (colmask << 1) | 1;
                     }
 
