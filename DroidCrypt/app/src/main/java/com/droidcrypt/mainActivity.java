@@ -57,6 +57,7 @@ public class mainActivity extends ActionBarActivity {
         protected Void doInBackground(Void... params) {
             BitmapFactory.Options opt= new BitmapFactory.Options();
             opt.inScaled = false;
+            opt.inSampleSize = 8;
             Bitmap input = BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
             HUGO hugo = new HUGO("", "Hello World!", input, getParent());
             hugo.execute();

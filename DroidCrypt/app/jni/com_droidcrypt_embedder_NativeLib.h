@@ -9,27 +9,11 @@ extern "C" {
 #endif
 /*
  * Class:     com_droidcrypt_embedder_NativeLib
- * Method:    calc_distortion
- * Signature: (II[FF)F
+ * Method:    stc_embed
+ * Signature: ([BILjava/util/BitSet;I[DZLjava/util/BitSet;I)F
  */
-JNIEXPORT jfloat JNICALL Java_com_droidcrypt_embedder_NativeLib_calc_1distortion
-  (JNIEnv *, jobject, jint, jint, jfloatArray, jfloat);
-
-/*
- * Class:     com_droidcrypt_embedder_NativeLib
- * Method:    calc_entropy
- * Signature: (II[FF)F
- */
-JNIEXPORT jfloat JNICALL Java_com_droidcrypt_embedder_NativeLib_calc_1entropy
-  (JNIEnv *, jobject, jint, jint, jfloatArray, jfloat);
-
-/*
- * Class:     com_droidcrypt_embedder_NativeLib
- * Method:    calc_m1_embed
- * Signature: (II[FF)F
- */
-JNIEXPORT jfloat JNICALL Java_com_droidcrypt_embedder_NativeLib_calc_1m1_1embed
-  (JNIEnv *, jobject, jint, jint, jfloatArray, jfloat);
+JNIEXPORT jfloat JNICALL Java_com_droidcrypt_embedder_NativeLib_stc_1embed
+  (JNIEnv *, jobject, jbyteArray, jint, jobject, jint, jdoubleArray, jboolean, jobject, jint);
 
 #ifdef __cplusplus
 }
