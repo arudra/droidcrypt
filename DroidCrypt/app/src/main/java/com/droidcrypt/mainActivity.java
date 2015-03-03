@@ -13,11 +13,13 @@ import android.view.MenuItem;
 
 public class mainActivity extends ActionBarActivity {
 
+    private AsyncCaller async;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        new AsyncCaller().execute();
+        async = new AsyncCaller();
+        async.execute();
     }
 
     @Override
@@ -41,10 +43,16 @@ public class mainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+    @Override
+     public void onDestroy() {
+        super.onDestroy();
+        async.pdLoading.dismiss();
+        async = null;
+    }
 
     private class AsyncCaller extends AsyncTask<Void, Void, Void>
     {
-        ProgressDialog pdLoading = new ProgressDialog(mainActivity.this);
+        public ProgressDialog pdLoading = new ProgressDialog(mainActivity.this);
 
         @Override
         protected void onPreExecute() {

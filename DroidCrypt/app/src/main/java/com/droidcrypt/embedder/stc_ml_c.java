@@ -248,13 +248,18 @@ public class stc_ml_c
     /* FINAL CALCULATIONS */
         distortion = 0;
         for ( int i = 0; i < cover_length; i++ ) {
-            stego[i] = stego_values[4 * i + 2 * stego2.toByteArray()[perm2[i]] + stego1.toByteArray()[perm1[i]]];
-            distortion += costs[4 * i + 2 * stego2.toByteArray()[perm2[i]] + stego1.toByteArray()[perm1[i]]];
+            int x1 = (int)(stego1.get(perm1[i]) ? 1 : 0);
+            int x2 = (int)(stego2.get(perm2[i]) ? 1 : 0);
+            stego[i] = stego_values[4 * i + 2 * x2 + x1];
+            distortion += costs[4 * i + 2 * x2 + x1];
         }
         if ( coding_loss[0] != 0 ) {
             dist_coding_loss = 0;
-            for ( int i = 0; i < cover_length; i++ )
-                dist_coding_loss += c[i + n * (2 * stego2.toByteArray()[perm2[i]] + stego1.toByteArray()[perm1[i]])];
+            for ( int i = 0; i < cover_length; i++ ) {
+                int x1 = (int)(stego1.get(perm1[i]) ? 1 : 0);
+                int x2 = (int)(stego2.get(perm2[i]) ? 1 : 0);
+                dist_coding_loss += c[i + n * (2 *x2 + x1)];
+            }
             float lambda_dist = get_lambda_distortion( n, 4, c, dist_coding_loss, lambda, 0, 20 ); // use 20 iterations to make lambda_dist precise
             float max_payload = calc_entropy( n, 4, c, lambda_dist );
             (coding_loss[0]) = (max_payload - m_actual) / max_payload; // fraction of max_payload lost due to practical coding scheme

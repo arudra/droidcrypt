@@ -10,7 +10,7 @@ import com.droidcrypt.common;
 public class stc_embed_c
 {
     private float [] shuffle(float[] v1, float[] v2, int num) {
-    int[] a = {0};
+    int[] a = new int[4];
     float[] out = new float[4];
 
         for (int i=0; i < 4; i++)
@@ -32,8 +32,8 @@ public class stc_embed_c
         double totalprice = 0.0;
 
         BitSet ssedone;
-        int[] path = {0};
-        int[][] columns = {{0}};
+        int[] path = null;
+        int[][] columns = {{0}, {0}};
         int[] matrices, widths;
 
         if ( matrixheight > 31 )
@@ -53,7 +53,6 @@ public class stc_embed_c
             }
             pathindex = 0;
         }
-
         {
             int shorter, longer, worm;
             double invalpha;
@@ -98,13 +97,14 @@ public class stc_embed_c
          SSE FLOAT VERSION
          */
             int pathindex8 = 0;
-            int[] shift = { 0, 4 };
-            byte[] mask = { (byte)0xf0, 0x0f };
+            int[] shift = new int[2];
+            shift[0] = 0;
+            shift[1] = 4;
+            int[] mask = new int [2];
+            mask[0] = 0xf0;
+            mask[1] = 0x0f;
             float[] prices;
-            byte [] path8 = {0};
-            for(int j=0; j < path.length; j++) {
-                path8[j] = (byte) path[j];
-            }
+            int [] path8 = path;
 
             double [] pricevector =  pricevectorv;
             double total = 0;
@@ -276,14 +276,24 @@ public class stc_embed_c
                                 //(_mm_movemask_ps(v2) << shift[m &1]);
                                 int tmp2 = 0x0;
                                 tmp2 = (int)(v2[3])<<3 | (int)(v2[2])<<2 | ((int)v2[1]<<1) | (int)(v2[0]);
-
-                                path8[pathindex8 + (m >> 1)] = (byte)((path8[pathindex8 + (m >> 1)] & mask[m & 1]) |
-                                                                tmp2 << shift[m & 1]);
-
+                                if ((pathindex8 + (m >> 1)) > path8.length) {
+                                    // ERROR
+                                    Log.e("EMBED", "Array out of bound on: (pathindex8 + (m >> 1)) > path8.length ");
+                                }
+                                else {
+                                    path8[pathindex8 + (m >> 1)] = (byte) ((path8[pathindex8 + (m >> 1)] & mask[m & 1]) |
+                                            tmp2 << shift[m & 1]);
+                                }
                                 tmp2 = 0;
                                 tmp2 = (int)(v3[3])<<3 | (int)(v3[2])<<2 | ((int)v3[1]<<1) | (int)(v3[0]);
-                                path8[pathindex8 + (altm >> 1)] = (byte)((path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) |
-                                                                tmp2 << shift[altm & 1]);
+                                if ((pathindex8 + (altm >> 1)) > path8.length) {
+                                    // ERROR
+                                    Log.e("EMBED", "Array out of bound on: (pathindex8 + (altm >> 1)) > path8.length ");
+                                }
+                                else {
+                                    path8[pathindex8 + (altm >> 1)] = (byte) ((path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) |
+                                            tmp2 << shift[altm & 1]);
+                                }
                             }
                         }
                     }

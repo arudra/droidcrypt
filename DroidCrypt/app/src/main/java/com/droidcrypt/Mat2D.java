@@ -21,7 +21,7 @@ public class Mat2D
         this.cols = cols;
         //vector = new ArrayList<Integer>(rows*cols);
         if (input == null) {
-            input = new byte[rows*cols];
+            image = new byte[rows*cols];
         }
         else
             image = input;
