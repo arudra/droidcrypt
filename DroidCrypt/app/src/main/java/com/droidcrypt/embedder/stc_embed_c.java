@@ -38,7 +38,7 @@ public class stc_embed_c
         int[] matrices, widths;
 
         if ( matrixheight > 31 )
-            Log.e("Submatrix", "Submatrix height must not exceed 31");
+            Log.e("EMBED", "Submatrix height must not exceed 31");
 
         height = 1 << matrixheight;
         colmask = height - 1;
@@ -49,7 +49,7 @@ public class stc_embed_c
         if ( stego != null ) {
             path = new long[vectorlength * parts];
             if ( path == null ) {
-                Log.e("Memory", "Not enough memory, byte array could not be allocated");
+                Log.e("EMBED", "Not enough memory, byte array could not be allocated");
                 //ss << "Not enough memory (" << (unsigned int) (vectorlength * parts * sizeof(int)) << " byte array could not be allocated).";
             }
             pathindex = 0;
@@ -63,7 +63,7 @@ public class stc_embed_c
 
             invalpha = (double) vectorlength / syndromelength;
             if ( invalpha < 1 ) {
-                Log.d("Cover"," The message cannot be longer than the cover object");
+                Log.d("EMBED"," The message cannot be longer than the cover object");
             }
         /* THIS IS OBSOLETE. Algorithm still works for alpha >1/2. You need to take care of cases with too many Infs in cost vector.
          if(invalpha < 2) {

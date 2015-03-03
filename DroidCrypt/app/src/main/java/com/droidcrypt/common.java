@@ -156,7 +156,7 @@ public class common
 				// I know, there will be identical columns.
 				for(i = 0; i < width; i++)
                 {
-					r = ((rn.nextInt(32768) & mask) << 1) + bop;
+					r = ((rn.nextInt() & mask) << 1) + bop;
 					cols[i] = r;
 				}
 			}
@@ -165,7 +165,7 @@ public class common
                 {
 					for(j = -1; j < i;)
                     {
-						r = ((rn.nextInt(32768) & mask) << 1) + bop;
+						r = ((rn.nextInt() & mask) << 1) + bop;
 						for(j = 0; j < i; j++) {
 							if(cols[j] == r)
 								break;
