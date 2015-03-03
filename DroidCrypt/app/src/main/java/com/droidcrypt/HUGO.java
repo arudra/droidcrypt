@@ -126,6 +126,7 @@ public class HUGO
         return new Mat2D(height, width, grayBitmap);
     }
 
+    /*
     public Mat2D loadImage (String imagePath)
     {
         FileInputStream fileInputStream = null;
@@ -170,7 +171,7 @@ public class HUGO
         } catch (Exception e) { e.printStackTrace(); }
 
         return img;
-    }
+    } */
 
     public void saveImage (String imagePath, Mat2D instance)
     {

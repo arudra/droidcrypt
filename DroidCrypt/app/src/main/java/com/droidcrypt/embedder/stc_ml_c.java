@@ -674,8 +674,8 @@ public class stc_ml_c
     /* FINAL CALCULATIONS */
         distortion = 0;
         for ( int i = 0; i < cover_length; i++ ) {
-            stego[i] = (stego1.toByteArray()[perm1[i]] == cover1[perm1[i]]) ? cover[i] : cover[i] + direction[i];
-            distortion += (stego1.toByteArray()[perm1[i]] == cover1[perm1[i]]) ? 0 : costs[i];
+            stego[i] = ((stego1.get(perm1[i]) ? 1 : 0) == cover1[perm1[i]]) ? cover[i] : cover[i] + direction[i];
+            distortion += ((stego1.get(perm1[i]) ? 1 : 0) == cover1[perm1[i]]) ? 0 : costs[i];
         }
         if ( coding_loss[0] != 0 )
         {

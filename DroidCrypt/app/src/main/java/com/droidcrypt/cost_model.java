@@ -9,20 +9,22 @@ public class cost_model extends base_cost_model {
 
     public cost_model(Mat2D cover, cost_model_config config) {
         super(cover, config);
-
         this.config = config;
 
-//        mat2D<int>* cover_padded = mat2D<int>::Padding_Mirror(cover, 3, 3);
-//        for (int r=0; r<cover->rows; r++)
-//        {
-//            for (int c=0; c<cover->cols; c++)
-//            {
-//                // pixel_costs[0] is the cost of -1, pixel_costs[0] is the cost of no change, pixel_costs[0] is the cost of +1
-//                float* pixel_costs = costs + ((c+r*cover->cols)*3);
-//                pixel_costs[0] = 0; pixel_costs[1] = 0; pixel_costs[2] = 0;
-//                calc_costs(r+3, c+3, cover_padded, pixel_costs);
-//            }
-//        }
+        Mat2D cover_padded = Mat2D.Padding_Mirror(cover, 3, 3);
+        for (int r=0; r<cover.rows; r++)
+        {
+            for (int c=0; c<cover.cols; c++)
+            {
+                // pixel_costs[0] is the cost of -1, pixel_costs[0] is the cost of no change, pixel_costs[0] is the cost of +1
+                float[] pixel_costs = new float[costs.length - (c+r*cover.cols)*3];
+                System.arraycopy(costs, (c+r*cover.cols)*3, pixel_costs, 0, pixel_costs.length);
+                pixel_costs[0] = 0;
+                pixel_costs[1] = 0;
+                pixel_costs[2] = 0;
+                calc_costs(r+3, c+3, cover_padded, pixel_costs);
+            }
+        }
     }
 
     private void calc_costs(int r, int c, Mat2D cover_padded, float[] pixel_costs) {
