@@ -13,29 +13,28 @@ public class Mat2D
 {
     public int rows;
     public int cols;
-    //private ArrayList<Integer> vector;
-    public Bitmap image;
+    public byte[] image;
 
-    public Mat2D (int rows, int cols, Bitmap input)
+    public Mat2D (int rows, int cols, byte[] input)
     {
         this.rows = rows;
         this.cols = cols;
         //vector = new ArrayList<Integer>(rows*cols);
-        if (image == null) {
-            Bitmap.Config config = Bitmap.Config.ARGB_8888;
-            image = Bitmap.createBitmap(rows, cols, config);
+        if (input == null) {
+            input = new byte[rows*cols];
         }
-        image = input;
+        else
+            image = input;
     }
 
-    public Integer Read (int row, int col)
+    public Byte Read (int row, int col)
     {
-        return image.getPixel(col, row);
+        return image[row*cols+col];
     }
 
-    public void Write (int row, int col, Integer val)
+    public void Write (int row, int col, byte val)
     {
-        image.setPixel(row, col, val);
+        image[row*cols+col]= val;
     }
 
 //    public void PermuteElements()

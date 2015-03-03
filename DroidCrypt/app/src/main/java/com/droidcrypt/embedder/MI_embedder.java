@@ -76,6 +76,8 @@ public class MI_embedder {
         }
         catch (Exception e)
         {
+            Log.d("EMBED", "Exception at embeding :" + e.getMessage());
+            e.printStackTrace();
             num_msg_bits[0] = 0;
             num_msg_bits[1] = 0;
             distortion[0] = 0;
@@ -112,12 +114,12 @@ public class MI_embedder {
             for ( int i = 0; i < n; i++ )
                 stego_pixels[i] = stego_px[i];
         } else {
-            Log.d("EMBED", "Password as not been stored inside the image");
+            Log.d("EMBED", "Password as not been stored inside the orig_image");
             for ( int i = 0; i < n; i++ ) {
                 int width = m.cols;
                 int row = i/width;
                 int col = i%width;
-                stego_pixels[i] = m.cover.image.getPixel(col, row);
+                stego_pixels[i] = m.cover.Read(col, row);
             }
         }
 
@@ -126,7 +128,7 @@ public class MI_embedder {
         {
             for ( int j = 0; j < m.cols; j++ )
             {
-                stego.Write(i, j, stego_pixels[i*m.cols+j]);
+                stego.Write(i, j, (byte)stego_pixels[i*m.cols+j]);
             }
         }
         alpha_out[0] = (float) (num_msg_bits[0] + num_msg_bits[1]) / (float) n;

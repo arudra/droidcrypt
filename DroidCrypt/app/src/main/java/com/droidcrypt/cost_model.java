@@ -9,7 +9,6 @@ public class cost_model extends base_cost_model {
 
     public cost_model(Mat2D cover, cost_model_config config) {
         super(cover, config);
-
         this.config = config;
 
         Mat2D cover_padded = Mat2D.Padding_Mirror(cover, 3, 3);

@@ -3,7 +3,9 @@ package com.droidcrypt;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
@@ -19,20 +21,20 @@ import java.util.Scanner;
 public class HUGO
 {
   
-    //INPUTS: input image path, Password
+    //INPUTS: input orig_image path, Password
     private String imagePath, password;
 
-    // output image path which holds hash of JPEG
+    // output orig_image path which holds hash of JPEG
     private String outputImage;
 
-    private Drawable image;
+    private Bitmap image;
     private Context context;
 
-    public HUGO (String input, String pass, Drawable inputImage, Context context)
+    public HUGO (String input, String pass, Bitmap inputImg, Context context)
     {
         imagePath = input;
         password = pass;
-        image = inputImage;
+        image = inputImg;
         this.context = context;
 
 //        MD5hash md5hash = new MD5hash();
@@ -43,7 +45,7 @@ public class HUGO
     public void execute ()
     {
         //convert to PGM
-        //String image = convertToPGM(imagePath);
+        //String orig_image = convertToPGM(imagePath);
 
 
         //  Load Cover
@@ -78,13 +80,14 @@ public class HUGO
 
     }
 
-    public Bitmap toGrayscale(Bitmap bmpOriginal)
+    public byte[] toGrayscale(Bitmap bmpOriginal)
     {
         int width, height;
         height = bmpOriginal.getHeight();
         width = bmpOriginal.getWidth();
-
-        Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        byte[] image = new byte[height*width];
+        /*
+        Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bmpGrayscale);
         Paint paint = new Paint();
         ColorMatrix cm = new ColorMatrix();
@@ -93,18 +96,37 @@ public class HUGO
         paint.setColorFilter(f);
         c.drawBitmap(bmpOriginal, 0, 0, paint);
         return bmpGrayscale;
+        */
+        int count = 0;
+        for (int i=0; i<width; i++) {
+            for (int j=0; j<height; j++) {
+                int pixel = bmpOriginal.getPixel(i, j);
+                int redValue = Color.red(pixel);
+                int blueValue = Color.blue(pixel);
+                int greenValue = Color.green(pixel);
+                int grayColor = (int)(0.2126f*redValue + 0.7152f*greenValue + 0.07722f*blueValue);
+                if (grayColor < 0) grayColor = 0;
+                else if (grayColor > 255) grayColor = 255;
+                image[count++] = (byte)grayColor;
+            }
+        }
+
+        return image;
     }
 
-    public Mat2D loadGrayImage (Drawable input)
+    public Mat2D loadGrayImage (Bitmap input)
     {
-        Bitmap grayBitmap = toGrayscale(((BitmapDrawable) input).getBitmap());
+        byte[] grayBitmap = toGrayscale(input);
 
-        int width = grayBitmap.getWidth();
-        int height = grayBitmap.getHeight();
+        int width = input.getWidth();
+        int height = input.getHeight();
+        input.recycle();
+        input = null;
 
         return new Mat2D(height, width, grayBitmap);
     }
 
+    /*
     public Mat2D loadImage (String imagePath)
     {
         FileInputStream fileInputStream = null;
@@ -149,7 +171,7 @@ public class HUGO
         } catch (Exception e) { e.printStackTrace(); }
 
         return img;
-    }
+    } */
 
     public void saveImage (String imagePath, Mat2D instance)
     {
