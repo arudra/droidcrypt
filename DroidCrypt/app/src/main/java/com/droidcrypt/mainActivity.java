@@ -1,6 +1,10 @@
 package com.droidcrypt;
 
+import android.app.ProgressDialog;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,10 +17,7 @@ public class mainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Drawable image1 = getResources().getDrawable(R.drawable.image5);
-        HUGO hugo = new HUGO("", "Hello World!", image1, this);
-        hugo.execute();
+        new AsyncCaller().execute();
     }
 
     @Override
@@ -39,5 +40,37 @@ public class mainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private class AsyncCaller extends AsyncTask<Void, Void, Void>
+    {
+        ProgressDialog pdLoading = new ProgressDialog(mainActivity.this);
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.show();
+        }
+        @Override
+        protected Void doInBackground(Void... params) {
+            BitmapFactory.Options opt= new BitmapFactory.Options();
+            opt.inScaled = false;
+            Bitmap input = BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
+            HUGO hugo = new HUGO("", "Hello World!", input, getParent());
+            hugo.execute();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+
+            //this method will be running on UI thread
+            pdLoading.dismiss();
+
+        }
+
     }
 }

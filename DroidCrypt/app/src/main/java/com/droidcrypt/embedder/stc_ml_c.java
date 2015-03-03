@@ -14,7 +14,7 @@ public class stc_ml_c
     private static float F_INF = Float.POSITIVE_INFINITY;
     private static double D_INF = Double.POSITIVE_INFINITY;
 
-    float stc_pm1_pls_embed( Integer cover_length, Bitmap cover, float[] costs, int message_length, BitSet message, // input variables
+    float stc_pm1_pls_embed( Integer cover_length, byte[] cover, float[] costs, int message_length, BitSet message, // input variables
                              int stc_constraint_height, float wet_cost, // other input parameters
                              int[] stego, int[] num_msg_bits, int[] max_trials, float[] coding_loss ) { // output variables
 
@@ -23,7 +23,7 @@ public class stc_ml_c
     }
 
     // distortion limited case - returns distortion
-    float stc_pm1_dls_embed( Integer cover_length, Bitmap cover, float[] costs, int message_length, BitSet message, float target_distortion, // input variables
+    float stc_pm1_dls_embed( Integer cover_length, byte[] cover, float[] costs, int message_length, BitSet message, float target_distortion, // input variables
                              int stc_constraint_height, float expected_coding_loss, float wet_cost, // other input parameters
                              int[] stego, int[] num_msg_bits, int[] max_trials, float[] coding_loss ) { // output variables
 
@@ -32,21 +32,18 @@ public class stc_ml_c
 
         int[] stego_values = new int[4 * cover_length];
         float[] costs_ml2 = new float[4 * cover_length];
-        for ( Integer i = 0; i < cover_length; i++ ) {
-            int row = i/(cover.getWidth());
-            int col = i%(cover.getWidth());
-
-            costs_ml2[4 * i + (cover.getPixel(col, row) - 1 + 4) % 4 ] = costs[3 * i + 0]; // set cost of changing by -1
-            stego_values[4 * i + (cover.getPixel(col, row) - 1 + 4) % 4] = cover.getPixel(col, row) - 1;
-            costs_ml2[4 * i + (cover.getPixel(col, row) + 0 + 4) % 4] = costs[3 * i + 1]; // set cost of changing by 0
-            stego_values[4 * i + (cover.getPixel(col, row) + 0 + 4) % 4] = cover.getPixel(col, row);
-            costs_ml2[4 * i + (cover.getPixel(col, row) + 1 + 4) % 4] = costs[3 * i + 2]; // set cost of changing by +1
-            stego_values[4 * i + (cover.getPixel(col, row) + 1 + 4) % 4] = cover.getPixel(col, row) + 1;
-            costs_ml2[4 * i + (cover.getPixel(col, row) + 2 + 4) % 4] = wet_cost; // set cost of changing by +2
-            stego_values[4 * i + (cover.getPixel(col, row) + 2 + 4) % 4] = cover.getPixel(col, row) + 2;
+        for ( int i = 0; i < cover_length; i++ ) {
+            int pixel = cover[i]&0xFF;
+            costs_ml2[4 * i + (pixel - 1 + 4) % 4 ] = costs[3 * i + 0]; // set cost of changing by -1
+            stego_values[4 * i + (pixel - 1 + 4) % 4] = pixel - 1;
+            costs_ml2[4 * i + (pixel + 0 + 4) % 4] = costs[3 * i + 1]; // set cost of changing by 0
+            stego_values[4 * i + (pixel + 0 + 4) % 4] = pixel;
+            costs_ml2[4 * i + (pixel + 1 + 4) % 4] = costs[3 * i + 2]; // set cost of changing by +1
+            stego_values[4 * i + (pixel + 1 + 4) % 4] = pixel + 1;
+            costs_ml2[4 * i + (pixel + 2 + 4) % 4] = wet_cost; // set cost of changing by +2
+            stego_values[4 * i + (pixel + 2 + 4) % 4] = pixel + 2;
         }
 
-        cover.recycle();
         cover = null;
         // run general 2 layered embedding in distortion limited regime
         dist = stc_ml2_embed( cover_length, costs_ml2, stego_values, message_length, message, target_distortion, stc_constraint_height,
@@ -280,22 +277,22 @@ public class stc_ml_c
                 test_non_inf |= ((costs[k * i + j] != -F_INF) & (costs[k * i + j] != F_INF));
                 test_minus_inf |= (costs[k * i + j] == -F_INF);
             }
-            /*
+
             if ( test_nan ) {
-                std::stringstream ss;
-                ss << "Incorrect cost array." << i << "-th element contains NaN value. This is not a valid cost.";
-                throw stc_exception( ss.str(), 6 );
+                String s = "Incorrect cost array." + i + "-th element contains NaN value. This is not a valid cost.";
+                Log.d("EMBED",s);
+//                throw new Exception(s);
             }
             if ( !test_non_inf ) {
-                std::stringstream ss;
-                ss << "Incorrect cost array." << i << "-th element does not contain any finite cost value. This is not a valid cost.";
-                throw stc_exception( ss.str(), 6 );
+                String s =  "Incorrect cost array." + i + "-th element does not contain any finite cost value. This is not a valid cost.";
+                Log.d("EMBED",s);
+//                throw stc_exception( ss.str(), 6 );
             }
             if ( test_minus_inf ) {
-                std::stringstream ss;
-                ss << "Incorrect cost array." << i << "-th element contains -Inf value. This is not a valid cost.";
-                throw stc_exception( ss.str(), 6 );
-            } */
+                String s =  "Incorrect cost array." + i + "-th element contains -Inf value. This is not a valid cost.";
+                Log.d("EMBED",s);
+//                throw stc_exception( ss.str(), 6 );
+            }
         }
     }
 
@@ -611,7 +608,7 @@ public class stc_ml_c
         //std::fill_n( c, 2 * n, F_INF );
         //std::fill_n( c, n, 0.0f );
 
-        for(int i = 0 ; i < 4*n; i++)
+        for(int i = 0 ; i < 2*n; i++)
         {
             c[i] = F_INF;
         }

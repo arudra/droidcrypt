@@ -113,24 +113,21 @@ public class stc_embed_c
             sseheight = height >> 2;
             ssedone = new BitSet(sseheight); // (u8*) malloc( sseheight * sizeof(u8) );
             prices = new float[height]; //aligned_malloc( height * sizeof(float), 16 );
-
+            for (i=0; i < height; i += 4)
             {
-                for (i=0; i < height; i += 4)
-                {
-                    prices[i] = inf;
-                    prices[i+1] = inf;
-                    prices[i+2] = inf;
-                    prices[i+3] = inf;
-                    ssedone.clear(i >> 2);
-                }
-
-                /*
-                __m128 fillval = _mm_set1_ps( inf );
-                for ( i = 0; i < height; i += 4 ) {
-                    _mm_store_ps( &prices[i], fillval );
-                    ssedone.clear(i >> 2);// [i >> 2] = 0;
-                } */
+                prices[i] = inf;
+                prices[i+1] = inf;
+                prices[i+2] = inf;
+                prices[i+3] = inf;
+                ssedone.clear(i >> 2);
             }
+
+            /*
+            __m128 fillval = _mm_set1_ps( inf );
+            for ( i = 0; i < height; i += 4 ) {
+                _mm_store_ps( &prices[i], fillval );
+                ssedone.clear(i >> 2);// [i >> 2] = 0;
+            } */
 
             prices[0] = 0.0f;
 
