@@ -9,9 +9,10 @@ import com.droidcrypt.common;
  */
 public class stc_embed_c
 {
-    private float [] shuffle(float[] v1, float[] v2, int num) {
-    int[] a = new int[4];
-    float[] out = new float[4];
+    private float [] shuffle(float[] v1, float[] v2, int num)
+    {
+        int[] a = new int[4];
+        float[] out = new float[4];
 
         for (int i=0; i < 4; i++)
         {
@@ -32,7 +33,7 @@ public class stc_embed_c
         double totalprice = 0.0;
 
         BitSet ssedone;
-        int[] path = null;
+        long[] path = null;
         int[][] columns = {{0}, {0}};
         int[] matrices, widths;
 
@@ -46,7 +47,7 @@ public class stc_embed_c
         parts = height >> 5;
 
         if ( stego != null ) {
-            path = new int[vectorlength * parts];
+            path = new long[vectorlength * parts];
             if ( path == null ) {
                 Log.e("Memory", "Not enough memory, byte array could not be allocated");
                 //ss << "Not enough memory (" << (unsigned int) (vectorlength * parts * sizeof(int)) << " byte array could not be allocated).";
@@ -58,7 +59,7 @@ public class stc_embed_c
             double invalpha;
 
             matrices = new int [syndromelength];
-            widths = new int [syndromelength];;
+            widths = new int [syndromelength];
 
             invalpha = (double) vectorlength / syndromelength;
             if ( invalpha < 1 ) {
@@ -104,7 +105,9 @@ public class stc_embed_c
             mask[0] = 0xf0;
             mask[1] = 0x0f;
             float[] prices;
-            int [] path8 = path;
+
+            //convert path int array into "unsigned" byte array path8
+            int [] path8 = new int[4*path.length];
 
             double [] pricevector =  pricevectorv;
             double total = 0;
@@ -190,28 +193,28 @@ public class stc_embed_c
                                     //v2 = _mm_shuffle_ps(v2, v2, 0xb1);
                                     //v3 = _mm_shuffle_ps(v3, v3, 0xb1);
                                     tmp = shuffle(v2, v2, 0xb1);
-                                    System.arraycopy(tmp, 0, v2, 0, tmp.length);
+                                    System.arraycopy(tmp, 0, v2, 0, 4);
 
                                     tmp = shuffle(v3, v3, 0xb1);
-                                    System.arraycopy(tmp, 0, v3, 0, tmp.length);
+                                    System.arraycopy(tmp, 0, v3, 0, 4);
                                     break;
                                 case 2:
                                     //v2 = _mm_shuffle_ps(v2, v2, 0x4e);
                                     //v3 = _mm_shuffle_ps(v3, v3, 0x4e);
                                     tmp = shuffle(v2, v2, 0x4e);
-                                    System.arraycopy(tmp, 0, v2, 0, tmp.length);
+                                    System.arraycopy(tmp, 0, v2, 0, 4);
 
                                     tmp = shuffle(v3, v3, 0x4e);
-                                    System.arraycopy(tmp, 0, v3, 0, tmp.length);
+                                    System.arraycopy(tmp, 0, v3, 0, 4);
                                     break;
                                 case 3:
                                     //v2 = _mm_shuffle_ps(v2, v2, 0x1b);
                                     //v3 = _mm_shuffle_ps(v3, v3, 0x1b);
                                     tmp = shuffle(v2, v2, 0x1b);
-                                    System.arraycopy(tmp, 0, v2, 0, tmp.length);
+                                    System.arraycopy(tmp, 0, v2, 0, 4);
 
                                     tmp = shuffle(v3, v3, 0x1b);
-                                    System.arraycopy(tmp, 0, v3, 0, tmp.length);
+                                    System.arraycopy(tmp, 0, v3, 0, 4);
                                     break;
                             }
                             /*
@@ -244,11 +247,8 @@ public class stc_embed_c
 
                             //_mm_store_ps( &prices[m << 2], v1 );
                             //_mm_store_ps( &prices[altm << 2], v4 );
-                            for(int r = 0; r < 4; r++)
-                            {
-                                prices[(m << 2) + r] = v1[r];
-                                prices[(altm << 2) + r] = v4[r];
-                            }
+                            System.arraycopy(v1, 0, prices, m << 2, 4);
+                            System.arraycopy(v4, 0, prices, altm << 2, 4);
 
                             if ( stego != null ) {
                                 //v2 = _mm_cmpeq_ps( v1, v2 );
@@ -274,37 +274,46 @@ public class stc_embed_c
 
                                 //Setup for MOVEMASK_PS
                                 //(_mm_movemask_ps(v2) << shift[m &1]);
-                                int tmp2 = 0x0;
-                                tmp2 = (int)(v2[3])<<3 | (int)(v2[2])<<2 | ((int)v2[1]<<1) | (int)(v2[0]);
+                                int tmp2 = (int)(v2[3])<<3 | (int)(v2[2])<<2 | ((int)v2[1]<<1) | (int)(v2[0]);
                                 if ((pathindex8 + (m >> 1)) > path8.length) {
                                     // ERROR
-                                    Log.e("EMBED", "Array out of bound on: (pathindex8 + (m >> 1)) > path8.length ");
+                                    Log.e("EMBED", "Array out of bound, pathindex: " + pathindex8 + " M: " + m + " length: " + path8.length);
+                                    break;
                                 }
                                 else {
-                                    path8[pathindex8 + (m >> 1)] = (byte) ((path8[pathindex8 + (m >> 1)] & mask[m & 1]) |
-                                            tmp2 << shift[m & 1]);
+                                    path8[pathindex8 + (m >> 1)] = ((path8[pathindex8 + (m >> 1)] & mask[m & 1]) | tmp2 << shift[m & 1]) & 0xFF;
                                 }
-                                tmp2 = 0;
+
                                 tmp2 = (int)(v3[3])<<3 | (int)(v3[2])<<2 | ((int)v3[1]<<1) | (int)(v3[0]);
                                 if ((pathindex8 + (altm >> 1)) > path8.length) {
                                     // ERROR
-                                    Log.e("EMBED", "Array out of bound on: (pathindex8 + (altm >> 1)) > path8.length ");
+                                    Log.e("EMBED", "Array out of bound, pathindex: " + pathindex8 + " altm: " + altm + " length: " + path8.length);
+                                    break;
                                 }
                                 else {
-                                    path8[pathindex8 + (altm >> 1)] = (byte) ((path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) |
-                                            tmp2 << shift[altm & 1]);
+                                    path8[pathindex8 + (altm >> 1)] = ((path8[pathindex8 + (altm >> 1)] & mask[altm & 1]) | (tmp2 << shift[altm & 1])) & 0xFF;
                                 }
                             }
                         }
                     }
 
-                    for ( i = 0; i < sseheight; i++ ) {
-                        ssedone.clear(i); //[i] = 0;
-                    }
+                    //ssedone[0 to sseheight] = 0;
+                    ssedone.clear(0, sseheight-1);
 
                     pathindex += parts;
-                    pathindex8 += parts << 2;
+                    pathindex8 += (parts << 2);
                 }
+
+
+                //Converting path8 "unsigned" byte to path "unsigned" int
+                for(int p = 0; p < path.length; p++)
+                {
+                    path[p] =   ((path8[4*p+3] & 0xFF) << 24) |   /* bits 24-31 */
+                                ((path8[4*p+2] & 0xFF) << 16) |   /* bits 16-23 */
+                                ((path8[4*p+1] & 0xFF)<< 8 )|     /* bits 8-15 */
+                                (path8[4*p] & 0xFF) ;             /* bits 0-7 */
+                }
+
 
                 if ( !syndrome.get(index2) )
                 {
@@ -335,7 +344,8 @@ public class stc_embed_c
                     }
                 }
 
-                if ( syndromelength - index2 <= matrixheight ) colmask >>= 1;
+                if ( syndromelength - index2 <= matrixheight )
+                    colmask >>= 1;
 
                 {
                     //register __m128 fillval = _mm_set1_ps( inf );
@@ -518,7 +528,6 @@ public class stc_embed_c
             pathindex -= parts;
             index--;
             index2--;
-            state = 0;
 
             // unused
             // int h = syndromelength;
