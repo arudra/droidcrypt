@@ -202,17 +202,14 @@ public class HUGO
 
     }
 
+    /*
     public String convertToPGM (String input)
     {
         File inputFile = new File(input);
         String output = null;
-
-
-
-
-
         return output;
     }
+    */
 
 
 
