@@ -197,15 +197,18 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
     // extract message from 'stego_array' into 'extracted_message' and use STCs with constr. height h
     unsigned char *extracted_message = new unsigned char[message_length];
     stc_ml_extract( n, stego_px, 2, num_msg_bits, stc_constr_height, (extracted_message) );
-    std::cout << "Checking the extracted message " << msg << " with "<< num_msg_bits[0] << " - " << num_msg_bits[1] << " :  ";
+/*    std::cout << "Checking the extracted message " << msg << " with "<< num_msg_bits[0] << " - " << num_msg_bits[1] << " :  ";
     for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
         printf("%x", extracted_message[k]);
     }
     std::cout << " vs.  ";
     for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
         printf("%x", message[k]);
-    }
+    } 
     std::cout << std::endl;
+    */
+    std::cout << "\nOriginal message " << msg << std::endl;
+    std::cout << "Extracted message " << msg << std::endl;
     // check the extracted message
     bool msg_ok = true;
     for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
