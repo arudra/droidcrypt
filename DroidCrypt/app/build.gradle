@@ -10,6 +10,15 @@ android {
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
+
+        ndk {
+            moduleName "embedder"
+        }
+    }
+    sourceSets.main {
+
+        jni.srcDirs=[] // This forces to build NDK libs on our own from Terminal
+        jniLibs.srcDirs 'libs/'
     }
     buildTypes {
         release {

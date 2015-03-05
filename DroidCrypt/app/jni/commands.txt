@@ -1,0 +1,11 @@
+To generate JNI header file from JAVA class:
+
+Go to ${PROJECT_ROOT}/app/build/intermediates/classes/debug
+
+Add /Users/dkmiyani/Documents/MyProject/adt-bundle-mac-x86_64-20140702/sdk/platforms/android-17/android.jar to classpath
+
+https://www.youtube.com/watch?v=kFtxo7rr2HQ
+
+Therefore,
+
+javah -jni -classpath .:/Users/dkmiyani/Documents/MyProject/adt-bundle-mac-x86_64-20140702/sdk/platforms/android-17/android.jar com.droidcrypt.Embedder

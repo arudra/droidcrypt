@@ -29,6 +29,7 @@ public class HUGO
 
     private Bitmap image;
     private Context context;
+    private Embedder e;
 
     public HUGO (String input, String pass, Bitmap inputImg, Context context)
     {
@@ -36,11 +37,13 @@ public class HUGO
         password = pass;
         image = inputImg;
         this.context = context;
-
-//        MD5hash md5hash = new MD5hash();
-//        outputImage = md5hash.generateHash(imagePath);
+//        e = new Embedder();
     }
 
+    public void testNdkCall()
+    {
+        e.embed(image, "Testing Password");
+    }
 
     public void execute ()
     {

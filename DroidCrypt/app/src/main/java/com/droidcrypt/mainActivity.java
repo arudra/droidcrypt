@@ -68,7 +68,8 @@ public class mainActivity extends ActionBarActivity {
             opt.inSampleSize = 8;
             Bitmap input = BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
             HUGO hugo = new HUGO("", "Hello World!", input, getParent());
-            hugo.execute();
+//            hugo.execute();
+            hugo.testNdkCall();
             return null;
         }
 
