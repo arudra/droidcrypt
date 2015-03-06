@@ -128,7 +128,7 @@ float calc_entropy( uint n, uint k, float* costs, float lambda ) {
         }
         for (int l=0; l<b; l++) {
             entr[l] = entr[l] - (-lambda*d[l]/z[l]);
-            entr[l] += log2f(z[l]);
+            entr[l] += (logf(z[l])/(logf(2)));
         }
     }
     for (int l=0; l<b;l++) {

@@ -11,6 +11,8 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,7 +44,11 @@ public class HUGO
 
     public void testNdkCall()
     {
-        e.embed(image, "Testing Password");
+
+        byte[] grayPix = toGrayscale(image);
+
+        e.embed(grayPix, image.getWidth(), image.getHeight(), "Testing Password");
+
     }
 
     public void execute ()
@@ -89,7 +95,7 @@ public class HUGO
         height = bmpOriginal.getHeight();
         width = bmpOriginal.getWidth();
         byte[] image = new byte[height*width];
-        /*
+
         Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bmpGrayscale);
         Paint paint = new Paint();
@@ -98,8 +104,8 @@ public class HUGO
         ColorMatrixColorFilter f = new ColorMatrixColorFilter(cm);
         paint.setColorFilter(f);
         c.drawBitmap(bmpOriginal, 0, 0, paint);
-        return bmpGrayscale;
-        */
+        //return bmpGrayscale;
+
         int count = 0;
         for (int i=0; i<width; i++) {
             for (int j=0; j<height; j++) {

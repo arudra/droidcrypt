@@ -3,7 +3,6 @@
 #include <cmath>
 #include <cfloat>
 #include <limits>
-#include <emmintrin.h>
 #include <cstdio>
 #include <sstream>
 #include <iostream>
@@ -26,6 +25,7 @@ void aligned_free( void *vptr ) {
     return;
 }
 
+/*
 inline __m128i maxLessThan255( const __m128i v1, const __m128i v2 ) {
     register __m128i mask = _mm_set1_epi32( 0xffffffff );
     return _mm_max_epu8( _mm_andnot_si128( _mm_cmpeq_epi8( v1, mask ), v1 ), _mm_andnot_si128( _mm_cmpeq_epi8( v2, mask ), v2 ) );
@@ -52,6 +52,8 @@ inline u8 min16B( __m128i minp ) {
     if ( mtemp[1] < mtemp[0] ) return mtemp[1];
     else return mtemp[0];
 }
+ 
+ */
 
 float * shuffle(float*v1, float*v2, int num) {
     int a[4];

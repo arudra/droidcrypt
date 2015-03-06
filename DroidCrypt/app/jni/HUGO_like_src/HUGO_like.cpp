@@ -4,6 +4,7 @@
 #include <time.h>
 #include <vector>
 #include <iomanip>
+#include <android/log.h>
 
 #include "image.h"
 #include "mi_embedder.h"
@@ -11,6 +12,12 @@
 #include "exception.hpp"
 #include "cost_model.h"
 #include "mat2D.h"
+#include "HUGO_like.h"
+
+
+#define  LOG_TAG    "libembedder"
+#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 mat2D<int> * Mat2dFromImage(int* img, int width, int height);
 
@@ -50,7 +57,7 @@ int HUGO_like(int * img, int width, int height, char * password)
         }
         std::string message(msg);
         //        std::string message = "1234567890";
-        
+        LOGI("Here we get all the information: password =%s", msg);
         cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stc_constr_height, randSeed, message);
         
         // Load cover
@@ -73,15 +80,28 @@ int HUGO_like(int * img, int width, int height, char * password)
     catch(std::exception& e)
     {
         std::cerr << "error: " << e.what() << "\n";
+        LOGE("ERROR exception in HUGO_like");
         return 1;
     }
     catch(...)
     {
         std::cerr << "Exception of unknown type!\n";
+        LOGE("Exception of unknown type!");
         return 1;
     }
     
     return 0;
+}
+    
+mat2D<int> * Mat2dFromImage(int* img, int width, int height)
+{
+    // move the image into a mat2D class
+    mat2D<int> *I = new mat2D<int>(height, width);
+    for (int r=0; r<height; r++)
+        for (int c=0; c<width; c++)
+            I->Write(r, c, img[c*I->rows+r]);
+    
+    return I;
 }
 
 mat2D<int> * Load_Image(std::string imagePath, cost_model_config *config)

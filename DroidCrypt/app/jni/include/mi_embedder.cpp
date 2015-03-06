@@ -8,6 +8,7 @@
 #include <string>
 #include <math.h>
 #include <cstdlib>
+#include <android/log.h>
 
 #include "mi_embedder.h"
 #include "info_theory.h"
@@ -16,6 +17,12 @@
 #include "base_cost_model.h"
 #include "mat2D.h"
 #include "exception.hpp"
+
+
+
+#define  LOG_TAG    "libembedder"
+#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 typedef unsigned int uint;
 typedef std::valarray< float > va_float;
@@ -167,7 +174,7 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
     message[message_length] = 0;
     uint i=0;
     for (i = 0; i < message_length; i++ ) // generate random message
-        message[i] = rand() % 2; //reinterpret_cast<unsigned char&>(msg[i]); //rng() % 2;
+        message[i] = rand()&0xb1; //reinterpret_cast<unsigned char&>(msg[i]); //rng() % 2;
     message[i] = 0;
     
     stc_trials_used = stc_max_trails;
@@ -190,24 +197,33 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
     // extract message from 'stego_array' into 'extracted_message' and use STCs with constr. height h
     unsigned char *extracted_message = new unsigned char[message_length];
     stc_ml_extract( n, stego_px, 2, num_msg_bits, stc_constr_height, (extracted_message) );
-/*    std::cout << "Checking the extracted message " << msg << " with "<< num_msg_bits[0] << " - " << num_msg_bits[1] << " :  ";
+    std::cout << "Checking the extracted message " << msg << " with "<< num_msg_bits[0] << " - " << num_msg_bits[1] << " :  ";
+    LOGI("Checking the extracted message %s (%d) %d-%d:", msg.c_str(), message_length, num_msg_bits[0], num_msg_bits[1] );
     for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
         printf("%x", extracted_message[k]);
+        LOGI("%x", extracted_message[k]);
     }
     std::cout << " vs.  ";
     for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
         printf("%x", message[k]);
+        LOGI("%x", message[k]);
     } 
     std::cout << std::endl;
-    */
-    std::cout << "\nOriginal message " << msg << std::endl;
-    std::cout << "Extracted message " << msg << std::endl;
+    
+    //std::cout << "\nOriginal message " << msg << std::endl;
+    //std::cout << "Extracted message " << msg << std::endl;
+    
     // check the extracted message
     bool msg_ok = true;
     for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
         msg_ok &= (extracted_message[k] == message[k]);
-        if ( !msg_ok ) throw exception( "ML_STC_ERROR: Extracted message differs in bit " );
+        if ( !msg_ok ) {
+            LOGE("ML_STC_ERROR: Extracted message differs in bit " );
+            throw exception( "ML_STC_ERROR: Extracted message differs in bit " );
+        }
     }
+
+    LOGI("____Password MATCHED !! ____");
 
     if ( num_msg_bits[0] + num_msg_bits[1] > 0 ) {
         for ( uint i = 0; i < n; i++ )

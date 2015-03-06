@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (Landroid/graphics/Bitmap;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_com_droidcrypt_Embedder_embed
-  (JNIEnv *, jclass, jobject, jstring);
+(JNIEnv * env, jclass  obj, jbyteArray bitmap,  jint jwidth, jint jheight, jstring  msg);
 
 #ifdef __cplusplus
 }

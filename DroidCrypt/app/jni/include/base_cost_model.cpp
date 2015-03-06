@@ -2,6 +2,11 @@
 #include "mat2D.h"
 #include "base_cost_model_config.h"
 #include "mi_embedder.h"
+
+#include <android/log.h>
+#define  LOG_TAG    "libembedder"
+#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 //#include <boost/random/uniform_int.hpp>
 //#include <boost/random/variate_generator.hpp>
 //#include <boost/random/mersenne_twister.hpp>
@@ -34,10 +39,12 @@ mat2D<int> * base_cost_model::Embed(float &alpha_out, float &coding_loss_out, un
         // payload-limited sender with given payload; lambda is initialized in the first run and then reused
 		//stego = mi_emb_simulate_pls_embedding(this, config->payload, rng(), pls_lambda, distortion, alpha_out);
 		//Should never come here!
+		LOGE("Error: base_cost_model::Embed - stc_constr_height MUST NEVER be 0");
     } 
 	else 
 	{
         // use STCs
+        LOGI("Starting to Embed data");
         unsigned int stc_max_trials = 10; // maximum number of trials for ML STCs
         stego = mi_emb_stc_pls_embedding(this, config->payload, 3, config->stc_constr_height, stc_max_trials, distortion, alpha_out, coding_loss_out, stc_trials_used );
     }
