@@ -115,8 +115,8 @@ int main(int argc, char** argv)
         int len = 12;
         char* msg = new char[len];
         gen_random(msg, len);
-        std::string message(msg);
-//        std::string message = "1234567890";
+        //std::string message(msg);
+        std::string message = "1234567890";
         
 		cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stc_constr_height, randSeed, message);
 

@@ -3,10 +3,6 @@
 #include <cstdlib>
 #include "common.h"
 
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random/mersenne_twister.hpp>
-
 u32 mats[] = {
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 109, 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -146,23 +142,22 @@ u32 *getMatrix(int width, int height) {
 		 * Modified by Tomas Filler.
 		 */
 
-		boost::mt19937 generator( 1 );
-		boost::variate_generator< boost::mt19937&, boost::uniform_int< > > rng( generator, boost::uniform_int< >( 0, RAND_MAX ) );
-
         mask = (1 << (height - 2)) - 1;
         bop = (1 << (height - 1)) + 1;
+
+        srand(1);
         if((1 << (height - 2)) < width) {
 			// fprintf(stderr, "Cannot generate matrix for this payload. Choose a higher constraint height.\n");
             // generate the columns randomly but let first and last row be full of 1s.
             // I know, there will be identical columns.
             for(i = 0; i < width; i++) {
-                r = ((rng() & mask) << 1) + bop;
+                r = ((rand() & mask) << 1) + bop;
                 cols[i] = r;
             }
 		} else {
             for(i = 0; i < width; i++) {
                 for(j = -1; j < i;) {
-                    r = ((rng() & mask) << 1) + bop;
+                    r = ((rand() & mask) << 1) + bop;
                     for(j = 0; j < i; j++) {
                         if(cols[j] == r)
                             break;

@@ -7,11 +7,7 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random/mersenne_twister.hpp>
+#include <cstdlib>
 
 #include "mi_embedder.h"
 #include "info_theory.h"
@@ -73,8 +69,7 @@ mat2D<int>* mi_emb_simulate_pls_embedding(base_cost_model* m, float alpha, uint 
     if ( lambda < 0 ) lambda = mi_emb_calculate_lambda_from_payload( m, alpha, 1, alpha_out );
 
 	mat2D<int>* stego = new mat2D<int>(m->rows, m->cols);
-    boost::mt19937 generator( seed );
-    boost::variate_generator< boost::mt19937&, boost::uniform_real< > > rng( generator, boost::uniform_real< >( 0, 1 ) );
+
 
     for ( int i = 0; i < m->rows; i++ ) {
         for ( int j = 0; j < m->cols; j++ ) {
@@ -83,7 +78,7 @@ mat2D<int>* mi_emb_simulate_pls_embedding(base_cost_model* m, float alpha, uint 
 			float* P = cost2probability(changeCosts, lambda);
 
             // sample from distribution flip_prob
-            int stego_noise = mi_emb_sample_from_distribution(P, rng());
+            int stego_noise = mi_emb_sample_from_distribution(P, rand());
 			delete P;
 			stego->Write(i, j, m->cover->Read(i,j) + stego_noise);
 
@@ -163,8 +158,6 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
         }
     }
 
-    boost::mt19937 generator( seed );
-    boost::variate_generator< boost::mt19937&, boost::uniform_int< > > rng( generator, boost::uniform_int< >( 0, RAND_MAX ) );
 //
     //    uint message_length = (uint) floor( alpha * n );
     uint message_length = (uint) m->config->message.length();
@@ -174,7 +167,7 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
     message[message_length] = 0;
     uint i=0;
     for (i = 0; i < message_length; i++ ) // generate random message
-        message[i] = rng() % 2; //reinterpret_cast<unsigned char&>(msg[i]); //rng() % 2;
+        message[i] = rand() % 2; //reinterpret_cast<unsigned char&>(msg[i]); //rng() % 2;
     message[i] = 0;
     
     stc_trials_used = stc_max_trails;
