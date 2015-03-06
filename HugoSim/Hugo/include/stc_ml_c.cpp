@@ -10,10 +10,6 @@
 #include <string.h> // due to memcpy
 //#include <mmintrin.h>  // for SSE
 //#include <xmmintrin.h> // for SSE
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random/mersenne_twister.hpp>
-
 #include "stc_embed_c.h"
 #include "stc_extract_c.h"
 //#include "fast_math.h"
@@ -79,22 +75,16 @@ template< class T > void align_delete( T *ptr ) {
 /* Generates random permutation of length n based on the MT random number generator with seed 'seed'. */
 void randperm( uint n, uint seed, uint* perm ) {
 
-    boost::mt19937 *generator = new boost::mt19937( seed );
-    boost::variate_generator< boost::mt19937, boost::uniform_int< > > *randi = new boost::variate_generator< boost::mt19937,
-            boost::uniform_int< > >( *generator, boost::uniform_int< >( 0, INT_MAX ) );
-
     // generate random permutation - this is used to shuffle cover pixels to randomize the effect of different neighboring pixels
+    srand (seed);
     for ( uint i = 0; i < n; i++ )
         perm[i] = i;
     for ( uint i = 0; i < n; i++ ) {
-        uint j = (*randi)() % (n - i);
+        uint j = /*(*randi)*/rand() % (n - i);
         uint tmp = perm[i];
         perm[i] = perm[i + j];
         perm[i + j] = tmp;
     }
-
-    delete generator;
-    delete randi;
 }
 
 
