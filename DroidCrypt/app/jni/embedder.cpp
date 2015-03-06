@@ -41,6 +41,8 @@ JNIEXPORT void JNICALL Java_com_droidcrypt_Embedder_embed
     AndroidBitmapInfo  info;
     void*              pixels;
     int                ret;
+    int                width;
+    int                height;
     static int         init;
 
     if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
@@ -48,17 +50,23 @@ JNIEXPORT void JNICALL Java_com_droidcrypt_Embedder_embed
         return;
     }
 
+/*
     if (info.format != ANDROID_BITMAP_FORMAT_RGB_565) {
         LOGE("Bitmap format is not RGB_565 !");
         int bitmapFormat = info.format;
         LOGE("Bitmap Format is %d", bitmapFormat);
     }
+*/
 
     if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
     }
 
     LOGI("Successfully got the pixels");
+    width = info.width;
+    height = info.height;
+
+    LOGI("Image Width and height are: %d, %d", width, height);
     const char *nativeString = (env)->GetStringUTFChars(msg, JNI_FALSE);
 
    // use your string

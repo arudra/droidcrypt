@@ -25,6 +25,7 @@ namespace po = boost::program_options;
 void Save_Image(std::string imagePath, mat2D<int>* I);
 mat2D<int> * Load_Image(std::string imagePath, cost_model_config *config);
 mat2D<int> * Embed(mat2D<int> *cover, cost_model_config * config, float &alpha_out, float &coding_loss_out, unsigned int &stc_trials_used, float &distortion);
+mat2D<int> * Mat2dFromImage(int* img, int width, int height);
 
 void printInfo(){
 	std::cout << "This program embeds a payload using while minimizing 'HUGO_like' steganographic distortion [1][2] to all greyscale 'PGM' images in the directory input-dir and saves the stego images into the output-dir." << std::endl << std::endl;
@@ -46,6 +47,74 @@ void gen_random(char *s, const int len) {
     s[len] = 0;
 }
 
+int HUGO_like(int * img, int width, int height, char * password)
+{
+    try {
+        float payload = 0.4;
+        bool verbose = false;
+        unsigned int stc_constr_height = 10;
+        float gamma = 2;
+        float sigma = 0.5;
+        int randSeed = 100;
+        
+        clock_t begin=clock();
+        int len = 12;
+        char* msg;
+        if (password == NULL) {
+            msg = new char[len];
+            gen_random(msg, len);
+        }
+        else {
+            len = strlen(password);
+            msg = password;
+        }
+        std::string message(msg);
+        //        std::string message = "1234567890";
+        
+        cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stc_constr_height, randSeed, message);
+        
+        // Load cover
+        mat2D<int> *cover = Mat2dFromImage(img, width, height);
+        base_cost_model * model = (base_cost_model *)new cost_model(cover, config);
+        
+        // Embedding
+        float alpha_out, coding_loss_out = 0, distortion = 0;
+        unsigned int stc_trials_used = 0;
+        mat2D<int> * stego = model->Embed(alpha_out, coding_loss_out, stc_trials_used, distortion);
+        
+        delete model;
+        
+        delete cover;
+        delete stego;
+        delete config;
+        
+        clock_t end=clock();
+    }
+    catch(std::exception& e)
+    {
+        std::cerr << "error: " << e.what() << "\n";
+        return 1;
+    }
+    catch(...)
+    {
+        std::cerr << "Exception of unknown type!\n";
+        return 1;
+    }
+    
+    return 0;
+}
+    
+mat2D<int> * Mat2dFromImage(int* img, int width, int height)
+{
+    // move the image into a mat2D class
+    mat2D<int> *I = new mat2D<int>(height, width);
+    for (int r=0; r<height; r++)
+        for (int c=0; c<width; c++)
+            I->Write(r, c, img[c*I->rows+r]);
+    
+    return I;
+}
+    
 int main(int argc, char** argv)
 {
 	try { 

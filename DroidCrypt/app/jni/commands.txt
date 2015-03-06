@@ -9,3 +9,10 @@ https://www.youtube.com/watch?v=kFtxo7rr2HQ
 Therefore,
 
 javah -jni -classpath .:/Users/dkmiyani/Documents/MyProject/adt-bundle-mac-x86_64-20140702/sdk/platforms/android-17/android.jar com.droidcrypt.Embedder
+
+------
+
+To Build:
+
+export PATH=$PATH:/Users/dkmiyani/Documents/MyProject/adt-bundle-mac-x86_64-20140702/android-ndk-r10d
+$ ndk-build
