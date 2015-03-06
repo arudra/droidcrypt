@@ -51,6 +51,7 @@ public class HUGO
 
     }
 
+    /*
     public void execute ()
     {
         //convert to PGM
@@ -88,6 +89,7 @@ public class HUGO
 //        saveImage(outputImage, stego);
 
     }
+    */
 
     public byte[] toGrayscale(Bitmap bmpOriginal)
     {
@@ -122,66 +124,7 @@ public class HUGO
 
         return image;
     }
-
-    public Mat2D loadGrayImage (Bitmap input)
-    {
-        byte[] grayBitmap = toGrayscale(input);
-
-        int width = input.getWidth();
-        int height = input.getHeight();
-        input.recycle();
-        input = null;
-
-        return new Mat2D(height, width, grayBitmap);
-    }
-
     /*
-    public Mat2D loadImage (String imagePath)
-    {
-        FileInputStream fileInputStream = null;
-        Mat2D img = null;
-
-        try {
-            fileInputStream = new FileInputStream(convertToPGM(imagePath));
-
-
-            Scanner scan = new Scanner(fileInputStream);
-            scan.nextLine(); //discard magic number
-            scan.nextLine(); //discard comment
-            int width = scan.nextInt();
-            int height = scan.nextInt();
-            int max = scan.nextInt();
-
-            img = new Mat2D(height, width, null);
-
-            fileInputStream.close();
-
-            fileInputStream = new FileInputStream(imagePath);
-
-            DataInputStream dis = new DataInputStream(fileInputStream);
-
-            //Discard header
-            for (int i = 0; i < 4; i++) {
-                char c;
-                do {
-                    c = (char) (dis.readUnsignedByte());
-                } while (c != '\n');
-            }
-
-            //Read Image into Mat2D instance
-            for (int row = 0; row < height; row++)
-            {
-                for(int col = 0; col < width; col++)
-                {
-                    img.Write(row, col, dis.readUnsignedByte());
-                }
-            }
-
-        } catch (Exception e) { e.printStackTrace(); }
-
-        return img;
-    } */
-
     public void saveImage (String imagePath, Mat2D instance)
     {
         byte[] pixels = new byte[instance.rows * instance.cols];
@@ -210,6 +153,7 @@ public class HUGO
         } catch (Exception e) { e.printStackTrace(); }
 
     }
+    */
 
     /*
     public String convertToPGM (String input)
