@@ -173,8 +173,9 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
     memcpy(message, msg.data(), message_length);
     message[message_length] = 0;
     uint i=0;
+    srand(time(NULL));
     for (i = 0; i < message_length; i++ ) // generate random message
-        message[i] = rand()&0xb1; //reinterpret_cast<unsigned char&>(msg[i]); //rng() % 2;
+        message[i] = rand()&0x1; //reinterpret_cast<unsigned char&>(msg[i]); //rng() % 2;
     message[i] = 0;
     
     stc_trials_used = stc_max_trails;
@@ -187,6 +188,7 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
     } 
 	catch (...) 
 	{
+        LOGE("ERROR stc_pm1_pls_embed exception");
         num_msg_bits[0] = 0;
         num_msg_bits[1] = 0;
         distortion = 0;
@@ -204,6 +206,7 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
         LOGI("%x", extracted_message[k]);
     }
     std::cout << " vs.  ";
+    LOGI("  vs. ");
     for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
         printf("%x", message[k]);
         LOGI("%x", message[k]);

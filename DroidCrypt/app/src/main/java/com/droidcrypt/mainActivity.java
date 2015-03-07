@@ -9,17 +9,28 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 
 
 public class mainActivity extends ActionBarActivity {
 
     private AsyncCaller async;
+    private HUGO hugo;
+    private ImageView originalImage;
+    private ImageView newImage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         async = new AsyncCaller();
         async.execute();
+        originalImage = (ImageView)findViewById(R.id.imageView);
+        newImage = (ImageView)findViewById(R.id.imageView2);
+        Button toggle = (Button) findViewById(R.id.btn_toggle);
+        toggle.setTag(Integer.valueOf(0));
     }
 
     @Override
@@ -50,6 +61,18 @@ public class mainActivity extends ActionBarActivity {
         async = null;
     }
 
+    public void onClick_btnToggle(View v) {
+        Integer tag = (Integer) v.getTag();
+        if (tag == 0) {
+            originalImage.setImageBitmap(hugo.origImage);
+            tag = 1;
+        } else {
+            originalImage.setImageBitmap(hugo.grayImage);
+            tag = 0;
+        }
+        v.setTag(tag);
+    }
+
     private class AsyncCaller extends AsyncTask<Void, Void, Void>
     {
         public ProgressDialog pdLoading = new ProgressDialog(mainActivity.this);
@@ -67,7 +90,7 @@ public class mainActivity extends ActionBarActivity {
             opt.inScaled = false;
             //opt.inSampleSize = 8;
             Bitmap input = BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
-            HUGO hugo = new HUGO("", "Hello World!", input, getParent());
+            hugo = new HUGO("", "Hello World!", input, getParent());
 //            hugo.execute();
             hugo.testNdkCall();
             return null;
@@ -78,6 +101,8 @@ public class mainActivity extends ActionBarActivity {
             super.onPostExecute(result);
 
             //this method will be running on UI thread
+            originalImage.setImageBitmap(hugo.origImage);
+            newImage.setImageBitmap(hugo.grayImage);
             pdLoading.dismiss();
 
         }

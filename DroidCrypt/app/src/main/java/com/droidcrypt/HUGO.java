@@ -9,15 +9,9 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.util.Log;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.Scanner;
+import java.io.ByteArrayOutputStream;
+import java.util.Random;
 
 
 public class HUGO
@@ -29,7 +23,9 @@ public class HUGO
     // output orig_image path which holds hash of JPEG
     private String outputImage;
 
-    private Bitmap image;
+    public Bitmap origImage;
+    public Bitmap grayImage;
+    public byte[] grayArray;
     private Context context;
     private Embedder e;
 
@@ -37,17 +33,28 @@ public class HUGO
     {
         imagePath = input;
         password = pass;
-        image = inputImg;
+        origImage = inputImg;
+        grayImage = null;
+        grayArray = null;
         this.context = context;
-//        e = new Embedder();
     }
 
     public void testNdkCall()
     {
+        grayArray = toGrayscale(origImage);
+        //grayArray = bitmapToByteArray(origImage);
+        e.embed(grayArray, 512, 512, "123456");
+        grayImage = byteArrayToBitmap(grayArray);
+    }
 
-        byte[] grayPix = toGrayscale(image);
+    private byte[] bitmapToByteArray(Bitmap bmp) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
+    }
 
-        e.embed(grayPix, image.getWidth(), image.getHeight(), "Testing Password");
+    private Bitmap byteArrayToBitmap(byte[] bitmapdata) {
+        return BitmapFactory.decodeByteArray(bitmapdata, 0, bitmapdata.length);
 
     }
 
@@ -70,7 +77,7 @@ public class HUGO
         cost_model_config config = new cost_model_config(payload, verbose, gamma, sigma, stcHeight, randSeed, message);
 
         //  -> call function Load_Image from Mat2D and put inside Mat2D variable "cover"
-        Mat2D cover = loadGrayImage(image);
+        Mat2D cover = loadGrayImage(origImage);
 
         //base_cost_model *model = (base_cost_model *)new cost_model(cover,config);
 
@@ -98,16 +105,17 @@ public class HUGO
         width = bmpOriginal.getWidth();
         byte[] image = new byte[height*width];
 
-        Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(bmpGrayscale);
+        /*grayImage = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        Canvas c = new Canvas(grayImage);
         Paint paint = new Paint();
         ColorMatrix cm = new ColorMatrix();
         cm.setSaturation(0);
         ColorMatrixColorFilter f = new ColorMatrixColorFilter(cm);
         paint.setColorFilter(f);
-        c.drawBitmap(bmpOriginal, 0, 0, paint);
+        c.drawBitmap(grayImage, 0, 0, paint);
         //return bmpGrayscale;
-
+*/
+        Random rn = new Random();
         int count = 0;
         for (int i=0; i<width; i++) {
             for (int j=0; j<height; j++) {
@@ -117,7 +125,8 @@ public class HUGO
                 int greenValue = Color.green(pixel);
                 int grayColor = (int)(0.2126f*redValue + 0.7152f*greenValue + 0.07722f*blueValue);
                 if (grayColor < 0) grayColor = 0;
-                else if (grayColor > 255) grayColor = 255;
+                else if (grayColor > 126) grayColor = 126;
+//                grayColor = rn.nextInt(100);
                 image[count++] = (byte)grayColor;
             }
         }

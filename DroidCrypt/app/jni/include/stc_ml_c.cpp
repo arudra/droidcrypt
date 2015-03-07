@@ -12,6 +12,14 @@
 //#include <xmmintrin.h> // for SSE
 #include "stc_embed_c.h"
 #include "stc_extract_c.h"
+#include <android/log.h>
+
+
+
+#define  LOG_TAG    "libembedder"
+#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+
 //#include "fast_math.h"
 
 // #include "sse_mathfun.h"    // library with optimized functions obtained from http://gruntthepeon.free.fr/ssemath/
@@ -332,6 +340,7 @@ inline uint mod( int x, int m ) {
 void stc_embed_trial( uint n, float* cover_bit_prob0, u8* message, uint stc_constraint_height, uint &num_msg_bits, uint* perm, u8* stego,
         uint &trial, uint max_trials, const char* debugging_file = "cost.txt" ) {
 
+    LOGI("ENTER stc_embed_trial");
     bool success = false;
     u8* cover = new u8[n];
     double* cost = new double[n];
@@ -346,11 +355,14 @@ void stc_embed_trial( uint n, float* cover_bit_prob0, u8* message, uint stc_cons
         memcpy( stego, cover, n ); // initialize stego array by cover array
         // debugging
         // write_vector_to_file<double>(n, cost, debugging_file);
+        LOGI("stc_embed_trial - embedding the data!");
         try {
             if ( num_msg_bits != 0 ) stc_embed( cover, n, message, num_msg_bits, (void*) cost, true, stego, stc_constraint_height );
             success = true;
         } catch ( stc_exception& e ) {
+            LOGE("Exception in stc_embed_trial");
             if ( e.error_id != 4 ) { // error_id=4 means No solution exists, thus we try to embed with different permutation.
+                LOGE("          No solution exists!");
                 delete[] cost;
                 delete[] cover;
                 throw e;
@@ -358,12 +370,14 @@ void stc_embed_trial( uint n, float* cover_bit_prob0, u8* message, uint stc_cons
             num_msg_bits--; // by decreasing the number of  bits, we change the permutation used to shuffle the bits
             trial++;
             if ( trial > max_trials ) {
+                LOGE("Exception in stc_embed_trial: Maximum number of trials in layered construction exceeded");
                 delete[] cost;
                 delete[] cover;
                 throw stc_exception( "Maximum number of trials in layered construction exceeded.", 6 );
             }
         }
     }
+    LOGI("EXIT stc_embed_trial");
     delete[] cost;
     delete[] cover;
 }
@@ -384,16 +398,19 @@ void check_costs( uint n, uint k, float *costs ) {
         if ( test_nan ) {
             std::stringstream ss;
             ss << "Incorrect cost array." << i << "-th element contains NaN value. This is not a valid cost.";
+            LOGE(ss.str().c_str());
             throw stc_exception( ss.str(), 6 );
         }
         if ( !test_non_inf ) {
             std::stringstream ss;
             ss << "Incorrect cost array." << i << "-th element does not contain any finite cost value. This is not a valid cost.";
+            LOGE(ss.str().c_str());
             throw stc_exception( ss.str(), 6 );
         }
         if ( test_minus_inf ) {
             std::stringstream ss;
             ss << "Incorrect cost array." << i << "-th element contains -Inf value. This is not a valid cost.";
+            LOGE(ss.str().c_str());
             throw stc_exception( ss.str(), 6 );
         }
     }
@@ -414,6 +431,7 @@ float stc_pm1_dls_embed( uint cover_length, int* cover, float* costs, uint messa
         uint stc_constraint_height, float expected_coding_loss, float wet_cost, // other input parameters
         int* stego, uint* num_msg_bits, uint &max_trials, float* coding_loss ) { // output variables
 
+    LOGI("ENTER: stc_pm1_dls_embed");
     check_costs( cover_length, 3, costs );
     float dist = 0;
 
@@ -433,6 +451,8 @@ float stc_pm1_dls_embed( uint cover_length, int* cover, float* costs, uint messa
     // run general 2 layered embedding in distortion limited regime
     dist = stc_ml2_embed( cover_length, costs_ml2, stego_values, message_length, message, target_distortion, stc_constraint_height,
             expected_coding_loss, stego, num_msg_bits, max_trials, coding_loss );
+
+    LOGI("EXIT: stc_pm1_dls_embed");
     delete[] costs_ml2;
     delete[] stego_values;
 
@@ -537,6 +557,7 @@ float stc_ml1_embed( uint cover_length, int* cover, short* direction, float* cos
             success = true;
         } catch ( stc_exception& e ) {
             if ( e.error_id != 4 ) { // error_id=4 means No solution exists, thus we try to embed with different permutation.
+                LOGE("Exception in stc_ml1_embed: No Solution exists");
                 delete[] cost1;
                 delete[] cover1;
                 delete[] stego1;
@@ -547,6 +568,7 @@ float stc_ml1_embed( uint cover_length, int* cover, short* direction, float* cos
             num_msg_bits[0]--; // by decreasing the number of  bits, we change the permutation used to shuffle the bits
             trial++;
             if ( trial > max_trials ) {
+                LOGE("Exception in stc_ml1_embed: Maximum number of trials in layered construction exceeded");
                 delete[] cost1;
                 delete[] cover1;
                 delete[] stego1;
@@ -583,7 +605,8 @@ float stc_ml1_embed( uint cover_length, int* cover, short* direction, float* cos
 float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint message_length, u8* message, float target_distortion, // input variables
         uint stc_constraint_height, float expected_coding_loss, // other input parameters
         int* stego, uint* num_msg_bits, uint &max_trials, float* coding_loss ) { // output and optional variables
-
+    
+    LOGI("ENTER: stc_ml2_embed");
     float distortion, dist_coding_loss, lambda, m_max;
     uint m_actual;
     uint n = cover_length + 4 - (cover_length % 4); // cover length rounded to multiple of 4
@@ -602,6 +625,7 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
         lsb1_only &= ((n_finite_costs <= 2) & (lsb_xor == 1));
     }
     if ( lsb1_only ) { // use stc_ml1_embed method
+        LOGI("stc_ml2_embed: use stc_ml1_embed method");
         distortion = 0;
         int *cover = new int[cover_length];
         short *direction = new short[cover_length];
@@ -633,7 +657,7 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
         return distortion;
     }
 
-    
+    LOGI("stc_ml2_embed: NOT using stc_ml1_embed method");
 //    std::cout << "CANNOT USE stc_ml1_embed method" << std::endl;
     
     // copy and transpose data for faster reading via SSE instructions
@@ -650,12 +674,14 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
         for ( uint j = 0; j < 4; j++ )
             c[j * n + i] -= f_min;
     }
-
+    LOGI("stc_ml2_embed - get_lambda_distortion");
     if ( target_distortion != F_INF ) {
         lambda = get_lambda_distortion( n, 4, c, target_distortion, 2 );
         m_max = (1 - expected_coding_loss) * calc_entropy( n, 4, c, lambda );
         m_actual = std::min( message_length, (uint) floor( m_max ) );
     }
+
+    LOGI("stc_ml2_embed - get_lambda_entropy");
     if ( (target_distortion == F_INF) || (m_actual < floor( m_max )) ) {
         m_actual = std::min( 2 * cover_length, message_length );
         lambda = get_lambda_entropy( n, 4, c, (float)m_actual, 2 );
@@ -682,9 +708,9 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
         }
     }
      */
-    
+    LOGI("stc_ml2_embed - Calculating p = exp(lambda*costs)");
      int bs = 4; // block size
-     float* p = new float [bs * n];
+     float* p = align_new< float > ( bs * n, 16 );
      float* v_lambda = new float[bs];
      //initializeZero(v_lambda, 4);
     
@@ -761,7 +787,8 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
     u8* stego2 = new u8[cover_length];
     uint *perm1 = new uint[cover_length];
     uint *perm2 = new uint[cover_length];
-
+    
+    LOGI("stc_ml2_embed - entering layer 2");
     /* LAYER OF 2ND LSBs */
     for ( uint i = 0; i < cover_length; i++ )
         p20[i] = p[i] + p[i + n]; // p20 = p(1,:)+p(2,:);         % probability of 2nd LSB of stego equal 0
@@ -769,6 +796,7 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
     try {
         stc_embed_trial( cover_length, p20, message, stc_constraint_height, num_msg_bits[1], perm2, stego2, trial, max_trials, "cost2.txt" );
     } catch ( stc_exception& e ) {
+        LOGE("stc_ml2_embed: Exception at stc_embed_trial layer 2 LSB");
         delete[] p10;
         delete[] p20;
         delete[] perm1;
@@ -780,6 +808,8 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
         throw e;
     }
 
+    LOGI("stc_ml2_embed - entering layer 1");
+    
     /* LAYER OF 1ST LSBs */
     for ( uint i = 0; i < cover_length; i++ ) //
         if ( stego2[perm2[i]] == 0 ) // % conditional probability of 1st LSB of stego equal 0 given LSB2=0
@@ -791,6 +821,7 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
         stc_embed_trial( cover_length, p10, message + num_msg_bits[1], stc_constraint_height, num_msg_bits[0], perm1, stego1, trial,
                 max_trials, "cost1.txt" );
     } catch ( stc_exception& e ) {
+        LOGE("stc_ml2_embed: Exception at stc_embed_trial layer 1 LSB");
         delete[] p10;
         delete[] p20;
         delete[] perm1;
@@ -826,7 +857,7 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
     delete[] perm2;
     align_delete< float > ( c );
     align_delete< float > ( p );
-
+    LOGI("EXIT: stc_ml2_embed");
     return distortion;
 }
 
@@ -952,6 +983,7 @@ float stc_ml3_embed( uint cover_length, float* costs, int* stego_values, uint me
     try {
         stc_embed_trial( cover_length, p30, message, stc_constraint_height, num_msg_bits[2], perm3, stego3, trial, max_trials, "cost3.txt" );
     } catch ( stc_exception& e ) {
+        LOGE("Exception in stc_ml3_embed Layer 3- stc_embed_trial failed!!");
         delete[] p10;
         delete[] p20;
         delete[] p30;
@@ -976,6 +1008,7 @@ float stc_ml3_embed( uint cover_length, float* costs, int* stego_values, uint me
         stc_embed_trial( cover_length, p20, message + num_msg_bits[2], stc_constraint_height, num_msg_bits[1], perm2, stego2, trial,
                 max_trials, "cost2.txt" );
     } catch ( stc_exception& e ) {
+        LOGE("Exception in stc_ml3_embed Layer 2- stc_embed_trial failed!!");
         delete[] p10;
         delete[] p20;
         delete[] p30;
@@ -1000,6 +1033,7 @@ float stc_ml3_embed( uint cover_length, float* costs, int* stego_values, uint me
         stc_embed_trial( cover_length, p10, message + num_msg_bits[1] + num_msg_bits[2], stc_constraint_height, num_msg_bits[0], perm1,
                 stego1, trial, max_trials, "cost1.txt" );
     } catch ( stc_exception& e ) {
+        LOGE("Exception in stc_ml3_embed Layer 1- stc_embed_trial failed!!");
         delete[] p10;
         delete[] p20;
         delete[] p30;

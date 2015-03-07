@@ -5,12 +5,6 @@
 #include <vector>
 #include <iomanip>
 
-#include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random/mersenne_twister.hpp>
-
 #include "image.h"
 #include "mi_embedder.h"
 #include "cost_model_config.h"
@@ -19,8 +13,6 @@
 #include "mat2D.h"
 
 typedef unsigned int uint;
-namespace fs = boost::filesystem;
-namespace po = boost::program_options;
 
 void Save_Image(std::string imagePath, mat2D<int>* I);
 mat2D<int> * Load_Image(std::string imagePath, cost_model_config *config);
@@ -50,19 +42,19 @@ void gen_random(char *s, const int len) {
 int HUGO_like(int * img, int width, int height, char * password)
 {
     try {
-        float payload = 0.4;
-        bool verbose = false;
-        unsigned int stc_constr_height = 10;
-        float gamma = 2;
-        float sigma = 0.5;
-        int randSeed = 100;
+        float payload = 0.1;
+        bool verbose = true;
+        unsigned int stc_constr_height = 7;
+        float gamma = 1;
+        float sigma = 1;
+        int randSeed = 0;
         
         clock_t begin=clock();
-        int len = 12;
+        int len = 100;
         char* msg;
-        if (password == NULL) {
+        if (true || password == NULL) {
             msg = new char[len];
-            gen_random(msg, len);
+            gen_random(msg, len-1);
         }
         else {
             len = strlen(password);
@@ -109,64 +101,35 @@ mat2D<int> * Mat2dFromImage(int* img, int width, int height)
     // move the image into a mat2D class
     mat2D<int> *I = new mat2D<int>(height, width);
     for (int r=0; r<height; r++)
-        for (int c=0; c<width; c++)
-            I->Write(r, c, img[c*I->rows+r]);
+        for (int c=0; c<width; c++) {
+            int pix = rand()%126;
+            //std::cout << pix << " " ;
+            I->Write(r, c, pix/*(int)img->pixels[c*I->rows+r]*/);
+        }
+           // I->Write(r, c, img[c*I->rows+r]);
     
     return I;
 }
     
 int main(int argc, char** argv)
 {
+    //HUGO_like(NULL, 200, 200, NULL);
+    //return 0;
 	try { 
 		std::string iDir, oDir;
-		float payload;
-		bool verbose = false;
-		unsigned int stc_constr_height = 0;
-		float gamma;
-		float sigma;
-		int randSeed;
-
-		po::variables_map vm;
-		std::vector< std::string > images;
-
-        po::options_description desc("Allowed options");
-        desc.add_options()
-            ("help", "produce help message")
-            ("input-dir,I",				po::value<std::string>(&iDir),									"directory with the cover images")
-            ("images,i",				po::value<std::vector<std::string> >(&images),					"list of cover images")
-			("output-dir,O",			po::value<std::string>(&oDir),									"directory to output stego images")
-            ("payload,a",				po::value<float>(&payload),										"payload to embed in bits per non-zero AC DCT coefficient")
-			("verbose,v",				po::bool_switch(&verbose),										"print out verbose messages")
-		    ("gamma,g",					po::value<float>(&gamma)->default_value(1),						"gamma parameter (default = 1)")
-			("sigma,s",					po::value<float>(&sigma)->default_value(1),						"sigma parameter (default = 1)")
-			("STC-height,h",			po::value<unsigned int>(&stc_constr_height)->default_value(0),	"0=simulate emb. on bound, >0 constraint height of STC, try 7-12")
-			("random-seed,r",			po::value<int>(&randSeed)->default_value(0),					"default=0 (every time different)")
-            ;
-
-        po::positional_options_description p;
-
-        po::store(po::command_line_parser(argc,argv).options(desc).positional(p).run(), vm);
-        po::notify(vm);
-
-        if (vm.count("help"))  { printInfo(); std::cout << desc << "\n"; return 1; }
-        if (!vm.count("output-dir")){ std::cout << "'output-dir' is required.\n" << desc << "\n"; return 1; }
-		else if (!fs::is_directory(fs::path(oDir))) { std::cout << "'output-dir' must be an existing directory.\n" << desc << "\n"; return 1; }
-		if (payload<=0){ std::cout << "'payload' must be larger than 0.\n" << desc << "\n"; return 1; }
-
-		// add all pgm files from the input directory to the vector
-		fs::directory_iterator end_itr; // default construction yields past-the-end
-		if (vm.count("input-dir"))
-		{
-			for ( fs::directory_iterator itr(iDir); itr!=end_itr; ++itr ) 
-			{
-				if ( (!fs::is_directory(itr->status())) && (itr->path().extension()==".pgm") )
-					images.push_back(itr->path().string());
-            }
-		}
+        float payload = 0.04;
+        bool verbose = true;
+        unsigned int stc_constr_height = 7;
+        float gamma = 2;
+        float sigma = 0.5;
+        int randSeed = 0;
+        
+        int width = 512;
+        int height = 512;
 
         if (verbose) {
             std::cout << "# HUGO_like DISTORTION EMBEDDING SIMULATOR" << std::endl;
-			if (vm.count("input-dir")) std::cout << "# input directory = " << iDir << std::endl;
+//			if (vm.count("input-dir")) std::cout << "# input directory = " << iDir << std::endl;
             std::cout << "# output directory = " << oDir << std::endl;
             std::cout << "# running payload-limited sender with alpha = " << payload << std::endl;
             if (stc_constr_height==0)
@@ -181,23 +144,18 @@ int main(int argc, char** argv)
         }
 
 		clock_t begin=clock();
-        int len = 12;
+        int len = 100;
         char* msg = new char[len];
         gen_random(msg, len);
-        //std::string message(msg);
-        std::string message = "1234567890";
+        std::string message(msg);
+//        std::string message = "1234567890";
         
 		cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stc_constr_height, randSeed, message);
 
-		for (int imageIndex=0; imageIndex<(int)images.size(); imageIndex++)
-		{
-            fs::path coverPath(images[imageIndex]);
-            fs::path stegoPath(fs::path(oDir) / fs::path(images[imageIndex]).filename());
+        // Load cover
+//			mat2D<int> *cover = Load_Image(images[imageIndex], config);
+            mat2D<int> *cover = Mat2dFromImage(NULL, width, height);
 
-			if (verbose) std::cout << std::left << std::setw( 15 ) << coverPath.filename().string() << std::left << std::setw( 15 ) << randSeed;
-
-			// Load cover
-			mat2D<int> *cover = Load_Image(images[imageIndex], config);
             if ( verbose ) std::cout << std::right << std::setw( 4 ) << cover->cols << "x" << std::left << std::setw( 10 )
                     << cover->rows << std::flush;
 
@@ -211,7 +169,7 @@ int main(int argc, char** argv)
 			delete model;
 
 			// Save stego
-			Save_Image(stegoPath.string(), stego);
+			//Save_Image(stegoPath.string(), stego);
 
 			if (verbose)
 			{
@@ -226,9 +184,8 @@ int main(int argc, char** argv)
 
 			delete cover;
 			delete stego;
-		}
+		
 		delete config;
-		images.clear();
 
 		clock_t end=clock();
 		if(config->verbose) std::cout << std::endl << "Time elapsed: " << double(((double)end-begin)/CLOCKS_PER_SEC) << " s"<< std::endl;
@@ -253,10 +210,14 @@ mat2D<int> * Load_Image(std::string imagePath, cost_model_config *config)
         throw exception("File '" + imagePath + "' is in unknown format, we support grayscale 8bit pgm.");
 		
 	// move the image into a mat2D class
-	mat2D<int> *I = new mat2D<int>(img->height, img->width);
-	for (int r=0; r<I->rows; r++)
-		for (int c=0; c<I->cols; c++)
-			I->Write(r, c, (int)img->pixels[c*I->rows+r]);
+	mat2D<int> *I = new mat2D<int>(img->height-312, img->width-312);
+    for (int r=0; r<I->rows; r++) {
+        for (int c=0; c<I->cols; c++) {
+            int pix = rand()%100;
+            //std::cout << pix << " " ;
+			I->Write(r, c, pix/*(int)img->pixels[c*I->rows+r]*/);
+        }
+    }
 	delete img;
 
 	return I;

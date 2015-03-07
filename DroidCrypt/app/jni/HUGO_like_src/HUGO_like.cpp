@@ -19,7 +19,7 @@
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-mat2D<int> * Mat2dFromImage(int* img, int width, int height);
+mat2D<int> * Mat2dFromImage(unsigned char* img, int width, int height);
 
 void gen_random(char *s, const int len) {
     static const char alphanum[] =
@@ -34,20 +34,20 @@ void gen_random(char *s, const int len) {
     s[len] = 0;
 }
 
-int HUGO_like(int * img, int width, int height, char * password)
+int HUGO_like(unsigned char * img, int width, int height, char * password)
 {
     try {
         float payload = 0.4;
         bool verbose = false;
-        unsigned int stc_constr_height = 10;
+        unsigned int stc_constr_height = 7;
         float gamma = 2;
         float sigma = 0.5;
-        int randSeed = 100;
+        int randSeed = 0;
         
         clock_t begin=clock();
-        int len = 12;
+        int len = 80;
         char* msg;
-        if (password == NULL) {
+        if (true || password == NULL) {
             msg = new char[len];
             gen_random(msg, len);
         }
@@ -93,13 +93,17 @@ int HUGO_like(int * img, int width, int height, char * password)
     return 0;
 }
     
-mat2D<int> * Mat2dFromImage(int* img, int width, int height)
+mat2D<int> * Mat2dFromImage(unsigned char* img, int width, int height)
 {
     // move the image into a mat2D class
     mat2D<int> *I = new mat2D<int>(height, width);
     for (int r=0; r<height; r++)
-        for (int c=0; c<width; c++)
-            I->Write(r, c, img[c*I->rows+r]);
+        for (int c=0; c<width; c++)  {
+            int pix = rand()%100;
+            //LOGI("%d", pix);
+            //std::cout << pix << " " ;
+            I->Write(r, c, pix/*(int)img[c*I->rows+r]*/);
+        }
     
     return I;
 }

@@ -16,3 +16,7 @@ To Build:
 
 export PATH=$PATH:/Users/dkmiyani/Documents/MyProject/adt-bundle-mac-x86_64-20140702/android-ndk-r10d
 $ ndk-build
+
+
+——
+^(?!.*(nativeGetEnabledTags)).*$

@@ -87,7 +87,7 @@ JNIEXPORT void JNICALL Java_com_droidcrypt_Embedder_embed
    // use your string
     LOGI(password);
 
-    int returnFromHugo = HUGO_like((int *)pixels, width, height, (char *)password);
+    int returnFromHugo = HUGO_like(pixels, width, height, (char *)password);
 
    (env)->ReleaseStringUTFChars(msg, password);
 
