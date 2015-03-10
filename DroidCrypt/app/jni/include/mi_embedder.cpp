@@ -146,6 +146,7 @@ float mi_emb_calculate_lambda_from_payload(base_cost_model* m, float rel_payload
     return lambda2;
 }
 
+/*
 mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed, uint stc_constr_height, uint stc_max_trails, float &distortion,
         float &alpha_out, float &coding_loss, uint &stc_trials_used) 
 
@@ -165,7 +166,6 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
         }
     }
 
-//
     //    uint message_length = (uint) floor( alpha * n );
     uint message_length = (uint) m->config->message.length();
     unsigned char *message = new unsigned char[message_length+1];
@@ -254,4 +254,108 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
     delete[] num_msg_bits;
 
     return stego;
+}
+*/
+
+
+mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed, uint stc_constr_height, uint stc_max_trails, float &distortion,
+                                     float &alpha_out, float &coding_loss, uint &stc_trials_used)
+{
+    distortion = 0;
+    uint n = m->rows * m->cols;
+    unsigned char *stego_pixels = new unsigned char[n];
+    
+    int *cover_px = new int[n];
+    int *stego_px = new int[n];
+    
+    for ( int i = 0; i < m->rows; i++ )
+    {
+        for ( int j = 0; j < m->cols; j++ )
+        {
+            cover_px[i * m->cols + j] = m->cover->Read(i, j);
+        }
+    }
+    
+    //
+    //    uint message_length = (uint) floor( alpha * n );
+    uint message_length = (uint) m->config->message.length();
+    unsigned char *message = new unsigned char[message_length+1];
+    std::string msg = m->config->message;
+    memcpy(message, msg.data(), message_length);
+    message[message_length] = 0;
+    uint i=0;
+    for (i = 0; i < message_length; i++ ) // generate random message
+        message[i] = rand()&0x01; //reinterpret_cast<unsigned char&>(msg[i]); //rng() % 2;
+    message[i] = 0;
+    m->config->message.assign(reinterpret_cast<char *>(message), message_length);
+    stc_trials_used = stc_max_trails;
+    uint *num_msg_bits = m->num_bits_used; //new uint[2]; // this array contains number of bits embedded into first and second layer
+    
+    try
+    {
+        distortion = stc_pm1_pls_embed( n, cover_px, m->costs, message_length, message, stc_constr_height, F_INF, stego_px, num_msg_bits,
+                                       stc_trials_used, &coding_loss );
+    }
+    catch (...)
+    {
+        LOGE("ERROR stc_pm1_pls_embed exception");
+        std::cout << "ERROR stc_pm1_pls_embed exception" << std::endl;
+        num_msg_bits[0] = 0;
+        num_msg_bits[1] = 0;
+        distortion = 0;
+        coding_loss = 0;
+    }
+
+    LOGI("____Password MATCHED !! ____");
+    
+    if ( num_msg_bits[0] + num_msg_bits[1] > 0 ) {
+        for ( uint i = 0; i < n; i++ )
+            stego_pixels[i] = stego_px[i];
+    } else {
+        for ( uint i = 0; i < n; i++ )
+            stego_pixels[i] = cover_px[i];
+    }
+    
+    mat2D<int>* stego = new mat2D<int>(m->rows, m->cols);
+    for ( int i = 0; i < m->rows; i++ )
+    {
+        for ( int j = 0; j < m->cols; j++ )
+        {
+            stego->Write(i, j, stego_pixels[i*m->cols+j]);
+        }
+    }
+    alpha_out = (float) (num_msg_bits[0] + num_msg_bits[1]) / (float) n;
+    
+    delete[] stego_pixels;
+    delete[] cover_px;
+    delete[] stego_px;
+    delete[] message;
+    //delete[] extracted_message;
+    //delete[] num_msg_bits;
+    
+    return stego;
+}
+
+/*
+    This funtion returns the embedded message inside a given image
+ */
+unsigned char * mi_extract_message(int *stego_px, int rows, int cols, int num_layers, uint *num_msg_bits, int stc_constr_height)
+{
+    unsigned int n = rows*cols;
+    int message_length = 0;
+    
+    for (int i=0; i<num_layers; i++) {
+        message_length += num_msg_bits[i];
+    }
+    
+    // check that the embedded message can be extracted
+    // extract message from 'stego_array' into 'extracted_message' and use STCs with constr. height h
+    unsigned char *extracted_message = new unsigned char[message_length];
+    stc_ml_extract( n, stego_px, num_layers, num_msg_bits, stc_constr_height, extracted_message);
+    for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
+        printf("%x", extracted_message[k]);
+        //LOGI("%x", extracted_message[k]);
+    }
+    return extracted_message;
+    
 }

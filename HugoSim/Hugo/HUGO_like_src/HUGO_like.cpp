@@ -117,15 +117,15 @@ int main(int argc, char** argv)
     //return 0;
 	try { 
 		std::string iDir, oDir;
-        float payload = 0.04;
+        float payload = 0.4;
         bool verbose = true;
         unsigned int stc_constr_height = 7;
         float gamma = 2;
         float sigma = 0.5;
         int randSeed = 0;
         
-        int width = 512;
-        int height = 512;
+        int width = 200;
+        int height = 200;
 
         if (verbose) {
             std::cout << "# HUGO_like DISTORTION EMBEDDING SIMULATOR" << std::endl;
@@ -165,13 +165,33 @@ int main(int argc, char** argv)
 			float alpha_out, coding_loss_out = 0, distortion = 0;
 			unsigned int stc_trials_used = 0;
 			mat2D<int> * stego = model->Embed(alpha_out, coding_loss_out, stc_trials_used, distortion);
-
-			delete model;
+        
+            // get all the necessary information
+            uint *num_msg_bits = model->num_bits_used;
+            int* stego_px = new int[stego->rows*stego->cols];
+            for ( int i = 0; i < stego->rows; i++ )
+            {
+                for ( int j = 0; j < stego->cols; j++ )
+                {
+                    stego_px[i * stego->cols + j] = stego->Read(i, j);
+                }
+            }
+        
+            // Extracting the message from the stego image
+            unsigned char *extracted_message = base_cost_model::Extract(stego_px, stego->cols, stego->rows, num_msg_bits, stc_constr_height);
+			
+            // verify if the embedded message the same as the extracted one!
+            bool isSame = base_cost_model::Verify((unsigned char *)(config->message.data()), extracted_message, num_msg_bits);
+            if (!isSame) {
+                // error message that the message is not the same!
+            }
+        
+            delete model;
 
 			// Save stego
 			//Save_Image(stegoPath.string(), stego);
 
-			if (verbose)
+			if (true)
 			{
 				std::cout	<< std::left << std::setw( 17 ) << alpha_out
 							<< std::left << std::setw( 17 ) << distortion / (cover->cols * cover->rows);

@@ -45,9 +45,9 @@ int HUGO_like(unsigned char * img, int width, int height, char * password)
         int randSeed = 0;
         
         clock_t begin=clock();
-        int len = 80;
+        int len = 10;
         char* msg;
-        if (true || password == NULL) {
+        if (password == NULL) {
             msg = new char[len];
             gen_random(msg, len);
         }
@@ -69,6 +69,28 @@ int HUGO_like(unsigned char * img, int width, int height, char * password)
         unsigned int stc_trials_used = 0;
         mat2D<int> * stego = model->Embed(alpha_out, coding_loss_out, stc_trials_used, distortion);
         
+        // get all the necessary information
+        uint *num_msg_bits = model->num_bits_used;
+        int* stego_px = new int[stego->rows*stego->cols];
+        for ( int i = 0; i < stego->rows; i++ )
+        {
+            for ( int j = 0; j < stego->cols; j++ )
+            {
+                stego_px[i * stego->cols + j] = stego->Read(i, j);
+            }
+        }
+    
+        // Extracting the message from the stego image
+        unsigned char *extracted_message = base_cost_model::Extract(stego_px, stego->cols, stego->rows, num_msg_bits, stc_constr_height);
+        
+        // verify if the embedded message the same as the extracted one!
+        bool isSame = base_cost_model::Verify((unsigned char *)(config->message.data()), extracted_message, num_msg_bits);
+        if (!isSame) {
+            // error message that the message is not the same!
+            LOGE("Error: Embedded Message and Extracted message are not the same!");
+        }
+    
+
         delete model;
         
         delete cover;
@@ -100,12 +122,22 @@ mat2D<int> * Mat2dFromImage(unsigned char* img, int width, int height)
     for (int r=0; r<height; r++)
         for (int c=0; c<width; c++)  {
             int pix = rand()%100;
+            unsigned char pixByte = img[r*I->rows+c];
             //LOGI("%d", pix);
             //std::cout << pix << " " ;
-            I->Write(r, c, pix/*(int)img[c*I->rows+r]*/);
+            I->Write(r, c, (int)pix);
         }
     
     return I;
+}
+
+void mat2dToImage(mat2D<int>*src, unsigned char* img, int width, int height)
+{
+    for(int r=0; r<height; r++) {
+        for(int c=0; c<width; c++) {
+            img[r*width+c] = (unsigned char) src->Read(r, c);
+        }
+    }
 }
 
 mat2D<int> * Load_Image(std::string imagePath, cost_model_config *config)

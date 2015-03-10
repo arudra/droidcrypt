@@ -14,5 +14,6 @@ mat2D<int>* mi_emb_simulate_pls_embedding(base_cost_model *m, float alpha, uint 
 mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model *m, float alpha, uint seed, uint stc_constr_height, uint stc_max_trails, float &distortion, float &alpha_out, float &coding_loss_out, uint &stc_trials_used);
 float mi_emb_calculate_lambda_from_payload(base_cost_model *m, float rel_payload, float lambda_init, float &alpha_out);
 float mi_emb_calc_average_payload(base_cost_model *m, float lambda);
+unsigned char * mi_extract_message(int *stego_px, int rows, int cols, int num_layers, uint *num_msg_bits, int stc_constr_height);
 
 #endif // MI_EMBEDDER_H_

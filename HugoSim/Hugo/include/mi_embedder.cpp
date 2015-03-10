@@ -147,7 +147,6 @@ float mi_emb_calculate_lambda_from_payload(base_cost_model* m, float rel_payload
 
 mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed, uint stc_constr_height, uint stc_max_trails, float &distortion,
                                      float &alpha_out, float &coding_loss, uint &stc_trials_used)
-
 {
     distortion = 0;
     uint n = m->rows * m->cols;
@@ -175,9 +174,9 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
     for (i = 0; i < message_length; i++ ) // generate random message
         message[i] = rand()&0x01; //reinterpret_cast<unsigned char&>(msg[i]); //rng() % 2;
     message[i] = 0;
-    
+    m->config->message.assign(reinterpret_cast<char *>(message), message_length);
     stc_trials_used = stc_max_trails;
-    uint *num_msg_bits = new uint[2]; // this array contains number of bits embedded into first and second layer
+    uint *num_msg_bits = m->num_bits_used; //new uint[2]; // this array contains number of bits embedded into first and second layer
     
     try
     {
@@ -193,7 +192,7 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
         distortion = 0;
         coding_loss = 0;
     }
-    
+    /*
     // check that the embedded message can be extracted
     // extract message from 'stego_array' into 'extracted_message' and use STCs with constr. height h
     unsigned char *extracted_message = new unsigned char[message_length];
@@ -224,7 +223,7 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
             throw exception( "ML_STC_ERROR: Extracted message differs in bit " );
         }
     }
-    
+    */
     //LOGI("____Password MATCHED !! ____");
     
     if ( num_msg_bits[0] + num_msg_bits[1] > 0 ) {
@@ -249,8 +248,33 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
     delete[] cover_px;
     delete[] stego_px;
     delete[] message;
-    delete[] extracted_message;
-    delete[] num_msg_bits;
+    //delete[] extracted_message;
+    //delete[] num_msg_bits;
     
     return stego;
 }
+
+/*
+    This funtion returns the embedded message inside a given image
+ */
+unsigned char * mi_extract_message(int *stego_px, int rows, int cols, int num_layers, uint *num_msg_bits, int stc_constr_height)
+{
+    unsigned int n = rows*cols;
+    int message_length = 0;
+    
+    for (int i=0; i<num_layers; i++) {
+        message_length += num_msg_bits[i];
+    }
+    
+    // check that the embedded message can be extracted
+    // extract message from 'stego_array' into 'extracted_message' and use STCs with constr. height h
+    unsigned char *extracted_message = new unsigned char[message_length];
+    stc_ml_extract( n, stego_px, num_layers, num_msg_bits, stc_constr_height, extracted_message);
+    for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
+        printf("%x", extracted_message[k]);
+        //LOGI("%x", extracted_message[k]);
+    }
+    return extracted_message;
+    
+}
+
