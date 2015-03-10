@@ -67,7 +67,7 @@ public class mainActivity extends ActionBarActivity {
             originalImage.setImageBitmap(hugo.origImage);
             tag = 1;
         } else {
-            originalImage.setImageBitmap(hugo.grayImage);
+            originalImage.setImageBitmap(hugo.convertColorHSVColor(hugo.origImage));
             tag = 0;
         }
         v.setTag(tag);
@@ -102,7 +102,7 @@ public class mainActivity extends ActionBarActivity {
 
             //this method will be running on UI thread
             originalImage.setImageBitmap(hugo.origImage);
-            newImage.setImageBitmap(hugo.grayImage);
+            newImage.setImageBitmap(hugo.convertColorHSVColor(hugo.origImage));
             pdLoading.dismiss();
 
         }

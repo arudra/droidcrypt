@@ -20,6 +20,7 @@
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 mat2D<int> * Mat2dFromImage(unsigned char* img, int width, int height);
+void Mat2dToImage(int *src, unsigned char* img, int width, int height);
 
 void gen_random(char *s, const int len) {
     static const char alphanum[] =
@@ -37,7 +38,7 @@ void gen_random(char *s, const int len) {
 int HUGO_like(unsigned char * img, int width, int height, char * password)
 {
     try {
-        float payload = 0.4;
+        float payload = 0.1;
         bool verbose = false;
         unsigned int stc_constr_height = 7;
         float gamma = 2;
@@ -76,7 +77,8 @@ int HUGO_like(unsigned char * img, int width, int height, char * password)
         {
             for ( int j = 0; j < stego->cols; j++ )
             {
-                stego_px[i * stego->cols + j] = stego->Read(i, j);
+                float tmpValue = (float)stego->Read(i, j)*126;
+                stego_px[i * stego->cols + j] = (int)(tmpValue/126.0f);
             }
         }
     
@@ -89,6 +91,8 @@ int HUGO_like(unsigned char * img, int width, int height, char * password)
             // error message that the message is not the same!
             LOGE("Error: Embedded Message and Extracted message are not the same!");
         }
+
+        Mat2dToImage(stego_px, img, width, height);
     
 
         delete model;
@@ -125,18 +129,17 @@ mat2D<int> * Mat2dFromImage(unsigned char* img, int width, int height)
             unsigned char pixByte = img[r*I->rows+c];
             //LOGI("%d", pix);
             //std::cout << pix << " " ;
-            I->Write(r, c, (int)pix);
+            I->Write(r, c, (int)pixByte);
         }
     
     return I;
 }
 
-void mat2dToImage(mat2D<int>*src, unsigned char* img, int width, int height)
+void Mat2dToImage(int *src, unsigned char* img, int width, int height)
 {
-    for(int r=0; r<height; r++) {
-        for(int c=0; c<width; c++) {
-            img[r*width+c] = (unsigned char) src->Read(r, c);
-        }
+    int totalPixel = width*height;
+    for(int r=0; r<totalPixel; r++) {
+        img[r] = (unsigned char) src[r];
     }
 }
 

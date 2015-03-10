@@ -306,8 +306,6 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
         coding_loss = 0;
     }
 
-    LOGI("____Password MATCHED !! ____");
-    
     if ( num_msg_bits[0] + num_msg_bits[1] > 0 ) {
         for ( uint i = 0; i < n; i++ )
             stego_pixels[i] = stego_px[i];

@@ -48,7 +48,7 @@ unsigned char* as_unsigned_char_array(JNIEnv * env, jbyteArray array) {
     return buf;
 }
 
-JNIEXPORT void JNICALL Java_com_droidcrypt_Embedder_embed
+JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
 (JNIEnv * env, jclass  obj, jbyteArray bitmap,  jint jwidth, jint jheight, jstring  msg)
 {
     //AndroidBitmapInfo  info;
@@ -93,5 +93,7 @@ JNIEXPORT void JNICALL Java_com_droidcrypt_Embedder_embed
 
     //AndroidBitmap_unlockPixels(env, bitmap);
 
+   bitmap = as_byte_array(env, pixels, width*height);
+   return bitmap;
 
 }

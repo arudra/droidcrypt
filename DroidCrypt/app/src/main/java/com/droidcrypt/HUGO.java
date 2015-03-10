@@ -43,7 +43,7 @@ public class HUGO
     {
         grayArray = toGrayscale(origImage);
         //grayArray = bitmapToByteArray(origImage);
-        e.embed(grayArray, origImage.getWidth(), origImage.getHeight(), "123456789012345");
+        grayArray = e.embed(grayArray, origImage.getWidth(), origImage.getHeight(), "123450194916834p9813t4bp9odgia");
         grayImage = convertColorHSVColor(origImage);
     }
 
@@ -99,7 +99,7 @@ public class HUGO
     */
 
     //Convert Bitmap from Color to HSV, then HSV to Color
-    private Bitmap convertColorHSVColor(Bitmap src){
+    public Bitmap convertColorHSVColor(Bitmap src){
 
         int w = src.getWidth();
         int h = src.getHeight();
@@ -118,7 +118,7 @@ public class HUGO
                 Color.colorToHSV(mapSrcColor[index], pixelHSV);
                 //int value = (int)(pixelHSV[2]*255);
                 //int pixelValue = (0xFF << 24) | (value << 16) | (value << 8) | value;
-                pixelHSV[2] = ((float)grayArray[index])/100.0f;
+                pixelHSV[2] = ((float)grayArray[index])/126.0f;
                 //Convert back from HSV to Color
                 mapDestColor[index] = Color.HSVToColor(pixelHSV);
 
@@ -176,7 +176,7 @@ public class HUGO
 //                else if (grayColor > 126) grayColor = 126;
 //                grayColor = rn.nextInt(100);
                 Color.colorToHSV(mapSrcColor[count], pixelHSV);
-                int grayColor = (int)(pixelHSV[2]*100);
+                int grayColor = (int)(pixelHSV[2]*126);
 
                 image[count++] = (byte)grayColor;
             }
