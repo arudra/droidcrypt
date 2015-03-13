@@ -2,7 +2,13 @@
 <resources>
 
     <string name="app_name">DroidCrypt</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="toggle">Toggle Image</string>
     <string name="action_settings">Settings</string>
+    <string name="embed">Embed</string>
+    <string name="extract">Extract</string>
+    <string name="settings">Settings</string>
+    <string name="account">Enter Account Name</string>
+    <string name="pass">Enter password</string>
+    <string name="image">Select Image</string>
 
 </resources>

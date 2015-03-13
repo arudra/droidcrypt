@@ -1,6 +1,8 @@
 package com.droidcrypt;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -11,26 +13,44 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
+
+import java.io.InputStream;
 
 
 public class mainActivity extends ActionBarActivity {
 
+    /*
     private AsyncCaller async;
     private HUGO hugo;
     private ImageView originalImage;
     private ImageView newImage;
+    */
+
+    private String name;
+    private String pass;
+    private static final int REQUEST_CODE = 1;
+    private Bitmap bitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        main MainFragment = new main();
+        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, MainFragment).commit();
+
+        /*
         async = new AsyncCaller();
         async.execute();
         originalImage = (ImageView)findViewById(R.id.imageView);
         newImage = (ImageView)findViewById(R.id.imageView2);
         Button toggle = (Button) findViewById(R.id.btn_toggle);
-        toggle.setTag(Integer.valueOf(0));
+        toggle.setTag(Integer.valueOf(0)); */
     }
 
     @Override
@@ -54,11 +74,73 @@ public class mainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    /* Buttons Clicked */
+    public void onClickEmbed (View view)
+    {
+        Embed fragment = new Embed();
+        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment).commit();
+    }
+
+    public void onClickImage (View view)
+    {
+        //Read account + password input (new fragment)
+        name = ((EditText)findViewById(R.id.account)).getText().toString();
+        pass = ((EditText)findViewById(R.id.password)).getText().toString();
+
+        findViewById(R.id.account).setVisibility(View.INVISIBLE);
+        findViewById(R.id.password).setVisibility(View.INVISIBLE);
+
+        Button button = (Button)findViewById(R.id.Image);
+        button.setVisibility(View.INVISIBLE);
+
+        //Send intent to Gallery
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK)
+        {
+            try {
+                if (bitmap!=null)
+                    bitmap.recycle();
+
+                InputStream stream = getContentResolver().openInputStream(data.getData());
+                bitmap = BitmapFactory.decodeStream(stream);
+                stream.close();
+
+                ImageView view = (ImageView)findViewById(R.id.display);
+                view.setImageBitmap(bitmap);
+                view.setVisibility(View.VISIBLE);
+
+                TextView textView = (TextView)findViewById(R.id.info);
+                textView.setText("Account: " + name + " Password: " + pass);
+                textView.setVisibility(View.VISIBLE);
+
+            } catch (Exception e) { e.printStackTrace(); }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void onClickExtract (View view)
+    {
+
+    }
+
+
+    /*
     @Override
      public void onDestroy() {
         super.onDestroy();
-        async.pdLoading.dismiss();
-        async = null;
+        //async.pdLoading.dismiss();
+        //async = null;
     }
 
     public void onClick_btnToggle(View v) {
@@ -72,6 +154,7 @@ public class mainActivity extends ActionBarActivity {
         }
         v.setTag(tag);
     }
+
 
     private class AsyncCaller extends AsyncTask<Void, Void, Void>
     {
@@ -107,5 +190,5 @@ public class mainActivity extends ActionBarActivity {
 
         }
 
-    }
+    } */
 }
