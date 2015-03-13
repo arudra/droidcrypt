@@ -278,16 +278,29 @@ mat2D<int>* mi_emb_stc_pls_embedding(base_cost_model* m, float alpha, uint seed,
     
     //
     //    uint message_length = (uint) floor( alpha * n );
-    uint message_length = (uint) m->config->message.length();
-    unsigned char *message = new unsigned char[message_length+1];
+    
+    //uint message_length = (uint) m->config->message.length();
+    uint message_length = m->config->length;
+    u8* tmp = m->config->embedMsg;
+    unsigned char *message = new unsigned char[message_length];
     std::string msg = m->config->message;
     memcpy(message, msg.data(), message_length);
     message[message_length] = 0;
     uint i=0;
+    //LOGI("Embed - %s", (char *)msg.data());
     for (i = 0; i < message_length; i++ ) // generate random message
-        message[i] = rand()&0x01; //reinterpret_cast<unsigned char&>(msg[i]); //rng() % 2;
-    message[i] = 0;
+        message[i] = tmp[i]; //rand()&0x01; //
     m->config->message.assign(reinterpret_cast<char *>(message), message_length);
+    
+    /*
+    unsigned char *message = m->config->embedMsg;
+    uint message_length = m->config->length;
+
+    LOGI("MiEmbedder - message_length = %d", message_length);
+    for (int l=0; l<message_length; l++) {
+        LOGI("__ %d", (int)message[l]);
+    }
+    */
     stc_trials_used = stc_max_trails;
     uint *num_msg_bits = m->num_bits_used; //new uint[2]; // this array contains number of bits embedded into first and second layer
     

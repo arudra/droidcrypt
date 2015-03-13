@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Random;
@@ -41,9 +42,25 @@ public class HUGO
 
     public void testNdkCall()
     {
+        int[] num_bits_used = new int[2];     // output
+        num_bits_used[0] = 2;
+        num_bits_used[1] = 2;
         grayArray = toGrayscale(origImage);
         //grayArray = bitmapToByteArray(origImage);
-        grayArray = e.embed(grayArray, origImage.getWidth(), origImage.getHeight(), "123450194916834p9813t4bp9odgia");
+        long startTime = System.currentTimeMillis();
+        try {
+            grayArray = e.embed(grayArray, origImage.getWidth(), origImage.getHeight(),
+                    "abcdef09", num_bits_used);
+            long endEmbed = System.currentTimeMillis();
+            String oPass = e.extract(grayArray, origImage.getWidth(), origImage.getHeight(), num_bits_used, 7);
+            long endExtract = System.currentTimeMillis();
+            Log.d("HUGO", "Num_bits_used to embeded the text = " + num_bits_used[0] + " - " + num_bits_used[1]);
+            Log.d("HUGO", "Password extracted  :  " + oPass);
+            Log.d("HUGO", "TIME Embed: " + (endEmbed - startTime) / 1000.f + "s  Extract: " + (endExtract - endEmbed) / 1000.f + "s");
+        } catch (Exception e) {
+            Log.e("HUGO", "Exception in embedder lib : " + e.getMessage());
+            e.printStackTrace();
+        }
         grayImage = convertColorHSVColor(origImage);
     }
 

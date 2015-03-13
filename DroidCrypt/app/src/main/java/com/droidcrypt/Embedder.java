@@ -15,6 +15,7 @@ public class Embedder {
     }
 
     /* NDK interface function, implemented by libembeder.so */
-    public static native byte[] embed(byte[] bitmap, int width, int height, String password);
+    public static native byte[] embed(byte[] bitmap, int width, int height, String password, int[] num_bits_used);
+    public static native String extract(byte[] bitmap, int width, int height, int[] num_bits_used, int stc_constr_height);
 
 }

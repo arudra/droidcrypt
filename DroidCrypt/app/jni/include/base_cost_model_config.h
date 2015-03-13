@@ -11,6 +11,8 @@ public:
 	unsigned int stc_constr_height;
 	int randSeed;
     std::string message;
+    unsigned char * embedMsg;
+    uint length;
     
 	base_cost_model_config(float payload, bool verbose, unsigned int stc_constr_height, int randSeed, std::string message);
 	~base_cost_model_config();

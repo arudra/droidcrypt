@@ -25,6 +25,7 @@ base_cost_model::base_cost_model(mat2D<int>* cover, base_cost_model_config *conf
 
 base_cost_model::~base_cost_model()
 {
+    //delete this->num_bits_used;
     delete this->costs;
 }
 

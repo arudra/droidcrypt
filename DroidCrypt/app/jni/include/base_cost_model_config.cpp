@@ -7,6 +7,8 @@ base_cost_model_config::base_cost_model_config(float payload, bool verbose, unsi
 	this->stc_constr_height = stc_constr_height;
 	this->randSeed = randSeed;
     this->message = message;
+    this->embedMsg = NULL;
+    this->length = 0;
 }
 
 base_cost_model_config::~base_cost_model_config()
