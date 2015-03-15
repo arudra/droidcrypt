@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,8 +32,6 @@ public class mainActivity extends ActionBarActivity {
     private ImageView newImage;
     */
 
-    private String name;
-    private String pass;
     private static final int REQUEST_CODE = 1;
     private Bitmap bitmap;
 
@@ -80,20 +79,19 @@ public class mainActivity extends ActionBarActivity {
     public void onClickEmbed (View view)
     {
         Embed fragment = new Embed();
-        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
     }
 
     public void onClickImage (View view)
     {
         //Read account + password input (new fragment)
-        name = ((EditText)findViewById(R.id.account)).getText().toString();
-        pass = ((EditText)findViewById(R.id.password)).getText().toString();
+        String name = ((EditText)findViewById(R.id.account)).getText().toString();
+        String pass = ((EditText)findViewById(R.id.password)).getText().toString();
 
-        findViewById(R.id.account).setVisibility(View.INVISIBLE);
-        findViewById(R.id.password).setVisibility(View.INVISIBLE);
-
-        Button button = (Button)findViewById(R.id.Image);
-        button.setVisibility(View.INVISIBLE);
+        //Set name + pass in global class
+        AccountInfo accountInfo = AccountInfo.getInstance();
+        accountInfo.setName(name);
+        accountInfo.setPassword(pass);
 
         //Send intent to Gallery
         Intent intent = new Intent();
@@ -101,6 +99,10 @@ public class mainActivity extends ActionBarActivity {
         intent.setAction(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, REQUEST_CODE);
+
+        //Switch to display fragment (call constructor with image + info)
+        AccountDisplay fragment = new AccountDisplay();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
     }
 
     @Override
@@ -116,13 +118,19 @@ public class mainActivity extends ActionBarActivity {
                 bitmap = BitmapFactory.decodeStream(stream);
                 stream.close();
 
+                //Set Image in global class
+                AccountInfo accountInfo = AccountInfo.getInstance();
+                accountInfo.setBitmap(bitmap);
+
+                //Get info from global class
+                String name = accountInfo.getName();
+                String pass = accountInfo.getPassword();
+
                 ImageView view = (ImageView)findViewById(R.id.display);
                 view.setImageBitmap(bitmap);
-                view.setVisibility(View.VISIBLE);
 
-                TextView textView = (TextView)findViewById(R.id.info);
-                textView.setText("Account: " + name + " Password: " + pass);
-                textView.setVisibility(View.VISIBLE);
+                ((TextView)findViewById(R.id.account)).setText("Account: " + name);
+                ((TextView)findViewById(R.id.password)).setText("Password: " + pass);
 
             } catch (Exception e) { e.printStackTrace(); }
         }
@@ -131,7 +139,8 @@ public class mainActivity extends ActionBarActivity {
 
     public void onClickExtract (View view)
     {
-
+        AccountDisplay fragment = new AccountDisplay();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
     }
 
 
