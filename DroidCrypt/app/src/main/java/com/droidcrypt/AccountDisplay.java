@@ -54,11 +54,6 @@ public class AccountDisplay extends android.support.v4.app.Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.display_fragment, container, false);
-
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.image4);
-        ImageView imageView = (ImageView)view.findViewById(R.id.display);
-        imageView.setImageBitmap(bitmap);
-
         // Inflate the layout for this fragment
         return view;
     }

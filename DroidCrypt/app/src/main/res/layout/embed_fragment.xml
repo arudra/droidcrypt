@@ -28,14 +28,32 @@
         android:layout_marginBottom="20sp"
     />
 
-    <Button
-        android:id="@+id/Image"
-        android:text="@string/image"
-        android:textSize="18sp"
-        android:layout_width="170sp"
+    <LinearLayout
+        android:layout_width="fill_parent"
         android:layout_height="80sp"
-        android:layout_gravity="center"
-        android:onClick="onClickImage"
-    />
+        android:orientation="horizontal"
+    >
+
+        <Button
+            android:id="@+id/Image"
+            android:text="@string/image"
+            android:textSize="18sp"
+            android:layout_width="170sp"
+            android:layout_height="fill_parent"
+            android:layout_marginStart="25sp"
+            android:onClick="onClickImage"
+        />
+
+        <Button
+            android:id="@+id/hugostart"
+            android:text="@string/start"
+            android:textSize="18sp"
+            android:layout_width="170sp"
+            android:layout_height="fill_parent"
+            android:onClick="onClickHugoStart"
+        />
+
+    </LinearLayout>
+
 
 </LinearLayout>

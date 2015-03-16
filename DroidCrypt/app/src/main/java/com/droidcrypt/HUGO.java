@@ -4,22 +4,16 @@ package com.droidcrypt;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.Paint;
 import android.util.Log;
-
 import java.io.ByteArrayOutputStream;
-import java.util.Random;
 
 
 public class HUGO
 {
   
     //INPUTS: input orig_image path, Password
-    private String imagePath, password;
+    private String password;
 
     // output orig_image path which holds hash of JPEG
     private String outputImage;
@@ -28,16 +22,13 @@ public class HUGO
     public Bitmap grayImage;
     public byte[] grayArray;
     private Context context;
-    private Embedder e;
 
-    public HUGO (String input, String pass, Bitmap inputImg, Context context)
+    public HUGO (String pass, Bitmap inputImg)
     {
-        imagePath = input;
         password = pass;
         origImage = inputImg;
         grayImage = null;
         grayArray = null;
-        this.context = context;
     }
 
     public void testNdkCall()
@@ -49,12 +40,12 @@ public class HUGO
         //grayArray = bitmapToByteArray(origImage);
         long startTime = System.currentTimeMillis();
         try {
-            grayArray = e.embed(grayArray, origImage.getWidth(), origImage.getHeight(),
+            grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(),
                     "abcdef09", num_bits_used);
             long endEmbed = System.currentTimeMillis();
-            String oPass = e.extract(grayArray, origImage.getWidth(), origImage.getHeight(), num_bits_used, 7);
+            String oPass = Embedder.extract(grayArray, origImage.getWidth(), origImage.getHeight(), num_bits_used, 7);
             long endExtract = System.currentTimeMillis();
-            Log.d("HUGO", "Num_bits_used to embeded the text = " + num_bits_used[0] + " - " + num_bits_used[1]);
+            Log.d("HUGO", "Num_bits_used to embed = " + num_bits_used[0] + " - " + num_bits_used[1]);
             Log.d("HUGO", "Password extracted  :  " + oPass);
             Log.d("HUGO", "TIME Embed: " + (endEmbed - startTime) / 1000.f + "s  Extract: " + (endExtract - endEmbed) / 1000.f + "s");
         } catch (Exception e) {
@@ -62,6 +53,49 @@ public class HUGO
             e.printStackTrace();
         }
         grayImage = convertColorHSVColor(origImage);
+    }
+
+    public void embed()
+    {
+        int[] num_bits_used = new int[2];
+        num_bits_used[0] = 2;
+        num_bits_used[1] = 2;
+
+        grayArray = toGrayscale(origImage);
+
+        long startTime = System.currentTimeMillis();
+
+        try{
+            grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(), password, num_bits_used);
+            //Store embedded array for later extract
+            long endTime = System.currentTimeMillis();
+            AccountInfo.getInstance().setHugoArray(grayArray);
+            AccountInfo.getInstance().setHugoBits(num_bits_used);
+
+            Log.d("HUGO", "Num_bits_used to embed = " + num_bits_used[0] + " - " + num_bits_used[1]);
+            Log.d("HUGO", "TIME Embed: " + (endTime - startTime) / 1000.f + "s");
+
+        } catch (Exception e)
+        {
+            Log.e("HUGO", "Exception in embedder: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public String extract()
+    {
+        String output;
+        AccountInfo accountInfo = AccountInfo.getInstance();
+
+        long startTime = System.currentTimeMillis();
+        output = Embedder.extract(accountInfo.getHugoArray(), accountInfo.getBitmap().getWidth(),
+                accountInfo.getBitmap().getHeight(), accountInfo.getHugoBits(), 7);
+        long endTime = System.currentTimeMillis();
+
+        Log.d("HUGO", "Info Extracted: " + output);
+        Log.d("HUGO", "TIME Extract: " + (endTime - startTime) / 1000.f + "s");
+
+        return output;
     }
 
     private byte[] bitmapToByteArray(Bitmap bmp) {

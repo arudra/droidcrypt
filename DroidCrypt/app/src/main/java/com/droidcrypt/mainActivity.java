@@ -5,35 +5,30 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
+import android.widget.Toast;
 
 import java.io.InputStream;
 
 
-public class mainActivity extends ActionBarActivity {
+public class mainActivity extends ActionBarActivity
+{
 
-    /*
-    private AsyncCaller async;
+    private EmbedCaller embedCaller;
+    private ExtractCaller extractCaller;
     private HUGO hugo;
-    private ImageView originalImage;
-    private ImageView newImage;
-    */
 
     private static final int REQUEST_CODE = 1;
     private Bitmap bitmap;
+    private boolean select = false;
+    private String info;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,13 +38,6 @@ public class mainActivity extends ActionBarActivity {
         main MainFragment = new main();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, MainFragment).commit();
 
-        /*
-        async = new AsyncCaller();
-        async.execute();
-        originalImage = (ImageView)findViewById(R.id.imageView);
-        newImage = (ImageView)findViewById(R.id.imageView2);
-        Button toggle = (Button) findViewById(R.id.btn_toggle);
-        toggle.setTag(Integer.valueOf(0)); */
     }
 
     @Override
@@ -100,9 +88,23 @@ public class mainActivity extends ActionBarActivity {
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, REQUEST_CODE);
 
-        //Switch to display fragment (call constructor with image + info)
-        AccountDisplay fragment = new AccountDisplay();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+        select = true;
+    }
+
+    public void onClickHugoStart (View view)
+    {
+        if (select)
+        {
+            Toast.makeText(this,"Starting Embedding!",Toast.LENGTH_SHORT).show();
+            embedCaller = new EmbedCaller();
+            embedCaller.execute();
+
+            //Switch to main fragment
+            main fragment = new main();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+        }
+        else
+            Toast.makeText(this,"Image must be selected first!",Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -122,15 +124,8 @@ public class mainActivity extends ActionBarActivity {
                 AccountInfo accountInfo = AccountInfo.getInstance();
                 accountInfo.setBitmap(bitmap);
 
-                //Get info from global class
-                String name = accountInfo.getName();
-                String pass = accountInfo.getPassword();
-
-                ImageView view = (ImageView)findViewById(R.id.display);
-                view.setImageBitmap(bitmap);
-
-                ((TextView)findViewById(R.id.account)).setText("Account: " + name);
-                ((TextView)findViewById(R.id.password)).setText("Password: " + pass);
+                ((TextView)findViewById(R.id.account)).setText("Account: " + accountInfo.getName());
+                ((TextView)findViewById(R.id.password)).setText("Password: " + accountInfo.getPassword());
 
             } catch (Exception e) { e.printStackTrace(); }
         }
@@ -139,65 +134,84 @@ public class mainActivity extends ActionBarActivity {
 
     public void onClickExtract (View view)
     {
+        extractCaller = new ExtractCaller();
+        extractCaller.execute();
+
+        //Switch to Display fragment
         AccountDisplay fragment = new AccountDisplay();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
     }
 
-
-    /*
     @Override
      public void onDestroy() {
         super.onDestroy();
-        //async.pdLoading.dismiss();
-        //async = null;
-    }
-
-    public void onClick_btnToggle(View v) {
-        Integer tag = (Integer) v.getTag();
-        if (tag == 0) {
-            originalImage.setImageBitmap(hugo.origImage);
-            tag = 1;
-        } else {
-            originalImage.setImageBitmap(hugo.convertColorHSVColor(hugo.origImage));
-            tag = 0;
-        }
-        v.setTag(tag);
+        embedCaller.pdLoading.dismiss();
+        embedCaller = null;
+        extractCaller.loader.dismiss();
+        extractCaller = null;
     }
 
 
-    private class AsyncCaller extends AsyncTask<Void, Void, Void>
+    private class EmbedCaller extends AsyncTask<Void, Void, Void>
     {
         public ProgressDialog pdLoading = new ProgressDialog(mainActivity.this);
 
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute()
+        {
             super.onPreExecute();
-            //this method will be running on UI thread
             pdLoading.setMessage("\tLoading...");
             pdLoading.show();
         }
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground(Void... params)
+        {
             BitmapFactory.Options opt= new BitmapFactory.Options();
             opt.inScaled = false;
             //opt.inSampleSize = 8;
-            Bitmap input = BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
-            hugo = new HUGO("", "Hello World!", input, getParent());
-//            hugo.execute();
-            hugo.testNdkCall();
+            AccountInfo accountInfo = AccountInfo.getInstance();
+            Bitmap input = accountInfo.getBitmap();
+
+            hugo = new HUGO(accountInfo.getName() + " " + accountInfo.getPassword(), input);
+            hugo.embed();
             return null;
         }
 
         @Override
-        protected void onPostExecute(Void result) {
+        protected void onPostExecute(Void result)
+        {
             super.onPostExecute(result);
-
-            //this method will be running on UI thread
-            originalImage.setImageBitmap(hugo.origImage);
-            newImage.setImageBitmap(hugo.convertColorHSVColor(hugo.origImage));
             pdLoading.dismiss();
-
+            Toast.makeText(mainActivity.this,"Finished Embedding!",Toast.LENGTH_SHORT).show();
         }
 
-    } */
+    }
+
+    private class ExtractCaller extends AsyncTask<Void, Void, Void>
+    {
+        public ProgressDialog loader = new ProgressDialog(mainActivity.this);
+
+        @Override
+        protected void onPreExecute()
+        {
+            super.onPreExecute();
+            loader.setMessage("\tLoading...");
+            loader.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void ... params)
+        {
+            info = hugo.extract();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result)
+        {
+            super.onPostExecute(result);
+            ((TextView)findViewById(R.id.account)).setText(info);
+            loader.dismiss();
+        }
+    }
 }

@@ -4,14 +4,12 @@
     <string name="app_name">DroidCrypt</string>
     <string name="toggle">Toggle Image</string>
     <string name="action_settings">Settings</string>
-    <string name="embed">Embed</string>
-    <string name="extract">Extract</string>
+    <string name="embed">Store Password</string>
+    <string name="extract">Get Password</string>
     <string name="settings">Settings</string>
     <string name="account">Enter Account Name</string>
     <string name="pass">Enter password</string>
     <string name="image">Select Image</string>
-
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="start">Start</string>
 
 </resources>
