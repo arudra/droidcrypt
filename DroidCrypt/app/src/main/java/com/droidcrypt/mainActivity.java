@@ -168,11 +168,11 @@ public class mainActivity extends ActionBarActivity
         {
             BitmapFactory.Options opt= new BitmapFactory.Options();
             opt.inScaled = false;
-            //opt.inSampleSize = 8;
+            opt.inSampleSize = 8;
             AccountInfo accountInfo = AccountInfo.getInstance();
             Bitmap input = accountInfo.getBitmap();
-
-            hugo = new HUGO(accountInfo.getName() + " " + accountInfo.getPassword(), input);
+            //Bitmap = BitmapFactory.decodeResource(getParent().getResources().R.)
+            hugo = new HUGO(accountInfo.getName() + "####" + accountInfo.getPassword(), input);
             hugo.embed();
             return null;
         }

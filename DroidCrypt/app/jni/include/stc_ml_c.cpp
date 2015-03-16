@@ -371,7 +371,7 @@ void stc_embed_trial( uint n, float* cover_bit_prob0, u8* message, uint stc_cons
                 LOGE("Exception in stc_embed_trial: Maximum number of trials in layered construction exceeded");
                 delete[] cost;
                 delete[] cover;
-                throw stc_exception( "Maximum number of trials in layered construction exceeded.", 6 );
+                // throw stc_exception( "Maximum number of trials in layered construction exceeded.", 6 );
             }
         }
     }
@@ -397,19 +397,19 @@ void check_costs( uint n, uint k, float *costs ) {
             std::stringstream ss;
             ss << "Incorrect cost array." << i << "-th element contains NaN value. This is not a valid cost.";
             LOGE(ss.str().c_str());
-            throw stc_exception( ss.str(), 6 );
+            // throw stc_exception( ss.str(), 6 );
         }
         if ( !test_non_inf ) {
             std::stringstream ss;
             ss << "Incorrect cost array." << i << "-th element does not contain any finite cost value. This is not a valid cost.";
             LOGE(ss.str().c_str());
-            throw stc_exception( ss.str(), 6 );
+            // throw stc_exception( ss.str(), 6 );
         }
         if ( test_minus_inf ) {
             std::stringstream ss;
             ss << "Incorrect cost array." << i << "-th element contains -Inf value. This is not a valid cost.";
             LOGE(ss.str().c_str());
-            throw stc_exception( ss.str(), 6 );
+            // throw stc_exception( ss.str(), 6 );
         }
     }
 }
@@ -561,7 +561,7 @@ float stc_ml1_embed( uint cover_length, int* cover, short* direction, float* cos
                 delete[] stego1;
                 delete[] perm1;
                 delete[] c;
-                throw e;
+                // throw e;
             }
             num_msg_bits[0]--; // by decreasing the number of  bits, we change the permutation used to shuffle the bits
             trial++;
@@ -572,7 +572,7 @@ float stc_ml1_embed( uint cover_length, int* cover, short* direction, float* cos
                 delete[] stego1;
                 delete[] perm1;
                 delete[] c;
-                throw stc_exception( "Maximum number of trials in layered construction exceeded.", 6 );
+                // throw stc_exception( "Maximum number of trials in layered construction exceeded.", 6 );
             }
         }
     }
@@ -993,7 +993,7 @@ float stc_ml3_embed( uint cover_length, float* costs, int* stego_values, uint me
         delete[] stego3;
         align_delete< float > ( c );
         align_delete< float > ( p );
-        throw e;
+        // throw e;
     }
 
     /* LAYER OF 2ND LSBs */
@@ -1018,7 +1018,7 @@ float stc_ml3_embed( uint cover_length, float* costs, int* stego_values, uint me
         delete[] stego3;
         align_delete< float > ( c );
         align_delete< float > ( p );
-        throw e;
+        // throw e;
     }
 
     /* LAYER OF 1ST LSBs */

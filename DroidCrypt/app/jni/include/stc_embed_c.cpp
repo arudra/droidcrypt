@@ -97,7 +97,7 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
 
     if ( matrixheight > 31 ) {
         LOGE("Submatrix height must not exceed 31.");
-        throw stc_exception( "Submatrix height must not exceed 31.", 1 );
+        // throw stc_exception( "Submatrix height must not exceed 31.", 1 );
     }
     height = 1 << matrixheight;
     colmask = height - 1;
@@ -111,7 +111,7 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
             std::stringstream ss;
             ss << "Not enough memory (" << (unsigned int) (vectorlength * parts * sizeof(u32)) << " byte array could not be allocated).";
             LOGE(ss.str().c_str());
-            throw stc_exception( ss.str(), 2 );
+            // throw stc_exception( ss.str(), 2 );
         }
         pathindex = 0;
     }
@@ -129,7 +129,7 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
             free( widths );
             if ( stego != NULL ) free( path );
             LOGE("The message cannot be longer than the cover object.");
-            throw stc_exception( "The message cannot be longer than the cover object.", 3 );
+            // throw stc_exception( "The message cannot be longer than the cover object.", 3 );
         }
         /* THIS IS OBSOLETE. Algorithm still works for alpha >1/2. You need to take care of cases with too many Infs in cost vector.
          if(invalpha < 2) {

@@ -106,11 +106,11 @@ JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
 
    bitmap = as_byte_array(env, pixels, width*height);
 
-   jint* tmpIntArray = (env)->GetIntArrayElements(num_bits_embeded, NULL);
-   //num_bits_embeded = as_int_array(env, num_bits_used, 2);
-   tmpIntArray[0] = num_bits_used[0];
-   tmpIntArray[1] = num_bits_used[1];
-   (env)->ReleaseIntArrayElements(num_bits_embeded, tmpIntArray, 0);
+   // jint* tmpIntArray = (env)->GetIntArrayElements(num_bits_embeded, NULL);
+   // //num_bits_embeded = as_int_array(env, num_bits_used, 2);
+   // tmpIntArray[0] = num_bits_used[0];
+   // tmpIntArray[1] = num_bits_used[1];
+   // (env)->ReleaseIntArrayElements(num_bits_embeded, tmpIntArray, 0);
 
    delete[] pixels;
    delete[] num_bits_used;

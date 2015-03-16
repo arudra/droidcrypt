@@ -11,7 +11,7 @@
 #include "image.h"
 #include "mi_embedder.h"
 #include "cost_model_config.h"
-#include "exception.hpp"
+//#include "exception.hpp"
 #include "cost_model.h"
 #include "mat2D.h"
 #include "HUGO_like.h"
@@ -77,7 +77,7 @@ void gen_random(char *s, const int len) {
 
 int HUGO_like(unsigned char * img, int width, int height, char * password, int* num_bits_used)
 {
-    try {
+    //try {
         float payload = 0.1;
         bool verbose = false;
         unsigned int stc_constr_height = 7;
@@ -99,6 +99,7 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         std::string message(password);
         //        std::string message = "1234567890";
         LOGI("Here we get all the information: password =%s (%d)", bit_array_to_string(msg, len), len);
+        payload = width*height/len;
         cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stc_constr_height, randSeed, message);
         config->embedMsg = msg;
         config->length = (uint) len;
@@ -150,19 +151,19 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         delete config;
         
         clock_t end=clock();
-    }
-    catch(std::exception& e)
-    {
-        std::cerr << "error: " << e.what() << "\n";
-        LOGE("ERROR exception in HUGO_like");
-        return 1;
-    }
-    catch(...)
-    {
-        std::cerr << "Exception of unknown type!\n";
-        LOGE("Exception of unknown type!");
-        return 1;
-    }
+    // }
+    // catch(std::exception& e)
+    // {
+    //     std::cerr << "error: " << e.what() << "\n";
+    //     LOGE("ERROR exception in HUGO_like");
+    //     return 1;
+    // }
+    // catch(...)
+    // {
+    //     std::cerr << "Exception of unknown type!\n";
+    //     LOGE("Exception of unknown type!");
+    //     return 1;
+    // }
     
     return 0;
 }
@@ -194,7 +195,7 @@ mat2D<int> * Mat2dFromImage(unsigned char* img, int width, int height)
     mat2D<int> *I = new mat2D<int>(height, width);
     for (int r=0; r<height; r++)
         for (int c=0; c<width; c++)  {
-            int pix = rand()%100;
+            //int pix = rand()%100;
             unsigned char pixByte = img[r*I->rows+c];
             //LOGI("%d", pix);
             //std::cout << pix << " " ;
@@ -210,33 +211,4 @@ void Mat2dToImage(int *src, unsigned char* img, int width, int height)
     for(int r=0; r<totalPixel; r++) {
         img[r] = (unsigned char) src[r];
     }
-}
-
-mat2D<int> * Load_Image(std::string imagePath, cost_model_config *config)
-{
-	// read image using the script in 'image.cpp'
-	image *img = new image();
-	if (imagePath.substr(imagePath.find_last_of(".")) == ".pgm")
-		img->load_from_pgm(imagePath);
-    else
-        throw exception("File '" + imagePath + "' is in unknown format, we support grayscale 8bit pgm.");
-		
-	// move the image into a mat2D class
-	mat2D<int> *I = new mat2D<int>(img->height, img->width);
-	for (int r=0; r<I->rows; r++)
-		for (int c=0; c<I->cols; c++)
-			I->Write(r, c, (int)img->pixels[c*I->rows+r]);
-	delete img;
-
-	return I;
-}
-
-void Save_Image(std::string imagePath, mat2D<int>* I)
-{
-	unsigned char* pixels = new unsigned char[I->rows * I->cols];
-	for (int r=0; r<I->rows; r++)
-		for (int c=0; c<I->cols; c++)
-		  pixels[c*I->rows + r] = (unsigned char)I->Read(r, c);
-	image* img = new image(I->cols, I->rows, pixels);
-	img->write_to_pgm(imagePath);
 }

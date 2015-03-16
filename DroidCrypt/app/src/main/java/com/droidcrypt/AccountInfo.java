@@ -34,7 +34,8 @@ public class AccountInfo
 
     public void setHugoArray (byte[] array)
     {
-        //Copy Array after embedding
+//        HugoArray = array;
+//        //Copy Array after embedding
         HugoArray = new byte[array.length];
         System.arraycopy(array, 0, HugoArray, 0, array.length);
     }
@@ -43,6 +44,7 @@ public class AccountInfo
 
     public void setHugoBits (int[] bits)
     {
+//        HugoBits = bits;
         HugoBits = new int[2];
         System.arraycopy(bits, 0, HugoBits, 0, 2);
     }
