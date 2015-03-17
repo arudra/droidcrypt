@@ -30,7 +30,8 @@ public:
 
 	~mat2D()
 	{
-		vect.clear();
+		this->vect.clear();
+        this->vect.shrink_to_fit();
 	}
 
 	T Read(int row, int col)

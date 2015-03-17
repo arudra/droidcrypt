@@ -36,7 +36,7 @@ void gen_random(char *s, const int len) {
         s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
     
-    s[len] = 0;
+    s[len-1] = 0;
 }
 
 int HUGO_like(int * img, int width, int height, char * password)
@@ -204,6 +204,9 @@ int main(int argc, char** argv)
 
 			delete cover;
 			delete stego;
+            delete [] extracted_message;
+        delete [] stego_px;
+        delete[] msg;
 		
 		delete config;
 

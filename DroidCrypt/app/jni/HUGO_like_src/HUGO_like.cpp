@@ -98,21 +98,27 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         }
         std::string message(password);
         //        std::string message = "1234567890";
-        LOGI("Here we get all the information: password =%s (%d)", bit_array_to_string(msg, len), len);
+        char *tmp = bit_array_to_string(msg, len);
+        LOGI("Here we get all the information: password =%s (%d)", tmp, len);
+
         payload = width*height/len;
         cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stc_constr_height, randSeed, message);
         config->embedMsg = msg;
         config->length = (uint) len;
 
         // Load cover
+        LOGI("Loading the cover image");
         mat2D<int> *cover = Mat2dFromImage(img, width, height);
         base_cost_model * model = (base_cost_model *)new cost_model(cover, config);
         
         // Embedding
+        LOGI("Starting to embed...");
         float alpha_out, coding_loss_out = 0, distortion = 0;
         unsigned int stc_trials_used = 0;
+        
         mat2D<int> * stego = model->Embed(alpha_out, coding_loss_out, stc_trials_used, distortion);
         
+        LOGI("Copying mat2d back to stego_px");
         // get all the necessary information
         uint *num_msg_bits = model->num_bits_used;
         int* stego_px = new int[stego->rows*stego->cols];
@@ -120,16 +126,22 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         {
             for ( int j = 0; j < stego->cols; j++ )
             {
-                float tmpValue = (float)stego->Read(i, j)*126;
-                stego_px[i * stego->cols + j] = (int)(tmpValue/126.0f);
+                float tmpValue = (float)stego->Read(i, j);
+                stego_px[i * stego->cols + j] = (int)(tmpValue);
             }
         }
-    
+
+        
+        LOGI("Extracting");
         // Extracting the message from the stego image
         unsigned char *extracted_message = base_cost_model::Extract(stego_px, stego->cols, stego->rows, num_msg_bits, stc_constr_height);
         
+
+        delete stego;
+
         // verify if the embedded message the same as the extracted one!
         bool isSame = base_cost_model::Verify((unsigned char *)(config->message.data()), extracted_message, num_msg_bits);
+        
         if (!isSame) {
             // error message that the message is not the same!
             LOGE("Error: Embedded Message and Extracted message are not the same!");
@@ -137,18 +149,19 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
             num_bits_used[1] = 0;
         }
         else {
-            LOGI("Successfully extracted_message is %s", bit_array_to_string(extracted_message, num_msg_bits[0] + num_msg_bits[1]));
+            char *tmp = bit_array_to_string(extracted_message, num_msg_bits[0] + num_msg_bits[1]);      
+            LOGI("Successfully extracted_message is %s", tmp);
             Mat2dToImage(stego_px, img, width, height);
             num_bits_used[0] = num_msg_bits[0];
             num_bits_used[1] = num_msg_bits[1];
         }
-
+        
         delete[] msg;
         delete model;
         delete[] stego_px;
         delete cover;
-        delete stego;
         delete config;
+        delete[] extracted_message;
         
         clock_t end=clock();
     // }

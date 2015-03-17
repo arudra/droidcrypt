@@ -70,6 +70,8 @@ JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
     int                height;
     static int         init;
     unsigned char* pixels = as_unsigned_char_array(env, bitmap);
+    (env)->DeleteLocalRef(bitmap);
+    
     int* num_bits_used = new int[2];
 
 /*
@@ -97,16 +99,15 @@ JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
     LOGI("Image Width and height are: %d, %d", width, height);
     const char *password = (env)->GetStringUTFChars(msg, JNI_FALSE);
 
-   // use your string
-    LOGI(password);
-
     int returnFromHugo = HUGO_like(pixels, width, height, (char *)password, num_bits_used);
 
     (env)->ReleaseStringUTFChars(msg, password);
 
-   bitmap = as_byte_array(env, pixels, width*height);
+    jbyteArray outbitmap = as_byte_array(env, pixels, width*height);
 
-   // jint* tmpIntArray = (env)->GetIntArrayElements(num_bits_embeded, NULL);
+   // num_bits_embeded = as_int_array(env, num_bits_used, 2);
+    env->SetIntArrayRegion (num_bits_embeded, 0, 2, reinterpret_cast<jint*>(num_bits_used));   
+    // jint* tmpIntArray = (env)->GetIntArrayElements(num_bits_embeded, NULL);
    // //num_bits_embeded = as_int_array(env, num_bits_used, 2);
    // tmpIntArray[0] = num_bits_used[0];
    // tmpIntArray[1] = num_bits_used[1];
@@ -115,7 +116,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
    delete[] pixels;
    delete[] num_bits_used;
 
-   return bitmap;
+   return outbitmap;
 
 }
 
@@ -169,7 +170,7 @@ JNIEXPORT jstring JNICALL Java_com_droidcrypt_Embedder_extract
     LOGI("EXIT Extracting");
    delete[] pixels;
    delete[] num_bits_used;
-   delete[] password;
+   //delete[] password;
 
    return jstrBuf;
 

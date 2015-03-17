@@ -1043,7 +1043,7 @@ float stc_ml3_embed( uint cover_length, float* costs, int* stego_values, uint me
         delete[] stego3;
         align_delete< float > ( c );
         align_delete< float > ( p );
-        throw e;
+        // throw e;
     }
     delete[] p10;
     delete[] p20;

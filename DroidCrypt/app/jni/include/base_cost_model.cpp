@@ -26,7 +26,8 @@ base_cost_model::base_cost_model(mat2D<int>* cover, base_cost_model_config *conf
 
 base_cost_model::~base_cost_model()
 {
-	delete this->costs;
+	delete[] this->costs;
+    delete[] this->num_bits_used;
 }
 
 mat2D<int> * base_cost_model::Embed(float &alpha_out, float &coding_loss_out, unsigned int &stc_trials_used, float &distortion)
@@ -93,5 +94,6 @@ bool base_cost_model::Verify(unsigned char* message, unsigned char *extracted_me
     }
     
     LOGI("____Password MATCHED !! ____");
+    LOGI("num_msg_bits: [%d, %d]", num_msg_bits[0], num_msg_bits[1]);
     return true;
 }
