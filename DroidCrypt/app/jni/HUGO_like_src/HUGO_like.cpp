@@ -72,7 +72,7 @@ void gen_random(char *s, const int len) {
         s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
     
-    s[len-1] = 0;
+    s[len-1] = '\0';
 }
 
 int HUGO_like(unsigned char * img, int width, int height, char * password, int* num_bits_used)
@@ -89,13 +89,11 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         int len = 10;
         unsigned char* msg;
         if (password == NULL) {
-            msg = new unsigned char[len];
-            gen_random((char *)msg, len);
+            password = new char[len];
+            gen_random(password, len);
         }
-        else {
-            msg = string_to_bit_array(password);  //password;
-            len = strlen(password)*8;
-        }
+        msg = string_to_bit_array(password);  //password;
+        len = strlen(password)*8;
         std::string message(password);
         //        std::string message = "1234567890";
         char *tmp = bit_array_to_string(msg, len);
@@ -147,7 +145,7 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         else {
             char *tmp = bit_array_to_string(extracted_message, num_msg_bits[0] + num_msg_bits[1]);      
             LOGI("Successfully extracted_message is %s", tmp);
-            Mat2dToImage(stego_px, img, width, height);
+            //Mat2dToImage(stego_px, img, width, height);
             num_bits_used[0] = num_msg_bits[0];
             num_bits_used[1] = num_msg_bits[1];
             //delete[] tmp;
@@ -206,11 +204,11 @@ mat2D<int> * Mat2dFromImage(unsigned char* img, int width, int height)
     mat2D<int> *I = new mat2D<int>(height, width);
     for (int r=0; r<height; r++)
         for (int c=0; c<width; c++)  {
-            //int pix = rand()%100;
-            unsigned char pixByte = img[r*I->rows+c];
+            int pix = rand()%100;
+            //unsigned char pixByte = img[r*I->rows+c];
             //LOGI("%d", pix);
             //std::cout << pix << " " ;
-            I->Write(r, c, (int)pixByte);
+            I->Write(r, c, (int)pix);
         }
     
     return I;
