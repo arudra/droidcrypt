@@ -2,6 +2,8 @@ package com.droidcrypt;
 
 import android.graphics.Bitmap;
 
+import java.io.File;
+
 /**
  * Created by Abhishek on 3/15/2015.
  */
@@ -12,6 +14,7 @@ public class AccountInfo
     private String password;
     private byte[] HugoArray;
     private int[] HugoBits;
+    private String FilePath;
 
     private static AccountInfo ourInstance = new AccountInfo();
 
@@ -50,5 +53,9 @@ public class AccountInfo
     }
 
     public int[] getHugoBits () { return HugoBits; }
+
+    public void setFilePath (String filepath) { FilePath = filepath; }
+
+    public String getFilePath () { return FilePath; }
 
 }

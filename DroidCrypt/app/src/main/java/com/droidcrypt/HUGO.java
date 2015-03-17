@@ -66,7 +66,7 @@ public class HUGO
         long startTime = System.currentTimeMillis();
 
         try{
-            grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(), password, num_bits_used);
+            //grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(), password, num_bits_used);
             //Store embedded array for later extract
             long endTime = System.currentTimeMillis();
             AccountInfo.getInstance().setHugoArray(grayArray);
@@ -109,48 +109,9 @@ public class HUGO
 
     }
 
-    /*
-    public void execute ()
-    {
-        //convert to PGM
-        //String orig_image = convertToPGM(imagePath);
-
-
-        //  Load Cover
-        // create config
-        float payload=0.4f, gamma=2, sigma=0.5f;
-        int randSeed = 12345;
-        boolean verbose = false;
-        int stcHeight = 10;
-        String message = password;
-
-        //cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stcHeight, randSeed, message);
-        cost_model_config config = new cost_model_config(payload, verbose, gamma, sigma, stcHeight, randSeed, message);
-
-        //  -> call function Load_Image from Mat2D and put inside Mat2D variable "cover"
-        Mat2D cover = loadGrayImage(origImage);
-
-        //base_cost_model *model = (base_cost_model *)new cost_model(cover,config);
-
-        cost_model model = new cost_model(cover, config);
-
-        //  Embed Image
-        float []alpha_out, code_out, distortion_out;
-        int []stcTrials_out;
-        alpha_out = new float[1];
-        code_out = new float[1];
-        distortion_out = new float[1];
-        stcTrials_out = new int[1];
-        Mat2D stego = model.Embed(alpha_out, code_out, stcTrials_out, distortion_out);
-
-        //Save stego
-//        saveImage(outputImage, stego);
-
-    }
-    */
 
     //Convert Bitmap from Color to HSV, then HSV to Color
-    public Bitmap convertColorHSVColor(Bitmap src){
+    public static Bitmap convertColorHSVColor(Bitmap src){
 
         int w = src.getWidth();
         int h = src.getHeight();
@@ -161,6 +122,9 @@ public class HUGO
 
         src.getPixels(mapSrcColor, 0, w, 0, 0, w, h);
 
+        AccountInfo accountInfo = AccountInfo.getInstance();
+        byte[] array = accountInfo.getHugoArray();
+
         int index = 0;
         for(int y = 0; y < h; ++y) {
             for(int x = 0; x < w; ++x) {
@@ -169,7 +133,7 @@ public class HUGO
                 Color.colorToHSV(mapSrcColor[index], pixelHSV);
                 //int value = (int)(pixelHSV[2]*255);
                 //int pixelValue = (0xFF << 24) | (value << 16) | (value << 8) | value;
-                pixelHSV[2] = ((float)grayArray[index])/126.0f;
+                pixelHSV[2] = ((float)array[index])/126.0f;
                 //Convert back from HSV to Color
                 mapDestColor[index] = Color.HSVToColor(pixelHSV);
 
