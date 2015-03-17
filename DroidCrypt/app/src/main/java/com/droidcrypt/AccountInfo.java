@@ -47,21 +47,22 @@ public class AccountInfo
 
     public void setHugoArray (byte[] array)
     {
-//        HugoArray = array;
+        HugoArray = null;
+        HugoArray = array;
 //        //Copy Array after embedding
         Log.d("GLOBAL", "Setting GrayArray");
-        HugoArray = new byte[array.length];
-        System.arraycopy(array, 0, HugoArray, 0, array.length);
+//        HugoArray = new byte[array.length];
+//        System.arraycopy(array, 0, HugoArray, 0, array.length);
     }
 
     public byte[] getHugoArray () { return HugoArray; }
 
     public void setHugoBits (int[] bits)
     {
-//        HugoBits = bits;
+        HugoBits = bits;
         Log.d("GLOBAL", "Setting num bits");
-        HugoBits = new int[2];
-        System.arraycopy(bits, 0, HugoBits, 0, 2);
+//        HugoBits = new int[2];
+//        System.arraycopy(bits, 0, HugoBits, 0, 2);
     }
 
     public int[] getHugoBits () { return HugoBits; }

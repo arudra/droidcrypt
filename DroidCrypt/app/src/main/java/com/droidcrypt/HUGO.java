@@ -41,7 +41,7 @@ public class HUGO
         long startTime = System.currentTimeMillis();
         try {
             grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(),
-                    "abcdef09", num_bits_used);
+                    "abcdef0989713", num_bits_used);
             long endEmbed = System.currentTimeMillis();
             String oPass = Embedder.extract(grayArray, origImage.getWidth(), origImage.getHeight(), num_bits_used, 7);
             long endExtract = System.currentTimeMillis();
@@ -62,16 +62,20 @@ public class HUGO
         num_bits_used[1] = 2;
 
         grayArray = toGrayscale(origImage);
-
+        if (grayArray.length < (origImage.getWidth()*origImage.getHeight()) ) {
+            Log.e("HUGO", "Error, the image size is less than the width and heigth. Image is corrupted");
+            return;
+        }
         long startTime = System.currentTimeMillis();
 
         try{
             //grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(), password, num_bits_used);
             //Store embedded array for later extract
             long endTime = System.currentTimeMillis();
-            AccountInfo.getInstance().setHugoArray(grayArray);
+//            AccountInfo.getInstance().setHugoArray(grayArray);
+            AccountInfo.getInstance().setBitmap(convertColorHSVColor(origImage));
             AccountInfo.getInstance().setHugoBits(num_bits_used);
-
+            grayArray = null;
             Log.d("HUGO", "Num_bits_used to embed = " + num_bits_used[0] + " - " + num_bits_used[1]);
             Log.d("HUGO", "TIME Embed: " + (endTime - startTime) / 1000.f + "s");
 
@@ -99,7 +103,7 @@ public class HUGO
     }
 
     //Convert Bitmap from Color to HSV, then HSV to Color
-    public static Bitmap convertColorHSVColor(Bitmap src){
+    public Bitmap convertColorHSVColor(Bitmap src){
 
         int w = src.getWidth();
         int h = src.getHeight();
@@ -110,8 +114,8 @@ public class HUGO
 
         src.getPixels(mapSrcColor, 0, w, 0, 0, w, h);
 
-        AccountInfo accountInfo = AccountInfo.getInstance();
-        byte[] array = accountInfo.getHugoArray();
+//        AccountInfo accountInfo = AccountInfo.getInstance();
+//        byte[] array = accountInfo.getHugoArray();
 
         int index = 0;
         for(int y = 0; y < h; ++y) {
@@ -121,7 +125,7 @@ public class HUGO
                 Color.colorToHSV(mapSrcColor[index], pixelHSV);
                 //int value = (int)(pixelHSV[2]*255);
                 //int pixelValue = (0xFF << 24) | (value << 16) | (value << 8) | value;
-                pixelHSV[2] = ((float)array[index])/126.0f;
+                pixelHSV[2] = ((float) grayArray[index])/126.0f;
                 //Convert back from HSV to Color
                 mapDestColor[index] = Color.HSVToColor(pixelHSV);
 

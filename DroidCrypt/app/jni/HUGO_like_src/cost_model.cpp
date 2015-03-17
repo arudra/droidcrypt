@@ -20,6 +20,7 @@ cost_model::cost_model(mat2D<int>* cover, cost_model_config* config) : base_cost
 			calc_costs(r+3, c+3, cover_padded, pixel_costs);
 		}
 	}
+    delete cover_padded;
 }
 
 cost_model::~cost_model()

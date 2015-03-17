@@ -4,6 +4,7 @@
 #include <time.h>
 #include <vector>
 #include <iomanip>
+#include <bitset>
 
 #include "image.h"
 #include "mi_embedder.h"
@@ -36,7 +37,7 @@ void gen_random(char *s, const int len) {
         s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
     
-    s[len] = 0;
+    s[len-1] = 0;
 }
 
 int HUGO_like(int * img, int width, int height, char * password)
@@ -110,6 +111,41 @@ mat2D<int> * Mat2dFromImage(int* img, int width, int height)
     
     return I;
 }
+
+unsigned char * string_to_bit_array(char * input) {
+    int len = strlen(input);
+    unsigned char * tmp = new unsigned char[len*8];
+    int i;
+    for (i=0; i<len; i++) {
+        std::bitset<8> byteArray(input[i]);
+        for (int j=0; j<8; j++) {
+            if (byteArray[j])
+                tmp[i*8 + j] = 1;
+            else tmp[i*8 + j] = 0;
+        }
+        //cout << byteArray << "  " << len << endl;
+    }
+    return tmp;
+}
+
+char * bit_array_to_string(unsigned char *input, int len) {
+    int i;
+    char * output = new char[len/8];
+    std::bitset<8> oByteArray;
+    for (i=0; i<len; i++) {
+        for (int j=0; j<8; j++) {
+            if (input[i*8 + j] == 1)
+                oByteArray.set(j, true);
+            else oByteArray.set(j, false);
+        }
+        //cout << oByteArray << endl;
+        unsigned long c = oByteArray.to_ulong();
+        output[i] = static_cast<char>( c );
+    }
+    //output[len>>3] = '\0';
+    return output;
+}
+
     
 int main(int argc, char** argv)
 {
@@ -144,9 +180,17 @@ int main(int argc, char** argv)
         }
 
 		clock_t begin=clock();
-        int len = 100;
+        int len = 40;
         char* msg = new char[len];
         gen_random(msg, len);
+        
+        unsigned char* tmp1 = string_to_bit_array(msg);
+        char* tmp2 = bit_array_to_string(tmp1, strlen(msg)*8);
+        
+        std::cout << msg << " - " << tmp2 << std::endl;
+        
+        delete [] tmp1;
+        delete [] tmp2;
         std::string message(msg);
 //        std::string message = "1234567890";
         
@@ -204,6 +248,9 @@ int main(int argc, char** argv)
 
 			delete cover;
 			delete stego;
+            delete [] extracted_message;
+        delete [] stego_px;
+        delete[] msg;
 		
 		delete config;
 

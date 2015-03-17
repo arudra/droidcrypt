@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F45B4A271AAA9639008DC071 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45B4A261AAA9639008DC071 /* main.cpp */; };
 		F45B76A21AAA96AE008DC071 /* base_cost_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45B4A2E1AAA9680008DC071 /* base_cost_model.cpp */; };
 		F45B76A31AAA96AE008DC071 /* base_cost_model_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45B4A301AAA9680008DC071 /* base_cost_model_config.cpp */; };
 		F45B76A41AAA96AF008DC071 /* common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45B76881AAA96A9008DC071 /* common.cpp */; };
@@ -17,11 +16,10 @@
 		F45B76A81AAA96AF008DC071 /* stc_embed_c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45B76941AAA96AC008DC071 /* stc_embed_c.cpp */; };
 		F45B76A91AAA96AF008DC071 /* stc_extract_c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45B76961AAA96AD008DC071 /* stc_extract_c.cpp */; };
 		F45B76AA1AAA96AF008DC071 /* stc_ml_c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45B76981AAA96AD008DC071 /* stc_ml_c.cpp */; };
-		F45B76AB1AAA96AF008DC071 /* compile.m in Sources */ = {isa = PBXBuildFile; fileRef = F45B769B1AAA96AE008DC071 /* compile.m */; };
 		F45B76AC1AAA96AF008DC071 /* cost_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45B769C1AAA96AE008DC071 /* cost_model.cpp */; };
 		F45B76AD1AAA96AF008DC071 /* cost_model_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45B769E1AAA96AE008DC071 /* cost_model_config.cpp */; };
 		F45B76AE1AAA96AF008DC071 /* HUGO_like.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45B76A01AAA96AE008DC071 /* HUGO_like.cpp */; };
-		F45B76AF1AAA96AF008DC071 /* HUGO_like_matlab.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45B76A11AAA96AE008DC071 /* HUGO_like_matlab.cpp */; };
+		F4C49B8A1AB88D85002E1B35 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4C49B891AB88D85002E1B35 /* CoreFoundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -38,7 +36,6 @@
 
 /* Begin PBXFileReference section */
 		F45B4A231AAA9639008DC071 /* HUGOSim */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HUGOSim; sourceTree = BUILT_PRODUCTS_DIR; };
-		F45B4A261AAA9639008DC071 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		F45B4A2E1AAA9680008DC071 /* base_cost_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base_cost_model.cpp; sourceTree = "<group>"; };
 		F45B4A2F1AAA9680008DC071 /* base_cost_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base_cost_model.h; sourceTree = "<group>"; };
 		F45B4A301AAA9680008DC071 /* base_cost_model_config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base_cost_model_config.cpp; sourceTree = "<group>"; };
@@ -10521,6 +10518,7 @@
 		F45B769F1AAA96AE008DC071 /* cost_model_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cost_model_config.h; sourceTree = "<group>"; };
 		F45B76A01AAA96AE008DC071 /* HUGO_like.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HUGO_like.cpp; sourceTree = "<group>"; };
 		F45B76A11AAA96AE008DC071 /* HUGO_like_matlab.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HUGO_like_matlab.cpp; sourceTree = "<group>"; };
+		F4C49B891AB88D85002E1B35 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -10528,6 +10526,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4C49B8A1AB88D85002E1B35 /* CoreFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10537,6 +10536,7 @@
 		F45B4A1A1AAA9639008DC071 = {
 			isa = PBXGroup;
 			children = (
+				F4C49B891AB88D85002E1B35 /* CoreFoundation.framework */,
 				F45B4A2D1AAA9680008DC071 /* include */,
 				F45B769A1AAA96AE008DC071 /* HUGO_like_src */,
 				F45B4A251AAA9639008DC071 /* HUGOSim */,
@@ -10555,7 +10555,6 @@
 		F45B4A251AAA9639008DC071 /* HUGOSim */ = {
 			isa = PBXGroup;
 			children = (
-				F45B4A261AAA9639008DC071 /* main.cpp */,
 			);
 			path = HUGOSim;
 			sourceTree = "<group>";
@@ -28293,18 +28292,15 @@
 				F45B76AC1AAA96AF008DC071 /* cost_model.cpp in Sources */,
 				F45B76A81AAA96AF008DC071 /* stc_embed_c.cpp in Sources */,
 				F45B76A41AAA96AF008DC071 /* common.cpp in Sources */,
-				F45B4A271AAA9639008DC071 /* main.cpp in Sources */,
 				F45B76A61AAA96AF008DC071 /* info_theory.cpp in Sources */,
 				F45B76AE1AAA96AF008DC071 /* HUGO_like.cpp in Sources */,
 				F45B76A71AAA96AF008DC071 /* mi_embedder.cpp in Sources */,
 				F45B76AA1AAA96AF008DC071 /* stc_ml_c.cpp in Sources */,
-				F45B76AF1AAA96AF008DC071 /* HUGO_like_matlab.cpp in Sources */,
 				F45B76AD1AAA96AF008DC071 /* cost_model_config.cpp in Sources */,
 				F45B76A51AAA96AF008DC071 /* image.cpp in Sources */,
 				F45B76A91AAA96AF008DC071 /* stc_extract_c.cpp in Sources */,
 				F45B76A21AAA96AE008DC071 /* base_cost_model.cpp in Sources */,
 				F45B76A31AAA96AE008DC071 /* base_cost_model_config.cpp in Sources */,
-				F45B76AB1AAA96AF008DC071 /* compile.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -28418,6 +28414,7 @@
 				F45B4A2C1AAA9639008DC071 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -803,6 +803,7 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
         delete[] stego2;
         align_delete< float > ( c );
         align_delete< float > ( p );
+        delete[] v_lambda;
         throw e;
     }
 
@@ -826,6 +827,7 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
         delete[] perm2;
         delete[] stego1;
         delete[] stego2;
+        delete[] v_lambda;
         align_delete< float > ( c );
         align_delete< float > ( p );
         throw e;
@@ -853,6 +855,7 @@ float stc_ml2_embed( uint cover_length, float* costs, int* stego_values, uint me
     delete[] stego2;
     delete[] perm1;
     delete[] perm2;
+    delete[] v_lambda;
     align_delete< float > ( c );
     align_delete< float > ( p );
     LOGI("EXIT: stc_ml2_embed");
@@ -1043,7 +1046,7 @@ float stc_ml3_embed( uint cover_length, float* costs, int* stego_values, uint me
         delete[] stego3;
         align_delete< float > ( c );
         align_delete< float > ( p );
-        throw e;
+        // throw e;
     }
     delete[] p10;
     delete[] p20;
