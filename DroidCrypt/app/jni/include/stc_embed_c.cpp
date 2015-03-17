@@ -260,12 +260,12 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
                                 for (int ir = 0; ir <4; ir++) {
                                     v2[ir] = tmp[ir];
                                 }
-                                free(tmp);
+                                delete[] tmp;
                                 tmp = shuffle(v3, v3, 0xb1);
                                 for (int ir = 0; ir <4; ir++) {
                                     v3[ir] = tmp[ir];
                                 }
-                                free(tmp);
+                                delete[] tmp;
 //                                swapFloats(&v2[0],&v2[1]);
 //                                swapFloats(&v2[2],&v2[3]);
 //                                swapFloats(&v3[0],&v3[1]);
@@ -283,12 +283,12 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
                                 for (int ir = 0; ir <4; ir++) {
                                     v2[ir] = tmp[ir];
                                 }
-                                free(tmp);
+                                delete[] tmp;
                                 tmp = shuffle(v3, v3, 0x4e);
                                 for (int ir = 0; ir <4; ir++) {
                                     v3[ir] = tmp[ir];
                                 }
-                                free(tmp);
+                                delete[] tmp;
                                 
                                 break;
                             case 3:
@@ -303,12 +303,12 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
                                 for (int ir = 0; ir <4; ir++) {
                                     v2[ir] = tmp[ir];
                                 }
-                                free(tmp);
+                                delete[] tmp;
                                 tmp = shuffle(v3, v3, 0x1b);
                                 for (int ir = 0; ir <4; ir++) {
                                     v3[ir] = tmp[ir];
                                 }
-                                free(tmp);
+                                delete[] tmp;
                                 
                                 break;
                         }
@@ -401,7 +401,7 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
                     for (int ir = 0; ir <4; ir++) {
                         prices[l+ir] = tmp[ir];
                     }
-                    free(tmp);
+                    delete[] tmp;
 //                    prices[l] = prices[(i+1) << 2];
 //                    prices[l+1] = prices[((i+1) << 2) + 2];
 //                    prices[l+2] = prices[i << 2];
@@ -420,7 +420,7 @@ double stc_embed( const u8 *vector, int vectorlength, const u8 *syndrome, int sy
                     for (int ir = 0; ir <4; ir++) {
                         prices[l+ir] = tmp[ir];
                     }
-                    free(tmp);
+                    delete[] tmp;
 //                    prices[l] = prices[((i+1) << 2) + 1];
 //                    prices[l+1] = prices[((i+1) << 2) + 3];
 //                    prices[l+2] = prices[(i << 2) + 1];

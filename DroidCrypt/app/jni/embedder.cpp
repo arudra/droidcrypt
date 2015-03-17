@@ -167,11 +167,11 @@ JNIEXPORT jstring JNICALL Java_com_droidcrypt_Embedder_extract
     jstring jstrBuf = (env)->NewStringUTF(password);
     //(env)->DeleteLocalRef(jstrBuf);
 
-    LOGI("EXIT Extracting");
    delete[] pixels;
    delete[] num_bits_used;
-   //delete[] password;
+   delete[] password;
 
+    LOGI("EXIT Extracting");
    return jstrBuf;
 
 }

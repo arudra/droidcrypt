@@ -41,7 +41,7 @@ public class HUGO
         long startTime = System.currentTimeMillis();
         try {
             grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(),
-                    "abcdef09", num_bits_used);
+                    "abcdef0989713", num_bits_used);
             long endEmbed = System.currentTimeMillis();
             String oPass = Embedder.extract(grayArray, origImage.getWidth(), origImage.getHeight(), num_bits_used, 7);
             long endExtract = System.currentTimeMillis();

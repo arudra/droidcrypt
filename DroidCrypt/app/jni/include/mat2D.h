@@ -30,7 +30,7 @@ public:
 
 	~mat2D()
 	{
-		vect.clear();
+		this->vect.clear();
 	}
 
 	T Read(int row, int col)

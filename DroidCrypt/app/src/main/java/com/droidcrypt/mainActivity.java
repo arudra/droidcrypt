@@ -34,6 +34,8 @@ public class mainActivity extends ActionBarActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//        embedCaller = new EmbedCaller();
+//        embedCaller.execute();
 
         main MainFragment = new main();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, MainFragment).commit();
@@ -168,11 +170,11 @@ public class mainActivity extends ActionBarActivity
         {
             BitmapFactory.Options opt= new BitmapFactory.Options();
             opt.inScaled = false;
-            opt.inSampleSize = 8;
-            AccountInfo accountInfo = AccountInfo.getInstance();
-            Bitmap input = accountInfo.getBitmap();
-            //Bitmap = BitmapFactory.decodeResource(getParent().getResources().R.)
-            hugo = new HUGO(accountInfo.getName() + "####" + accountInfo.getPassword(), input);
+//            opt.inSampleSize = 8;
+//            AccountInfo accountInfo = AccountInfo.getInstance();
+//            Bitmap input = accountInfo.getBitmap();
+            Bitmap bitmap1= BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
+            hugo = new HUGO(/*accountInfo.getName() + */"1234567890" /*+ accountInfo.getPassword()*/, bitmap1);
             hugo.embed();
             return null;
         }

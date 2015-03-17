@@ -72,7 +72,7 @@ void gen_random(char *s, const int len) {
         s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
     
-    s[len] = 0;
+    s[len-1] = 0;
 }
 
 int HUGO_like(unsigned char * img, int width, int height, char * password, int* num_bits_used)
@@ -100,7 +100,7 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         //        std::string message = "1234567890";
         char *tmp = bit_array_to_string(msg, len);
         LOGI("Here we get all the information: password =%s (%d)", tmp, len);
-
+        //delete[] tmp;
         payload = width*height/len;
         cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stc_constr_height, randSeed, message);
         config->embedMsg = msg;
@@ -131,14 +131,10 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
             }
         }
 
-        
-        LOGI("Extracting");
+        LOGI("Extracting - %d, %d", num_msg_bits[0], num_msg_bits[1]);
         // Extracting the message from the stego image
         unsigned char *extracted_message = base_cost_model::Extract(stego_px, stego->cols, stego->rows, num_msg_bits, stc_constr_height);
         
-
-        delete stego;
-
         // verify if the embedded message the same as the extracted one!
         bool isSame = base_cost_model::Verify((unsigned char *)(config->message.data()), extracted_message, num_msg_bits);
         
@@ -154,16 +150,18 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
             Mat2dToImage(stego_px, img, width, height);
             num_bits_used[0] = num_msg_bits[0];
             num_bits_used[1] = num_msg_bits[1];
+            //delete[] tmp;
         }
         
-        delete[] msg;
+        delete stego;
         delete model;
+        delete[] msg;
         delete[] stego_px;
         delete cover;
         delete config;
-        delete[] extracted_message;
+        //delete[] extracted_message;
         
-        clock_t end=clock();
+        //clock_t end=clock();
     // }
     // catch(std::exception& e)
     // {
@@ -196,7 +194,7 @@ char * HUGO_like_extract(unsigned char *img, int width, int height, int stc_cons
     char *output = bit_array_to_string(extracted_message, num_msg_bits[0] + num_msg_bits[1]);
     LOGI("extracted_message is %s", output);
     // convert the bit array into string
-    delete[] extracted_message;
+    //delete[] extracted_message;
     delete[] stego_px;
 
     return output;
