@@ -66,7 +66,7 @@ public class HUGO
         long startTime = System.currentTimeMillis();
 
         try{
-            grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(), password, num_bits_used);
+            //grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(), password, num_bits_used);
             //Store embedded array for later extract
             long endTime = System.currentTimeMillis();
             AccountInfo.getInstance().setHugoArray(grayArray);

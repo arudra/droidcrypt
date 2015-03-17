@@ -215,7 +215,7 @@ public class mainActivity extends ActionBarActivity
                             SaveFile(filename, HUGO.convertColorHSVColor(accountInfo.getBitmap()));
                         }
                     })
-                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which)
                         {
@@ -224,7 +224,6 @@ public class mainActivity extends ActionBarActivity
                             String date = dateFormat.format(new Date());
                             String file = accountInfo.getFilePath();
                             filename = file.substring(0, file.length() - 4) + date + ".jpg";
-                            Log.d("EMBED","Saving file at: " + filename);
                             SaveFile(filename, HUGO.convertColorHSVColor(accountInfo.getBitmap()));
                         }
                     })
@@ -240,7 +239,7 @@ public class mainActivity extends ActionBarActivity
         try {
             out = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // PNG is a lossless format, the compression factor (100) is ignored
-            Log.d("EMBED", "Bitmap File saved");
+            Log.d("EMBED", "Bitmap File saved at: " + file);
         } catch (Exception e) {
             Log.d("EMBED", "Bitmap File not saved!");
             e.printStackTrace();
