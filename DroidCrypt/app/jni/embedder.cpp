@@ -69,10 +69,9 @@ JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
     int                width;
     int                height;
     static int         init;
-    /*
     unsigned char* pixels = as_unsigned_char_array(env, bitmap);
     (env)->DeleteLocalRef(bitmap);
-    */
+    
     int* num_bits_used = new int[2];
 
 /*
@@ -98,10 +97,10 @@ JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
     height = (int) jheight;
 
     LOGI("Image Width and height are: %d, %d", width, height);
-    const char *password = NULL;//(env)->GetStringUTFChars(msg, JNI_FALSE);
+    const char *password = (env)->GetStringUTFChars(msg, JNI_FALSE);
 
-    int returnFromHugo = HUGO_like(NULL, width, height, (char *)password, num_bits_used);
-/*
+    int returnFromHugo = HUGO_like(pixels, width, height, (char *)password, num_bits_used);
+
     (env)->ReleaseStringUTFChars(msg, password);
 
     jbyteArray outbitmap = as_byte_array(env, pixels, width*height);
@@ -115,9 +114,13 @@ JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
    // (env)->ReleaseIntArrayElements(num_bits_embeded, tmpIntArray, 0);
 
    delete[] pixels;
-*/   delete[] num_bits_used;
+   delete[] num_bits_used;
 
-   return NULL;
+   pixels =  NULL;
+   num_bits_used = NULL;
+
+   LOGI("EXITING com_droidcrypt_Embedder");
+   return outbitmap;
 
 }
 

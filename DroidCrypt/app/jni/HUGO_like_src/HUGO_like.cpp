@@ -77,7 +77,7 @@ void gen_random(char *s, const int len) {
 
 int HUGO_like(unsigned char * img, int width, int height, char * password, int* num_bits_used)
 {
-    //try {
+    try {
         float payload = 0.1;
         bool verbose = false;
         unsigned int stc_constr_height = 7;
@@ -157,23 +157,30 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         delete[] stego_px;
         delete cover;
         delete config;
+        
+        stego = NULL;
+        model= NULL;
+        msg= NULL;
+        stego_px= NULL;
+        cover= NULL;
+        config= NULL;
+
         //delete[] extracted_message;
         
         //clock_t end=clock();
-    // }
-    // catch(std::exception& e)
-    // {
-    //     std::cerr << "error: " << e.what() << "\n";
-    //     LOGE("ERROR exception in HUGO_like");
-    //     return 1;
-    // }
-    // catch(...)
-    // {
-    //     std::cerr << "Exception of unknown type!\n";
-    //     LOGE("Exception of unknown type!");
-    //     return 1;
-    // }
+    }
+    catch(std::exception& e)
+    {
+        LOGE("ERROR exception in HUGO_like");
+        return 1;
+    }
+    catch(...)
+    {
+        LOGE("Exception of unknown type!");
+        return 1;
+    }
     
+    LOGI("EXITING HUGO");
     return 0;
 }
 
@@ -194,6 +201,7 @@ char * HUGO_like_extract(unsigned char *img, int width, int height, int stc_cons
     // convert the bit array into string
     //delete[] extracted_message;
     delete[] stego_px;
+    stego_px = NULL;
 
     return output;
 }
@@ -204,11 +212,11 @@ mat2D<int> * Mat2dFromImage(unsigned char* img, int width, int height)
     mat2D<int> *I = new mat2D<int>(height, width);
     for (int r=0; r<height; r++)
         for (int c=0; c<width; c++)  {
-            int pix = rand()%100;
-            //unsigned char pixByte = img[r*I->rows+c];
+            //int pix = rand()%100;
+            unsigned char pixByte = img[r*I->rows+c];
             //LOGI("%d", pix);
             //std::cout << pix << " " ;
-            I->Write(r, c, (int)pix);
+            I->Write(r, c, (int)pixByte);
         }
     
     return I;

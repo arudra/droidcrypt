@@ -169,10 +169,12 @@ public class mainActivity extends ActionBarActivity
         super.onDestroy();
         embedCaller.pdLoading.dismiss();
         embedCaller = null;
-        extractCaller.loader.dismiss();
+        if (extractCaller != null) {
+            extractCaller.loader.dismiss();
+
+        }
         extractCaller = null;
     }
-
 
     private class EmbedCaller extends AsyncTask<Void, Void, Void>
     {
@@ -183,8 +185,8 @@ public class mainActivity extends ActionBarActivity
         protected void onPreExecute()
         {
             super.onPreExecute();
-            pdLoading.setMessage("\tLoading...");
-            pdLoading.show();
+            pdLoading.setMessage("\tEmbeding...");
+            //pdLoading.show();
         }
         @Override
         protected Void doInBackground(Void... params)
@@ -192,11 +194,14 @@ public class mainActivity extends ActionBarActivity
             BitmapFactory.Options opt= new BitmapFactory.Options();
             opt.inScaled = false;
 //            opt.inSampleSize = 8;
-//            AccountInfo accountInfo = AccountInfo.getInstance();
-//            Bitmap input = accountInfo.getBitmap();
-            Bitmap bitmap1= BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
-            hugo = new HUGO(/*accountInfo.getName() + */"1234567890" /*+ accountInfo.getPassword()*/, bitmap1);
+            AccountInfo accountInfo = AccountInfo.getInstance();
+            Bitmap input = accountInfo.getBitmap();
+//            Bitmap bitmap1= BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
+//            hugo = new HUGO(/*accountInfo.getName() + */"1234567890" /*+ accountInfo.getPassword()*/, bitmap1);
+            hugo = new HUGO(accountInfo.getName() + "##" + accountInfo.getPassword(), input);
             hugo.embed();
+
+            hugo = null;
             return null;
         }
 
@@ -215,7 +220,7 @@ public class mainActivity extends ActionBarActivity
                         {
                             //Overwrite file
                             filename = accountInfo.getFilePath();
-                            //SaveFile(filename, HUGO.convertColorHSVColor(accountInfo.getBitmap()));
+                            SaveFile(filename, accountInfo.getBitmap());
                         }
                     })
                     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -228,7 +233,7 @@ public class mainActivity extends ActionBarActivity
                             String file = accountInfo.getFilePath();
                             filename = file.substring(0, file.length() - 4) + date + ".jpg";
                             Log.d("EMBED","Saving file at: " + filename);
-                            //SaveFile(filename, HUGO.convertColorHSVColor(accountInfo.getBitmap()));
+                            SaveFile(filename, accountInfo.getBitmap());
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_alert).show();

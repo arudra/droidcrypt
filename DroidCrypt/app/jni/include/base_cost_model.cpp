@@ -28,6 +28,9 @@ base_cost_model::~base_cost_model()
 {
 	delete[] this->costs;
     delete[] this->num_bits_used;
+
+    this->costs = NULL;
+    this->num_bits_used = NULL;
 }
 
 mat2D<int> * base_cost_model::Embed(float &alpha_out, float &coding_loss_out, unsigned int &stc_trials_used, float &distortion)

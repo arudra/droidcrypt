@@ -23,10 +23,10 @@ public class FullPath
 
         // Split at colon, use second item in the array
         String id;
-        if(wholeID != null && wholeID.length() > 1)
+        if(wholeID != null && wholeID.indexOf(':') > 0)
             id = wholeID.split(":")[1];
         else
-            id = wholeID;
+            return wholeID;
 
 
         String[] column = { MediaStore.Images.Media.DATA };
