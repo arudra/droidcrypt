@@ -3,6 +3,8 @@ package com.droidcrypt;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -10,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
@@ -102,6 +105,7 @@ public class mainActivity extends ActionBarActivity
         accountInfo.setPassword(pass);
 
         Toast.makeText(this,"Starting Embedding!",Toast.LENGTH_SHORT).show();
+        Log.d("EMBED", "Embedding started");
         embedCaller = new EmbedCaller();
         embedCaller.execute();
 
@@ -119,49 +123,33 @@ public class mainActivity extends ActionBarActivity
                 if (bitmap!=null)
                     bitmap.recycle();
 
-                InputStream stream = getContentResolver().openInputStream(data.getData());
-                bitmap = BitmapFactory.decodeStream(stream);
-                stream.close();
+                Log.d("EMBED","Return from Gallery");
+
+                //Find File Path
+                Uri imageURI = data.getData();
+
+                Log.d("EMBED", "URI: " + imageURI);
+
+                String result;
+                if(Build.VERSION.SDK_INT < 19)
+                    result = FullPath.getPath_API11(this,imageURI);
+                else
+                    result = FullPath.getPath_API19(this, imageURI);
+
+                Log.d("EMBED", "Full Path: " + result);
+                if (result != null)
+                    accountInfo.setFilePath(result);
+
+                //InputStream stream = getContentResolver().openInputStream(data.getData());
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageURI);//BitmapFactory.decodeStream(stream);
+                //stream.close();
 
                 //Set Image in global class
                 accountInfo.setBitmap(bitmap);
 
-                //Find File Path
-                Uri selectedImageURI = data.getData();
-                accountInfo.setFilePath(getRealPathFromURI(selectedImageURI));
-
-
             } catch (Exception e) { e.printStackTrace(); }
         }
         super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    //Convert URI into Full File Path
-    private String getRealPathFromURI(Uri contentURI)
-    {
-        String filePath = "";
-        String wholeID = DocumentsContract.getDocumentId(contentURI);
-
-        // Split at colon, use second item in the array
-        String id = wholeID.split(":")[1];
-
-        String[] column = { MediaStore.Images.Media.DATA };
-
-        // where id is equal to
-        String sel = MediaStore.Images.Media._ID + "=?";
-
-        Cursor cursor = getApplicationContext().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                column, sel, new String[]{ id }, null);
-
-        int columnIndex = cursor.getColumnIndex(column[0]);
-
-        if (cursor.moveToFirst()) {
-            filePath = cursor.getString(columnIndex);
-        }
-        cursor.close();
-
-        Log.d("File","Full File Path: " + filePath);
-        return filePath;
     }
 
     public void onClickExtract (View view)
@@ -216,7 +204,7 @@ public class mainActivity extends ActionBarActivity
             pdLoading.dismiss();
 
             new AlertDialog.Builder(mainActivity.this)
-                    .setTitle("Save Image")
+                    .setTitle("Overwrite Image")
                     .setMessage("Do you want to overwrite the original image?")
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         @Override
@@ -224,9 +212,10 @@ public class mainActivity extends ActionBarActivity
                         {
                             //Overwrite file
                             filename = accountInfo.getFilePath();
+                            SaveFile(filename, HUGO.convertColorHSVColor(accountInfo.getBitmap()));
                         }
                     })
-                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which)
                         {
@@ -235,30 +224,35 @@ public class mainActivity extends ActionBarActivity
                             String date = dateFormat.format(new Date());
                             String file = accountInfo.getFilePath();
                             filename = file.substring(0, file.length() - 4) + date + ".jpg";
-
+                            Log.d("EMBED","Saving file at: " + filename);
+                            SaveFile(filename, HUGO.convertColorHSVColor(accountInfo.getBitmap()));
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_alert).show();
-
-            //Save File
-            Bitmap save = HUGO.convertColorHSVColor(accountInfo.getBitmap());
-            FileOutputStream out = null;
-            try {
-                out = new FileOutputStream(filename);
-                save.compress(Bitmap.CompressFormat.PNG, 100, out); // PNG is a lossless format, the compression factor (100) is ignored
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (out != null) {
-                        out.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
 
+    }
+
+    public void SaveFile (String file, Bitmap bitmap)
+    {
+        FileOutputStream out = null;
+
+        try {
+            out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // PNG is a lossless format, the compression factor (100) is ignored
+            Log.d("EMBED", "Bitmap File saved");
+        } catch (Exception e) {
+            Log.d("EMBED", "Bitmap File not saved!");
+            e.printStackTrace();
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private class ExtractCaller extends AsyncTask<Void, Void, Void>

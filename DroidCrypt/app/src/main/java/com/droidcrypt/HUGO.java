@@ -66,7 +66,7 @@ public class HUGO
         long startTime = System.currentTimeMillis();
 
         try{
-            //grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(), password, num_bits_used);
+            grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(), password, num_bits_used);
             //Store embedded array for later extract
             long endTime = System.currentTimeMillis();
             AccountInfo.getInstance().setHugoArray(grayArray);
@@ -97,18 +97,6 @@ public class HUGO
 
         return output;
     }
-
-    private byte[] bitmapToByteArray(Bitmap bmp) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        return stream.toByteArray();
-    }
-
-    private Bitmap byteArrayToBitmap(byte[] bitmapdata) {
-        return BitmapFactory.decodeByteArray(bitmapdata, 0, bitmapdata.length);
-
-    }
-
 
     //Convert Bitmap from Color to HSV, then HSV to Color
     public static Bitmap convertColorHSVColor(Bitmap src){
@@ -199,49 +187,5 @@ public class HUGO
 
         return image;
     }
-    /*
-    public void saveImage (String imagePath, Mat2D instance)
-    {
-        byte[] pixels = new byte[instance.rows * instance.cols];
-
-        for(int r = 0; r < instance.rows; r++)
-        {
-            for(int c = 0; c < instance.cols; c++)
-            {
-                pixels[c*instance.rows + r] = instance.Read(r, c).byteValue();
-            }
-        }
-
-        //Write to PGM file
-        File newFile = new File(imagePath);
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(newFile);
-            for(int i = 0; i < instance.rows; i++)
-            {
-                for(int j = 0; j < instance.cols; j++)
-                {   //write one byte
-                    fileOutputStream.write(pixels[j*instance.rows+i]);
-                }
-            }
-            fileOutputStream.flush();
-            fileOutputStream.close();
-        } catch (Exception e) { e.printStackTrace(); }
-
-    }
-    */
-
-    /*
-    public String convertToPGM (String input)
-    {
-        File inputFile = new File(input);
-        String output = null;
-        return output;
-    }
-    */
-
-
-
-
-
 
 }
