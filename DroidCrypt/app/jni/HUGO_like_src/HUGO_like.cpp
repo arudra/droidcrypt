@@ -46,9 +46,10 @@ unsigned char * string_to_bit_array(char * input) {
 
 char * bit_array_to_string(unsigned char *input, int len) {
     int i;
-    char * output = new char[len/8+1];
+    int olen = len/8;
+    char * output = new char[olen+1];
     bitset<8> oByteArray;
-  for (i=0; i<len; i++) {
+  for (i=0; i<olen; i++) {
     for (int j=0; j<8; j++) {
       if (input[i*8 + j] == 1)
         oByteArray.set(j, true);
@@ -58,7 +59,7 @@ char * bit_array_to_string(unsigned char *input, int len) {
     unsigned long c = oByteArray.to_ulong();
     output[i] = static_cast<char>( c ); 
   }
-  output[len>>3] = 0;
+  output[olen] = '\0';
   return output;
 }
 
@@ -98,7 +99,7 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         //        std::string message = "1234567890";
         char *tmp = bit_array_to_string(msg, len);
         LOGI("Here we get all the information: password =%s (%d)", tmp, len);
-        //delete[] tmp;
+        delete[] tmp;
         payload = width*height/len;
         cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stc_constr_height, randSeed, message);
         config->embedMsg = msg;
@@ -145,10 +146,10 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         else {
             char *tmp = bit_array_to_string(extracted_message, num_msg_bits[0] + num_msg_bits[1]);      
             LOGI("Successfully extracted_message is %s", tmp);
-            //Mat2dToImage(stego_px, img, width, height);
+            Mat2dToImage(stego_px, img, width, height);
             num_bits_used[0] = num_msg_bits[0];
             num_bits_used[1] = num_msg_bits[1];
-            //delete[] tmp;
+            delete[] tmp;
         }
         
         LOGI("config");
@@ -171,7 +172,7 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         cover= NULL;
         config= NULL;
 
-        //delete[] extracted_message;
+        delete[] extracted_message;
         
         //clock_t end=clock();
     }

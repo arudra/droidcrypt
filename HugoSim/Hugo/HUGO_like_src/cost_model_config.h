@@ -2,6 +2,7 @@
 #define CONFIG_H_
 
 #include "base_cost_model_config.h"
+#include <iostream>
 
 class cost_model_config : public base_cost_model_config
 {

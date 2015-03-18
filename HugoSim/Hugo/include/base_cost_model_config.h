@@ -2,6 +2,7 @@
 #define BASE_COST_MODEL_CONFIG_H_
 
 #include <string>
+#include <iostream>
 
 class base_cost_model_config
 {
@@ -11,6 +12,8 @@ public:
 	unsigned int stc_constr_height;
 	int randSeed;
     std::string message;
+    unsigned char * embedMsg;
+    unsigned int length;
     
 	base_cost_model_config(float payload, bool verbose, unsigned int stc_constr_height, int randSeed, std::string message);
 	~base_cost_model_config();

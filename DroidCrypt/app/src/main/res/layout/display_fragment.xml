@@ -10,11 +10,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter Account Name"
+        android:text="Your Account Name:"
         android:id="@+id/textView1"
         android:layout_weight="1"
         android:height="25dp"
-        android:textColor="@color/indigo_A400"
+        android:textColor="@color/blue_grey_500"
         android:textSize="24sp"
         android:gravity="center_vertical|center_horizontal"
         android:layout_marginLeft="0dp"
@@ -30,19 +30,18 @@
         android:layout_weight="1"
         android:layout_gravity="center"
         android:textSize="20sp"
-        android:textColor="#000"
+        android:textColor="@color/blue_grey_800"
         android:layout_marginTop="30dp"
-        android:text="GMAIL"
         android:layout_below="@+id/textView1"
         android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter Password"
+        android:text="Your Password:"
         android:id="@+id/textView2"
         android:height="25dp"
-        android:textColor="@color/indigo_A400"
+        android:textColor="@color/blue_grey_500"
         android:textSize="24sp"
         android:layout_weight="1"
         android:gravity="center_vertical|center_horizontal"
@@ -58,9 +57,8 @@
         android:layout_weight="1"
         android:layout_gravity="center"
         android:textSize="20sp"
-        android:textColor="#000"
+        android:textColor="@color/blue_grey_800"
         android:layout_marginTop="30dp"
-        android:text="PASSWORD"
         android:layout_below="@+id/textView2"
         android:layout_centerHorizontal="true" />
 

@@ -25,6 +25,7 @@ cost_model::cost_model(mat2D<int>* cover, cost_model_config* config) : base_cost
 
 cost_model::~cost_model()
 {
+    std::cout << "~cost_model" << std::endl;
 }
 
 void cost_model::calc_costs(int r, int c, mat2D<int>* cover_padded, float* pixel_costs) {

@@ -9,4 +9,5 @@ cost_model_config::cost_model_config(float payload, bool verbose, float gamma, f
 
 cost_model_config::~cost_model_config()
 {
+    std::cout << "destructor: cost_model_config" << std::endl;
 }

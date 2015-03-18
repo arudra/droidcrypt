@@ -288,6 +288,7 @@ public class mainActivity extends ActionBarActivity
             sharedPrefs.putString(filename, accountInfo.getName() + " " + accountInfo.getPassword());
             sharedPrefs.apply();
 //            Log.d("EMBED","SharedPref: " + filename + " " + accountInfo.getHugoBits()[0] + " " + accountInfo.getHugoBits()[1]);
+            Toast.makeText(mainActivity.this, "File saved: " + filename, Toast.LENGTH_LONG).show();
 
         } catch (Exception e) {
             Log.d("EMBED", "Bitmap File not saved!");
