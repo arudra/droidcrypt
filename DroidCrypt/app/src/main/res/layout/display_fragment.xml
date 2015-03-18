@@ -10,9 +10,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter Account Name"
+        android:text="Account Name"
         android:id="@+id/textView1"
-        android:layout_weight="1"
         android:height="25dp"
         android:textColor="@color/indigo_A400"
         android:textSize="24sp"
@@ -27,24 +26,21 @@
         android:id="@+id/account"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:layout_gravity="center"
         android:textSize="20sp"
         android:textColor="#000"
         android:layout_marginTop="30dp"
-        android:text="GMAIL"
         android:layout_below="@+id/textView1"
         android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter Password"
+        android:text="Password"
         android:id="@+id/textView2"
         android:height="25dp"
         android:textColor="@color/indigo_A400"
         android:textSize="24sp"
-        android:layout_weight="1"
         android:gravity="center_vertical|center_horizontal"
         android:layout_below="@+id/account"
         android:layout_centerHorizontal="true"
@@ -60,7 +56,6 @@
         android:textSize="20sp"
         android:textColor="#000"
         android:layout_marginTop="30dp"
-        android:text="PASSWORD"
         android:layout_below="@+id/textView2"
         android:layout_centerHorizontal="true" />
 

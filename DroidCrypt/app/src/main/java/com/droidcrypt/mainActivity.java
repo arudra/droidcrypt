@@ -57,9 +57,7 @@ public class mainActivity extends ActionBarActivity
 
         ActionBar bar = getSupportActionBar();
         bar.setBackgroundDrawable(new ColorDrawable(R.color.indigo_500));
-
-        setTitle("Steganosarus");
-
+        setTitle("Stegosaurus");
 
         main MainFragment = new main();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, MainFragment).commit();
@@ -137,21 +135,22 @@ public class mainActivity extends ActionBarActivity
 
                 //Find File Path
                 Uri imageURI = data.getData();
-                File filepath = new File(imageURI.toString());
-                String file = filepath.getAbsolutePath().split(":")[1];
-                Log.d("EMBED", "" + file);
+//                File filepath = new File(imageURI.toString());
+//                String file = filepath.getAbsolutePath().split(":")[1];
+//                Log.d("EMBED", "" + file);
 
-//                String result = "";
-//                if(Build.VERSION.SDK_INT < 19)
-//                    result = FullPath.getPath_API11(this,imageURI);
-//                else
-//                    result = FullPath.getPath_API19(this, imageURI);
+                String result = "";
+                if(Build.VERSION.SDK_INT < 19)
+                    result = FullPath.getPath_API11(this,imageURI);
+                else
+                    result = FullPath.getPath_API19(this, imageURI);
 
-//                Log.d("EMBED", "Full Path: " + result);
-                accountInfo.setFilePath(file);
+                Log.d("EMBED", "Full Path: " + result);
+//                accountInfo.setFilePath(file);
+                accountInfo.setFilePath(result);
 
-                //bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageURI);
-                bitmap = BitmapFactory.decodeFile(file);
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageURI);
+//                bitmap = BitmapFactory.decodeFile(file);
 
                 //Set Image in global class
                 accountInfo.setBitmap(bitmap);
@@ -281,12 +280,18 @@ public class mainActivity extends ActionBarActivity
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // PNG is a lossless format, the compression factor (100) is ignored
             Log.d("EMBED", "Bitmap File saved at: " + file);
 
-            //Save Filname + bits to SharedPrefs
+            //Scan file so it shows up in Gallery
+            File check = new File(file);
+            SingleMediaScanner singleMediaScanner = new SingleMediaScanner(mainActivity.this, check);
+
+            //Save Filename + bits to SharedPrefs
             SharedPreferences.Editor sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE).edit();
             String filename = file.substring(file.lastIndexOf('/') + 1);
 //            sharedPrefs.putString(filename, accountInfo.getHugoBits()[0] + " " + accountInfo.getHugoBits()[1]);
             sharedPrefs.putString(filename, accountInfo.getName() + " " + accountInfo.getPassword());
             sharedPrefs.apply();
+            Toast.makeText(mainActivity.this, "File saved at: " + filename, Toast.LENGTH_LONG).show();
+
 //            Log.d("EMBED","SharedPref: " + filename + " " + accountInfo.getHugoBits()[0] + " " + accountInfo.getHugoBits()[1]);
 
         } catch (Exception e) {
