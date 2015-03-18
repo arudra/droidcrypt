@@ -70,28 +70,10 @@ JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
     int                height;
     static int         init;
     unsigned char* pixels = as_unsigned_char_array(env, bitmap);
-    (env)->DeleteLocalRef(bitmap);
+    //(env)->DeleteLocalRef(bitmap);
     
     int* num_bits_used = new int[2];
 
-/*
-    if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
-        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
-        return;
-    }
-*/
-/*
-    if (info.format != ANDROID_BITMAP_FORMAT_RGB_565) {
-        LOGE("Bitmap format is not RGB_565 !");
-        int bitmapFormat = info.format;
-        LOGE("Bitmap Format is %d", bitmapFormat);
-    }
-*/
-/*
-    if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
-        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-    }
-*/
     LOGI("Successfully got the pixels");
     width = (int) jwidth;
     height = (int) jheight;
@@ -107,11 +89,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
 
    // num_bits_embeded = as_int_array(env, num_bits_used, 2);
     env->SetIntArrayRegion (num_bits_embeded, 0, 2, reinterpret_cast<jint*>(num_bits_used));   
-    // jint* tmpIntArray = (env)->GetIntArrayElements(num_bits_embeded, NULL);
-   // //num_bits_embeded = as_int_array(env, num_bits_used, 2);
-   // tmpIntArray[0] = num_bits_used[0];
-   // tmpIntArray[1] = num_bits_used[1];
-   // (env)->ReleaseIntArrayElements(num_bits_embeded, tmpIntArray, 0);
+
 
    delete[] pixels;
    delete[] num_bits_used;

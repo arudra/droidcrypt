@@ -151,12 +151,18 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
             //delete[] tmp;
         }
         
-        delete stego;
-        delete model;
-        delete[] msg;
-        delete[] stego_px;
-        delete cover;
+        LOGI("config");
         delete config;
+        LOGI("model");
+        delete model;
+        LOGI("cover");
+        delete cover;
+        LOGI("stego");
+        delete stego;
+        LOGI("msg");
+        delete[] msg;
+        LOGI("stego_px");
+        delete[] stego_px;
         
         stego = NULL;
         model= NULL;
