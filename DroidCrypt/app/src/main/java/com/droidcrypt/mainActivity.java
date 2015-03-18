@@ -167,7 +167,9 @@ public class mainActivity extends ActionBarActivity
     @Override
      public void onDestroy() {
         super.onDestroy();
-        embedCaller.pdLoading.dismiss();
+        if (extractCaller != null) {
+            embedCaller.pdLoading.dismiss();
+        }
         embedCaller = null;
         if (extractCaller != null) {
             extractCaller.loader.dismiss();
@@ -186,7 +188,7 @@ public class mainActivity extends ActionBarActivity
         {
             super.onPreExecute();
             pdLoading.setMessage("\tEmbeding...");
-            //pdLoading.show();
+            pdLoading.show();
         }
         @Override
         protected Void doInBackground(Void... params)
@@ -199,7 +201,7 @@ public class mainActivity extends ActionBarActivity
 //            Bitmap bitmap1= BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
 //            hugo = new HUGO(/*accountInfo.getName() + */"1234567890" /*+ accountInfo.getPassword()*/, bitmap1);
             hugo = new HUGO(accountInfo.getName() + "##" + accountInfo.getPassword(), input);
-            hugo.embed();
+            hugo.testNdkCall();
 
             hugo = null;
             return null;
