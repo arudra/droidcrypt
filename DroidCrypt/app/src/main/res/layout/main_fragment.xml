@@ -10,41 +10,41 @@
     <Button
         android:id="@+id/embed"
         android:layout_width="160sp"
-        android:layout_height="80sp"
+        android:layout_height="60sp"
         android:text="@string/embed"
         android:textSize="20sp"
         android:onClick="onClickEmbed"
-        android:textColor="@color/black_text"
-        android:background="@color/light_blue_A700"
-        android:layout_centerHorizontal="true"
+        android:textColor="@color/white_text"
+        android:background="@color/indigo_400"
+        android:layout_alignEnd="@+id/extract"
         android:layout_above="@+id/extract"
-    />
+        android:height="187dp" />
 
     <Button
         android:id="@+id/extract"
         android:layout_width="160sp"
-        android:layout_height="80sp"
+        android:layout_height="60sp"
         android:text="@string/extract"
         android:textSize="20sp"
         android:onClick="onClickExtract"
-        android:textColor="@color/black_text"
-        android:background="@color/light_blue_A700"
+        android:textColor="@color/white_text"
+        android:background="@color/indigo_400"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:layout_marginTop="@dimen/abc_action_button_min_height_material"
-    />
+        android:height="187dp" />
 
     <Button
         android:id="@+id/settings"
         android:layout_width="160sp"
-        android:layout_height="80sp"
+        android:layout_height="60sp"
         android:text="@string/settings"
         android:textSize="20sp"
-        android:textColor="@color/black_text"
-        android:background="@color/light_blue_A700"
+        android:textColor="@color/white_text"
+        android:background="@color/indigo_400"
         android:layout_below="@+id/extract"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/abc_action_button_min_height_material"
-    />
+        android:height="187dp" />
 
 </RelativeLayout>

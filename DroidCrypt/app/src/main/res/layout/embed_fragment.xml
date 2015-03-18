@@ -6,42 +6,67 @@
     tools:context="com.droidcrypt.Embed"
     android:orientation="vertical"
     android:background="@color/white"
-    >
+    android:weightSum="1">
+
+    <TextView
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:text="Enter Account Name"
+        android:id="@+id/textView"
+        android:layout_weight="0.1"
+        android:height="25dp"
+        android:textColor="@color/black_text"
+        android:textSize="20sp"
+        android:layout_marginTop="100dp"
+        android:layout_gravity="center"
+        android:gravity="center_vertical|center_horizontal" />
 
     <EditText
         android:id="@+id/account"
         android:inputType="text"
-        android:hint="@string/account"
         android:layout_width="250sp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="200sp"
-        android:layout_marginBottom="20sp"
+        android:layout_marginTop="20sp"
+        android:layout_marginBottom="50sp"
         android:textColor="@color/black_text"
-    />
+        android:height="25dp"
+        android:textSize="20sp" />
+
+    <TextView
+        android:layout_width="221dp"
+        android:layout_height="wrap_content"
+        android:text="Enter Password"
+        android:id="@+id/textView_passView"
+        android:layout_gravity="center"
+        android:height="25dp"
+        android:textColor="@color/black_text"
+        android:textSize="20sp"
+        android:layout_weight="0.1"
+        android:gravity="center_vertical|center_horizontal" />
 
     <EditText
         android:id="@+id/password"
-        android:hint="@string/pass"
         android:inputType="textPassword"
         android:layout_width="250sp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginBottom="20sp"
         android:textColor="@color/black_text"
-    />
+        android:height="25dp"
+        android:textSize="20sp" />
 
     <Button
         android:id="@+id/hugostart"
-        android:text="@string/start"
+        android:text="Proceed"
         android:textSize="20sp"
-        android:layout_width="170sp"
-        android:layout_height="80sp"
+        android:layout_width="187dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:onClick="onClickHugoStart"
-        android:textColor="@color/black_text"
-        android:background="@color/light_blue_A700"
+        android:textColor="@color/white_text"
+        android:background="@color/indigo_400"
         android:layout_marginTop="@dimen/abc_action_button_min_height_material"
-    />
+        android:height="25dp" />
 
 </LinearLayout>

@@ -58,7 +58,7 @@ char * bit_array_to_string(unsigned char *input, int len) {
     unsigned long c = oByteArray.to_ulong();
     output[i] = static_cast<char>( c ); 
   }
-  output[len>>3] = '\0';
+  output[len>>3] = 0;
   return output;
 }
 
@@ -72,7 +72,7 @@ void gen_random(char *s, const int len) {
         s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
     
-    s[len-1] = '\0';
+    s[len-1] = 0;
 }
 
 int HUGO_like(unsigned char * img, int width, int height, char * password, int* num_bits_used)

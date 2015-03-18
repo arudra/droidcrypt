@@ -21,14 +21,16 @@ public class HUGO
     public Bitmap origImage;
     public Bitmap grayImage;
     public byte[] grayArray;
-    private Context context;
+    public int[] num_bits_used;
 
-    public HUGO (String pass, Bitmap inputImg)
+    public HUGO (String pass, Bitmap inputImg, int[] bits)
     {
         password = pass;
         origImage = inputImg;
         grayImage = null;
         grayArray = null;
+
+        num_bits_used =  bits;
     }
 
     public void testNdkCall()
@@ -41,7 +43,7 @@ public class HUGO
         long startTime = System.currentTimeMillis();
         try {
             grayArray = Embedder.embed(grayArray, origImage.getWidth(), origImage.getHeight(),
-                    "abcdef0989713", num_bits_used);
+                    "abcdef0989mvgcg713", num_bits_used);
             long endEmbed = System.currentTimeMillis();
             String oPass = Embedder.extract(grayArray, origImage.getWidth(), origImage.getHeight(), num_bits_used, 7);
             long endExtract = System.currentTimeMillis();
@@ -57,13 +59,12 @@ public class HUGO
 
     public void embed()
     {
-        int[] num_bits_used = new int[2];
         num_bits_used[0] = 2;
         num_bits_used[1] = 2;
 
         grayArray = toGrayscale(origImage);
         if (grayArray.length < (origImage.getWidth()*origImage.getHeight()) ) {
-            Log.e("HUGO", "Error, the image size is less than the width and heigth. Image is corrupted");
+            Log.e("HUGO", "Error, the image size is less than the width and height. Image is corrupted");
             return;
         }
         long startTime = System.currentTimeMillis();
@@ -74,7 +75,6 @@ public class HUGO
             long endTime = System.currentTimeMillis();
 //            AccountInfo.getInstance().setHugoArray(grayArray);
             AccountInfo.getInstance().setBitmap(convertColorHSVColor(origImage));
-            AccountInfo.getInstance().setHugoBits(num_bits_used);
             grayArray = null;
             Log.d("HUGO", "Num_bits_used to embed = " + num_bits_used[0] + " - " + num_bits_used[1]);
             Log.d("HUGO", "TIME Embed: " + (endTime - startTime) / 1000.f + "s");
@@ -92,8 +92,8 @@ public class HUGO
         AccountInfo accountInfo = AccountInfo.getInstance();
 
         long startTime = System.currentTimeMillis();
-        output = Embedder.extract(accountInfo.getHugoArray(), accountInfo.getBitmap().getWidth(),
-                accountInfo.getBitmap().getHeight(), accountInfo.getHugoBits(), 7);
+        output = Embedder.extract(toGrayscale(accountInfo.getBitmap()), accountInfo.getBitmap().getWidth(),
+                accountInfo.getBitmap().getHeight(), num_bits_used, 7);
         long endTime = System.currentTimeMillis();
 
         Log.d("HUGO", "Info Extracted: " + output);

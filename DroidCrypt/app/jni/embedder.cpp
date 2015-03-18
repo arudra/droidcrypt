@@ -148,7 +148,8 @@ JNIEXPORT jstring JNICALL Java_com_droidcrypt_Embedder_extract
     char *password = HUGO_like_extract(pixels, width, height, stc_constr_height, num_bits_used);
     jstring jstrBuf = (env)->NewStringUTF(password);
     //(env)->DeleteLocalRef(jstrBuf);
-
+    env->ReleaseIntArrayElements(num_bits_embeded, tmpIntArray, JNI_ABORT);
+    
    delete[] pixels;
    delete[] num_bits_used;
    delete[] password;

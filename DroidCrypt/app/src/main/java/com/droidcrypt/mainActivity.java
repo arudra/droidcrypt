@@ -7,14 +7,17 @@ import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,12 +41,12 @@ public class mainActivity extends ActionBarActivity
 
     private EmbedCaller embedCaller;
     private ExtractCaller extractCaller;
-    private HUGO hugo;
 
     private static final int REQUEST_CODE = 1;
     private Bitmap bitmap;
     private String info;
     private AccountInfo accountInfo;
+    private boolean embed = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +56,12 @@ public class mainActivity extends ActionBarActivity
 //        embedCaller.execute();
 
         accountInfo = AccountInfo.getInstance();
+
+        ActionBar bar = getSupportActionBar();
+        bar.setBackgroundDrawable(new ColorDrawable(R.color.indigo_500));
+
+        setTitle("Steganosarus");
+
 
         main MainFragment = new main();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, MainFragment).commit();
@@ -125,29 +134,35 @@ public class mainActivity extends ActionBarActivity
                 if (bitmap!=null)
                     bitmap.recycle();
 
+
                 Log.d("EMBED","Return from Gallery");
 
                 //Find File Path
                 Uri imageURI = data.getData();
+                File filepath = new File(imageURI.toString());
+                String file = filepath.getAbsolutePath().split(":")[1];
+                Log.d("EMBED", "" + file);
 
-                Log.d("EMBED", "URI: " + imageURI);
+//                String result = "";
+//                if(Build.VERSION.SDK_INT < 19)
+//                    result = FullPath.getPath_API11(this,imageURI);
+//                else
+//                    result = FullPath.getPath_API19(this, imageURI);
 
-                String result;
-                if(Build.VERSION.SDK_INT < 19)
-                    result = FullPath.getPath_API11(this,imageURI);
-                else
-                    result = FullPath.getPath_API19(this, imageURI);
+//                Log.d("EMBED", "Full Path: " + result);
+                accountInfo.setFilePath(file);
 
-                Log.d("EMBED", "Full Path: " + result);
-                if (result != null)
-                    accountInfo.setFilePath(result);
-
-                //InputStream stream = getContentResolver().openInputStream(data.getData());
-                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageURI);//BitmapFactory.decodeStream(stream);
-                //stream.close();
+                //bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageURI);
+                bitmap = BitmapFactory.decodeFile(file);
 
                 //Set Image in global class
                 accountInfo.setBitmap(bitmap);
+
+                if(!embed)    //Call Extract
+                {
+                    extractCaller = new ExtractCaller();
+                    extractCaller.execute();
+                }
 
             } catch (Exception e) { e.printStackTrace(); }
         }
@@ -156,8 +171,14 @@ public class mainActivity extends ActionBarActivity
 
     public void onClickExtract (View view)
     {
-        extractCaller = new ExtractCaller();
-        extractCaller.execute();
+        embed = false;
+
+        //Send intent to Gallery
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_CODE);
 
         //Switch to Display fragment
         AccountDisplay fragment = new AccountDisplay();
@@ -168,7 +189,7 @@ public class mainActivity extends ActionBarActivity
      public void onDestroy() {
         super.onDestroy();
         if (extractCaller != null) {
-            embedCaller.pdLoading.dismiss();
+        embedCaller.pdLoading.dismiss();
         }
         embedCaller = null;
         if (extractCaller != null) {
@@ -196,12 +217,21 @@ public class mainActivity extends ActionBarActivity
             BitmapFactory.Options opt= new BitmapFactory.Options();
             opt.inScaled = false;
 //            opt.inSampleSize = 8;
-            AccountInfo accountInfo = AccountInfo.getInstance();
             Bitmap input = accountInfo.getBitmap();
 //            Bitmap bitmap1= BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
-//            hugo = new HUGO(/*accountInfo.getName() + */"1234567890" /*+ accountInfo.getPassword()*/, bitmap1);
-            hugo = new HUGO(accountInfo.getName() + "##" + accountInfo.getPassword(), input);
-            hugo.testNdkCall();
+
+            int[] num_bits = new int[2];
+            HUGO hugo = new HUGO(accountInfo.getName() + "##" + accountInfo.getPassword(), input, num_bits);
+//            HUGO hugo = new HUGO(/*accountInfo.getName() + */"1234567890" /*+ accountInfo.getPassword()*/, bitmap1, num_bits);
+            hugo.embed();
+
+            //Save filename + num_bits
+            SharedPreferences.Editor sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE).edit();
+            String file = accountInfo.getFilePath();
+            String filename = file.substring(file.lastIndexOf('/') + 1);
+            sharedPrefs.putString(filename,hugo.num_bits_used[0] + " " + hugo.num_bits_used[1]);
+            sharedPrefs.apply();
+            Log.d("EMBED", "SharedPref: " + filename + " " + hugo.num_bits_used[0] + " " + hugo.num_bits_used[1]);
 
             hugo = null;
             return null;
@@ -216,7 +246,7 @@ public class mainActivity extends ActionBarActivity
             new AlertDialog.Builder(mainActivity.this)
                     .setTitle("Overwrite Image")
                     .setMessage("Do you want to overwrite the original image?")
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    .setPositiveButton(R.string.overwrite, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which)
                         {
@@ -225,7 +255,7 @@ public class mainActivity extends ActionBarActivity
                             SaveFile(filename, accountInfo.getBitmap());
                         }
                     })
-                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    .setNegativeButton(R.string.newfile, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which)
                         {
@@ -250,7 +280,7 @@ public class mainActivity extends ActionBarActivity
         try {
             out = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // PNG is a lossless format, the compression factor (100) is ignored
-            Log.d("EMBED", "Bitmap File saved");
+            Log.d("EMBED", "Bitmap File saved at: " + file);
         } catch (Exception e) {
             Log.d("EMBED", "Bitmap File not saved!");
             e.printStackTrace();
@@ -280,6 +310,26 @@ public class mainActivity extends ActionBarActivity
         @Override
         protected Void doInBackground(Void ... params)
         {
+            int[] bits = new int[2];
+            SharedPreferences sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE);
+
+            String file = accountInfo.getFilePath();
+            String filename = file.substring(file.lastIndexOf('/') + 1);
+            String result = sharedPrefs.getString(filename, null);
+
+            //File found
+            if(result != null)
+            {
+                bits[0] = Integer.parseInt(result.split(" ")[0]);
+                bits[1] = Integer.parseInt(result.split(" ")[1]);
+            }
+            else
+            {
+                //Toast.makeText(mainActivity.this, "This file does not contain a password!", Toast.LENGTH_SHORT).show();
+            }
+
+            HUGO hugo = new HUGO("", accountInfo.getBitmap(), bits);
+
             info = hugo.extract();
             return null;
         }
