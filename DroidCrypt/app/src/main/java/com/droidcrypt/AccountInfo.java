@@ -57,15 +57,13 @@ public class AccountInfo
 
 //    public byte[] getHugoArray () { return HugoArray; }
 
-//    public void setHugoBits (int[] bits)
-//    {
-//        HugoBits = bits;
-//        Log.d("GLOBAL", "Setting num bits");
-//        HugoBits = new int[2];
-//        System.arraycopy(bits, 0, HugoBits, 0, 2);
-//    }
-//
-//    public int[] getHugoBits () { return HugoBits; }
+    public void setHugoBits (int[] bits)
+    {
+        HugoBits = bits;
+        Log.d("GLOBAL", "Setting num bits");
+    }
+
+    public int[] getHugoBits () { return HugoBits; }
 
     public void setFilePath (String filepath) { FilePath = filepath; Log.d("GLOBAL", "Setting file path: " + filepath); }
 

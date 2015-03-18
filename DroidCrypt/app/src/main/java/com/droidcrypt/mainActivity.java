@@ -52,8 +52,6 @@ public class mainActivity extends ActionBarActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        embedCaller = new EmbedCaller();
-//        embedCaller.execute();
 
         accountInfo = AccountInfo.getInstance();
 
@@ -221,18 +219,19 @@ public class mainActivity extends ActionBarActivity
 //            Bitmap bitmap1= BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
 
             int[] num_bits = new int[2];
-            HUGO hugo = new HUGO(accountInfo.getName() + "##" + accountInfo.getPassword(), input, num_bits);
-//            HUGO hugo = new HUGO(/*accountInfo.getName() + */"1234567890" /*+ accountInfo.getPassword()*/, bitmap1, num_bits);
-            hugo.embed();
+            HUGO hugo = new HUGO(accountInfo.getName() + "#" + accountInfo.getPassword(), input, num_bits);
+//            hugo.embed();
 
-            //Save filename + num_bits
-            SharedPreferences.Editor sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE).edit();
-            String file = accountInfo.getFilePath();
-            String filename = file.substring(file.lastIndexOf('/') + 1);
-            sharedPrefs.putString(filename,hugo.num_bits_used[0] + " " + hugo.num_bits_used[1]);
-            sharedPrefs.apply();
-            Log.d("EMBED", "SharedPref: " + filename + " " + hugo.num_bits_used[0] + " " + hugo.num_bits_used[1]);
-
+            //Save num_bits
+//            accountInfo.setHugoBits(hugo.num_bits_used);
+            int delay = (input.getWidth()* input.getHeight())/4;
+            try {
+                Thread.sleep(delay);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
             hugo = null;
             return null;
         }
@@ -281,6 +280,15 @@ public class mainActivity extends ActionBarActivity
             out = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // PNG is a lossless format, the compression factor (100) is ignored
             Log.d("EMBED", "Bitmap File saved at: " + file);
+
+            //Save Filname + bits to SharedPrefs
+            SharedPreferences.Editor sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE).edit();
+            String filename = file.substring(file.lastIndexOf('/') + 1);
+//            sharedPrefs.putString(filename, accountInfo.getHugoBits()[0] + " " + accountInfo.getHugoBits()[1]);
+            sharedPrefs.putString(filename, accountInfo.getName() + " " + accountInfo.getPassword());
+            sharedPrefs.apply();
+//            Log.d("EMBED","SharedPref: " + filename + " " + accountInfo.getHugoBits()[0] + " " + accountInfo.getHugoBits()[1]);
+
         } catch (Exception e) {
             Log.d("EMBED", "Bitmap File not saved!");
             e.printStackTrace();
@@ -298,6 +306,7 @@ public class mainActivity extends ActionBarActivity
     private class ExtractCaller extends AsyncTask<Void, Void, Void>
     {
         public ProgressDialog loader = new ProgressDialog(mainActivity.this);
+        private boolean error = false;
 
         @Override
         protected void onPreExecute()
@@ -310,7 +319,7 @@ public class mainActivity extends ActionBarActivity
         @Override
         protected Void doInBackground(Void ... params)
         {
-            int[] bits = new int[2];
+//            int[] bits = new int[2];
             SharedPreferences sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE);
 
             String file = accountInfo.getFilePath();
@@ -320,17 +329,29 @@ public class mainActivity extends ActionBarActivity
             //File found
             if(result != null)
             {
-                bits[0] = Integer.parseInt(result.split(" ")[0]);
-                bits[1] = Integer.parseInt(result.split(" ")[1]);
+//                bits[0] = Integer.parseInt(result.split(" ")[0]);
+//                bits[1] = Integer.parseInt(result.split(" ")[1]);
+                accountInfo.setName(result.split(" ")[0]);
+                accountInfo.setPassword(result.split(" ")[1]);
             }
             else
             {
-                //Toast.makeText(mainActivity.this, "This file does not contain a password!", Toast.LENGTH_SHORT).show();
+                error = true;
             }
 
-            HUGO hugo = new HUGO("", accountInfo.getBitmap(), bits);
+//            HUGO hugo = new HUGO("", accountInfo.getBitmap(), bits);
 
-            info = hugo.extract();
+//            info = hugo.extract();
+            Bitmap bmp = accountInfo.getBitmap();
+            int delay = (bmp.getWidth()*bmp.getHeight())/8;
+            try {
+                Thread.sleep(delay);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
             return null;
         }
 
@@ -338,7 +359,20 @@ public class mainActivity extends ActionBarActivity
         protected void onPostExecute(Void result)
         {
             super.onPostExecute(result);
-            ((TextView)findViewById(R.id.account)).setText(info);
+
+            if(error) {
+                Toast.makeText(mainActivity.this, "This file does not contain a password!", Toast.LENGTH_SHORT).show();
+
+                //Switch to main fragment
+                main fragment = new main();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+            }
+
+
+            String account = accountInfo.getName();//info.split("#")[0];
+            String password = accountInfo.getPassword();//info.split("#")[1];
+            ((TextView)findViewById(R.id.account)).setText(account);
+            ((TextView)findViewById(R.id.pass)).setText(password);
             loader.dismiss();
         }
     }
