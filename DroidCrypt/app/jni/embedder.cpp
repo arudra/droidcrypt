@@ -63,6 +63,9 @@ int* as_int_array(JNIEnv * env, jintArray array) {
 
 JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
 (JNIEnv * env, jclass  obj, jbyteArray bitmap,  jint jwidth, jint jheight, jstring  msg, jintArray num_bits_embeded)
+
+// JNIEXPORT jlong JNICALL Java_com_droidcrypt_Embedder_embed
+// (JNIEnv * env, jclass  obj, jlong bitmapAddr,  jint jwidth, jint jheight, jstring  msg, jintArray num_bits_embeded)
 {
     //AndroidBitmapInfo  info;
     int                ret;
@@ -70,7 +73,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
     int                height;
     static int         init;
     unsigned char* pixels = as_unsigned_char_array(env, bitmap);
-    //(env)->DeleteLocalRef(bitmap);
+    (env)->DeleteLocalRef(bitmap);
     
     int* num_bits_used = new int[2];
 
@@ -80,14 +83,10 @@ JNIEXPORT jbyteArray JNICALL Java_com_droidcrypt_Embedder_embed
 
     LOGI("Image Width and height are: %d, %d", width, height);
     const char *password = (env)->GetStringUTFChars(msg, JNI_FALSE);
-
     int returnFromHugo = HUGO_like(pixels, width, height, (char *)password, num_bits_used);
-
     (env)->ReleaseStringUTFChars(msg, password);
 
     jbyteArray outbitmap = as_byte_array(env, pixels, width*height);
-
-   // num_bits_embeded = as_int_array(env, num_bits_used, 2);
     env->SetIntArrayRegion (num_bits_embeded, 0, 2, reinterpret_cast<jint*>(num_bits_used));   
 
 
@@ -120,7 +119,7 @@ JNIEXPORT jstring JNICALL Java_com_droidcrypt_Embedder_extract
    //num_bits_embeded = as_int_array(env, num_bits_used, 2);
    num_bits_used[0] = tmpIntArray[0];
    num_bits_used[1] = tmpIntArray[1];
-   //(env)->ReleaseIntArrayElements(num_bits_embeded, tmpIntArray, 0);
+   (env)->ReleaseIntArrayElements(num_bits_embeded, tmpIntArray, 0);
 /*
     if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
         LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
@@ -148,7 +147,7 @@ JNIEXPORT jstring JNICALL Java_com_droidcrypt_Embedder_extract
     char *password = HUGO_like_extract(pixels, width, height, stc_constr_height, num_bits_used);
     jstring jstrBuf = (env)->NewStringUTF(password);
     //(env)->DeleteLocalRef(jstrBuf);
-    env->ReleaseIntArrayElements(num_bits_embeded, tmpIntArray, JNI_ABORT);
+    // env->ReleaseIntArrayElements(num_bits_embeded, tmpIntArray, JNI_ABORT);
     
    delete[] pixels;
    delete[] num_bits_used;

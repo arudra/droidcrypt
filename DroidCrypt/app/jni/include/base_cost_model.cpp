@@ -72,13 +72,13 @@ bool base_cost_model::Verify(unsigned char* message, unsigned char *extracted_me
     LOGI("Verifying the extracted message %d-%d:", num_msg_bits[0], num_msg_bits[1] );
     for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
         printf("%x", extracted_message[k]);
-        LOGI("%x", extracted_message[k]);
+        //LOGI("%x", extracted_message[k]);
     }
     std::cout << " vs.  ";
-    LOGI("  vs. ");
+    //LOGI("  vs. ");
     for ( uint k = 0; k < num_msg_bits[0] + num_msg_bits[1]; k++ ) {
         printf("%x", message[k]);
-        LOGI("%x", message[k]);
+        //LOGI("%x", message[k]);
     }
     std::cout << std::endl;
     

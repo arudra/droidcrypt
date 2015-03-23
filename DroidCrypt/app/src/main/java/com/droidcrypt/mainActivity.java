@@ -3,19 +3,15 @@ package com.droidcrypt;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -28,16 +24,23 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.opencv.android.OpenCVLoader;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
 public class mainActivity extends ActionBarActivity
 {
+
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            // Handle initialization error
+        }
+    }
 
     private EmbedCaller embedCaller;
     private ExtractCaller extractCaller;
@@ -57,9 +60,7 @@ public class mainActivity extends ActionBarActivity
 
         ActionBar bar = getSupportActionBar();
         bar.setBackgroundDrawable(new ColorDrawable(R.color.indigo_500));
-
-        setTitle("Steganosarus");
-
+        setTitle("Stegosaurus");
 
         main MainFragment = new main();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, MainFragment).commit();
@@ -92,6 +93,7 @@ public class mainActivity extends ActionBarActivity
     /* Buttons Clicked */
     public void onClickEmbed (View view)
     {
+        embed = true;
         //Send intent to Gallery
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -137,21 +139,22 @@ public class mainActivity extends ActionBarActivity
 
                 //Find File Path
                 Uri imageURI = data.getData();
-                File filepath = new File(imageURI.toString());
-                String file = filepath.getAbsolutePath().split(":")[1];
-                Log.d("EMBED", "" + file);
+//                File filepath = new File(imageURI.toString());
+//                String file = filepath.getAbsolutePath().split(":")[1];
+//                Log.d("EMBED", "" + file);
 
-//                String result = "";
-//                if(Build.VERSION.SDK_INT < 19)
-//                    result = FullPath.getPath_API11(this,imageURI);
-//                else
-//                    result = FullPath.getPath_API19(this, imageURI);
+                String result = "";
+                if(Build.VERSION.SDK_INT < 19)
+                    result = FullPath.getPath_API11(this,imageURI);
+                else
+                    result = FullPath.getPath_API19(this, imageURI);
 
-//                Log.d("EMBED", "Full Path: " + result);
-                accountInfo.setFilePath(file);
+                Log.d("EMBED", "Full Path: " + result);
+//                accountInfo.setFilePath(file);
+                accountInfo.setFilePath(result);
 
-                //bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageURI);
-                bitmap = BitmapFactory.decodeFile(file);
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageURI);
+//                bitmap = BitmapFactory.decodeFile(file);
 
                 //Set Image in global class
                 accountInfo.setBitmap(bitmap);
@@ -220,18 +223,18 @@ public class mainActivity extends ActionBarActivity
 
             int[] num_bits = new int[2];
             HUGO hugo = new HUGO(accountInfo.getName() + "#" + accountInfo.getPassword(), input, num_bits);
-//            hugo.embed();
+            hugo.embed();
 
             //Save num_bits
-//            accountInfo.setHugoBits(hugo.num_bits_used);
-            int delay = (input.getWidth()* input.getHeight())/4;
-            try {
-                Thread.sleep(delay);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
+            accountInfo.setHugoBits(hugo.num_bits_used);
+//            int delay = (input.getWidth()* input.getHeight())/4;
+//            try {
+//                Thread.sleep(delay);
+//            }
+//            catch (Exception e)
+//            {
+//                e.printStackTrace();
+//            }
             hugo = null;
             return null;
         }
@@ -281,12 +284,18 @@ public class mainActivity extends ActionBarActivity
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // PNG is a lossless format, the compression factor (100) is ignored
             Log.d("EMBED", "Bitmap File saved at: " + file);
 
-            //Save Filname + bits to SharedPrefs
+            //Scan file so it shows up in Gallery
+            File check = new File(file);
+            SingleMediaScanner singleMediaScanner = new SingleMediaScanner(mainActivity.this, check);
+
+            //Save Filename + bits to SharedPrefs
             SharedPreferences.Editor sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE).edit();
             String filename = file.substring(file.lastIndexOf('/') + 1);
-//            sharedPrefs.putString(filename, accountInfo.getHugoBits()[0] + " " + accountInfo.getHugoBits()[1]);
-            sharedPrefs.putString(filename, accountInfo.getName() + " " + accountInfo.getPassword());
+            sharedPrefs.putString(filename, accountInfo.getHugoBits()[0] + "#" + accountInfo.getHugoBits()[1]);
+//            sharedPrefs.putString(filename, accountInfo.getName() + " " + accountInfo.getPassword());
             sharedPrefs.apply();
+            Toast.makeText(mainActivity.this, "File saved at: " + filename, Toast.LENGTH_LONG).show();
+
 //            Log.d("EMBED","SharedPref: " + filename + " " + accountInfo.getHugoBits()[0] + " " + accountInfo.getHugoBits()[1]);
             Toast.makeText(mainActivity.this, "File saved: " + filename, Toast.LENGTH_LONG).show();
 
@@ -320,7 +329,7 @@ public class mainActivity extends ActionBarActivity
         @Override
         protected Void doInBackground(Void ... params)
         {
-//            int[] bits = new int[2];
+            int[] bits = new int[2];
             SharedPreferences sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE);
 
             String file = accountInfo.getFilePath();
@@ -330,28 +339,28 @@ public class mainActivity extends ActionBarActivity
             //File found
             if(result != null)
             {
-//                bits[0] = Integer.parseInt(result.split(" ")[0]);
-//                bits[1] = Integer.parseInt(result.split(" ")[1]);
-                accountInfo.setName(result.split(" ")[0]);
-                accountInfo.setPassword(result.split(" ")[1]);
+                bits[0] = Integer.parseInt(result.split("#")[0]);
+                bits[1] = Integer.parseInt(result.split("#")[1]);
+//                accountInfo.setName(result.split(" ")[0]);
+//                accountInfo.setPassword(result.split(" ")[1]);
             }
             else
             {
                 error = true;
             }
 
-//            HUGO hugo = new HUGO("", accountInfo.getBitmap(), bits);
+            HUGO hugo = new HUGO("", accountInfo.getBitmap(), bits);
 
-//            info = hugo.extract();
-            Bitmap bmp = accountInfo.getBitmap();
-            int delay = (bmp.getWidth()*bmp.getHeight())/8;
-            try {
-                Thread.sleep(delay);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
+            info = hugo.extract();
+//            Bitmap bmp = accountInfo.getBitmap();
+//            int delay = (bmp.getWidth()*bmp.getHeight())/8;
+//            try {
+//                Thread.sleep(delay);
+//            }
+//            catch (Exception e)
+//            {
+//                e.printStackTrace();
+//            }
 
             return null;
         }
@@ -372,8 +381,10 @@ public class mainActivity extends ActionBarActivity
 
             String account = accountInfo.getName();//info.split("#")[0];
             String password = accountInfo.getPassword();//info.split("#")[1];
-            ((TextView)findViewById(R.id.account)).setText(account);
-            ((TextView)findViewById(R.id.pass)).setText(password);
+            if (account != null)
+                ((TextView)findViewById(R.id.account)).setText(account);
+            if (password != null)
+                ((TextView)findViewById(R.id.pass)).setText(password);
             loader.dismiss();
         }
     }

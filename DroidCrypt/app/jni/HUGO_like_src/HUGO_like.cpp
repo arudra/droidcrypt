@@ -57,7 +57,7 @@ char * bit_array_to_string(unsigned char *input, int len) {
     }
     //cout << oByteArray << endl;
     unsigned long c = oByteArray.to_ulong();
-    output[i] = static_cast<char>( c ); 
+    output[i] = char( c ); 
   }
   output[olen] = '\0';
   return output;
@@ -100,7 +100,7 @@ int HUGO_like(unsigned char * img, int width, int height, char * password, int* 
         char *tmp = bit_array_to_string(msg, len);
         LOGI("Here we get all the information: password =%s (%d)", tmp, len);
         delete[] tmp;
-        payload = width*height/len;
+        payload = (float)len/(float)(width*height);
         cost_model_config *config = new cost_model_config(payload, verbose, gamma, sigma, stc_constr_height, randSeed, message);
         config->embedMsg = msg;
         config->length = (uint) len;
@@ -206,7 +206,7 @@ char * HUGO_like_extract(unsigned char *img, int width, int height, int stc_cons
     char *output = bit_array_to_string(extracted_message, num_msg_bits[0] + num_msg_bits[1]);
     LOGI("extracted_message is %s", output);
     // convert the bit array into string
-    //delete[] extracted_message;
+    delete[] extracted_message;
     delete[] stego_px;
     stego_px = NULL;
 
@@ -220,7 +220,7 @@ mat2D<int> * Mat2dFromImage(unsigned char* img, int width, int height)
     for (int r=0; r<height; r++)
         for (int c=0; c<width; c++)  {
             //int pix = rand()%100;
-            unsigned char pixByte = img[r*I->rows+c];
+            unsigned char pixByte = img[r*I->cols+c];
             //LOGI("%d", pix);
             //std::cout << pix << " " ;
             I->Write(r, c, (int)pixByte);
@@ -234,5 +234,6 @@ void Mat2dToImage(int *src, unsigned char* img, int width, int height)
     int totalPixel = width*height;
     for(int r=0; r<totalPixel; r++) {
         img[r] = (unsigned char) src[r];
+        //LOGI("%x", src[r]);
     }
 }
