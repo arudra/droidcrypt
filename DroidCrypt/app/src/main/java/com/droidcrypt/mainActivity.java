@@ -29,6 +29,7 @@ import org.opencv.android.OpenCVLoader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -89,7 +90,6 @@ public class mainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
-
     /* Buttons Clicked */
     public void onClickEmbed (View view)
     {
@@ -139,22 +139,25 @@ public class mainActivity extends ActionBarActivity
 
                 //Find File Path
                 Uri imageURI = data.getData();
-//                File filepath = new File(imageURI.toString());
-//                String file = filepath.getAbsolutePath().split(":")[1];
-//                Log.d("EMBED", "" + file);
+                File filepath = new File(imageURI.toString());
+                String file = filepath.getAbsolutePath().split(":")[1];
+                Log.d("EMBED", "" + file);
 
                 String result = "";
                 if(Build.VERSION.SDK_INT < 19)
-                    result = FullPath.getPath_API11(this,imageURI);
+                    result = FullPath.getPath(this,imageURI);
                 else
-                    result = FullPath.getPath_API19(this, imageURI);
+                    result = FullPath.getPath(this, imageURI);
 
                 Log.d("EMBED", "Full Path: " + result);
 //                accountInfo.setFilePath(file);
                 accountInfo.setFilePath(result);
 
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageURI);
-//                bitmap = BitmapFactory.decodeFile(file);
+                bitmap = BitmapFactory.decodeFile(result);
+
+//                InputStream imageStream = getContentResolver().openInputStream(imageURI);
+//                bitmap = BitmapFactory.decodeStream(imageStream);
 
                 //Set Image in global class
                 accountInfo.setBitmap(bitmap);
@@ -189,15 +192,24 @@ public class mainActivity extends ActionBarActivity
     @Override
      public void onDestroy() {
         super.onDestroy();
-        if (extractCaller != null) {
-        embedCaller.pdLoading.dismiss();
+        if (embedCaller!= null && embedCaller.pdLoading != null) {
+            embedCaller.pdLoading.dismiss();
         }
         embedCaller = null;
-        if (extractCaller != null) {
+        if (extractCaller != null && extractCaller.loader != null) {
             extractCaller.loader.dismiss();
 
         }
         extractCaller = null;
+        Bitmap b = AccountInfo.getInstance().getBitmap();
+        if (b!= null && !b.isRecycled()) {
+            b.recycle();
+            b = null;
+        }
+        if (bitmap != null && !bitmap.isRecycled()) {
+            bitmap.recycle();
+            bitmap = null;
+        }
     }
 
     private class EmbedCaller extends AsyncTask<Void, Void, Void>
@@ -268,6 +280,7 @@ public class mainActivity extends ActionBarActivity
                             filename = file.substring(0, file.length() - 4) + date + ".jpg";
                             Log.d("EMBED","Saving file at: " + filename);
                             SaveFile(filename, accountInfo.getBitmap());
+                            accountInfo.getBitmap().recycle();
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_alert).show();
@@ -291,7 +304,9 @@ public class mainActivity extends ActionBarActivity
             //Save Filename + bits to SharedPrefs
             SharedPreferences.Editor sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE).edit();
             String filename = file.substring(file.lastIndexOf('/') + 1);
-            sharedPrefs.putString(filename, accountInfo.getHugoBits()[0] + "#" + accountInfo.getHugoBits()[1]);
+            String value = accountInfo.getHugoBits()[0] + "#" + accountInfo.getHugoBits()[1];
+            Log.d("HUGO_EMBED", value);
+            sharedPrefs.putString(filename, value);
 //            sharedPrefs.putString(filename, accountInfo.getName() + " " + accountInfo.getPassword());
             sharedPrefs.apply();
             Toast.makeText(mainActivity.this, "File saved at: " + filename, Toast.LENGTH_LONG).show();
@@ -386,6 +401,7 @@ public class mainActivity extends ActionBarActivity
             if (password != null)
                 ((TextView)findViewById(R.id.pass)).setText(password);
             loader.dismiss();
+            accountInfo.getBitmap().recycle();
         }
     }
 }
