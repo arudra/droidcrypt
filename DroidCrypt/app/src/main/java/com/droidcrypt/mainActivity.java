@@ -101,6 +101,7 @@ public class mainActivity extends ActionBarActivity
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, REQUEST_CODE);
 
+        //Main to Embed Fragment
         Embed fragment = new Embed();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
     }
@@ -120,9 +121,9 @@ public class mainActivity extends ActionBarActivity
         embedCaller = new EmbedCaller();
         embedCaller.execute();
 
-        //Switch to main fragment
+        //Embed to Main fragment
         main fragment = new main();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 
     @Override
@@ -134,7 +135,6 @@ public class mainActivity extends ActionBarActivity
                 if (bitmap!=null)
                     bitmap.recycle();
 
-
                 Log.d("EMBED","Return from Gallery");
 
                 //Find File Path
@@ -144,20 +144,13 @@ public class mainActivity extends ActionBarActivity
                 Log.d("EMBED", "" + file);
 
                 String result = "";
-                if(Build.VERSION.SDK_INT < 19)
-                    result = FullPath.getPath(this,imageURI);
-                else
-                    result = FullPath.getPath(this, imageURI);
+                result = FullPath.getPath(this, imageURI);
 
                 Log.d("EMBED", "Full Path: " + result);
-//                accountInfo.setFilePath(file);
                 accountInfo.setFilePath(result);
 
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageURI);
                 bitmap = BitmapFactory.decodeFile(result);
-
-//                InputStream imageStream = getContentResolver().openInputStream(imageURI);
-//                bitmap = BitmapFactory.decodeStream(imageStream);
 
                 //Set Image in global class
                 accountInfo.setBitmap(bitmap);
@@ -170,6 +163,11 @@ public class mainActivity extends ActionBarActivity
 
             } catch (Exception e) { e.printStackTrace(); }
         }
+//        else {
+//            //Switch to Main Fragment on Error
+//            main fragment = new main();
+//            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+//        }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -184,7 +182,7 @@ public class mainActivity extends ActionBarActivity
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, REQUEST_CODE);
 
-        //Switch to Display fragment
+        //Main to Display fragment
         AccountDisplay fragment = new AccountDisplay();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
     }
@@ -326,7 +324,7 @@ public class mainActivity extends ActionBarActivity
         protected void onPreExecute()
         {
             super.onPreExecute();
-            loader.setMessage("\tLoading...");
+            loader.setMessage("\tExtracting...");
             loader.show();
         }
 
@@ -364,16 +362,16 @@ public class mainActivity extends ActionBarActivity
             super.onPostExecute(result);
 
             if(error) {
-                Toast.makeText(mainActivity.this, "This file does not contain a password!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mainActivity.this, "No Data Found!", Toast.LENGTH_SHORT).show();
 
-                //Switch to main fragment
+                //Display to Main fragment
                 main fragment = new main();
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
             }
 
 
-            String account = accountInfo.getName();//info.split("#")[0];
-            String password = accountInfo.getPassword();//info.split("#")[1];
+            String account = accountInfo.getName();
+            String password = accountInfo.getPassword();
             if (account != null)
                 ((TextView)findViewById(R.id.account)).setText(account);
             if (password != null)
