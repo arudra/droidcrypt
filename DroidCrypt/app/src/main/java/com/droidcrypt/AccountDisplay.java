@@ -21,6 +21,7 @@ public class AccountDisplay extends android.support.v4.app.Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private AccountInfo accountInfo = AccountInfo.getInstance();
 
     private String mParam1;
 
@@ -53,9 +54,20 @@ public class AccountDisplay extends android.support.v4.app.Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.display_fragment, container, false);
-        // Inflate the layout for this fragment
-        return view;
+        return inflater.inflate(R.layout.display_fragment, container, false);
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        String account = accountInfo.getName();
+        String password = accountInfo.getPassword();
+        if (account != null)
+            ((TextView)getActivity().findViewById(R.id.account)).setText(account);
+        if (password != null)
+            ((TextView)getActivity().findViewById(R.id.pass)).setText(password);
     }
 
 }

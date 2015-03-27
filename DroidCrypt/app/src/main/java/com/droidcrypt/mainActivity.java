@@ -47,6 +47,7 @@ public class mainActivity extends ActionBarActivity
     private boolean embed = true;
     private boolean valid;
 
+    /* Android State Functions */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,7 +94,7 @@ public class mainActivity extends ActionBarActivity
     {
         super.onResume();
         //Should come to this function after onActivityResult returns
-        if(valid && embed)
+        if(valid && embed)  //Called by Embed
         {
             Log.d("RESUME","Switch to Embed");
             valid = false;
@@ -101,13 +102,10 @@ public class mainActivity extends ActionBarActivity
             Embed fragment = new Embed();
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
         }
-        else if (valid && !embed)
+        else if (valid && !embed)   //Called by Extract
         {
             Log.d("RESUME", "Switch to Extract");
             valid = false;
-            //Main to Display fragment
-            AccountDisplay fragment = new AccountDisplay();
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
         }
         Log.d("RESUME", "No Picture Returned");
     }
@@ -135,6 +133,7 @@ public class mainActivity extends ActionBarActivity
         }
     }
 
+
     /* Buttons Clicked */
     public void onClickEmbed (View view)
     {
@@ -157,7 +156,6 @@ public class mainActivity extends ActionBarActivity
         accountInfo.setName(name);
         accountInfo.setPassword(pass);
 
-        Toast.makeText(this,"Starting Embedding!",Toast.LENGTH_SHORT).show();
         Log.d("EMBED", "Embedding started");
         embedCaller = new EmbedCaller();
         embedCaller.execute();
@@ -178,6 +176,7 @@ public class mainActivity extends ActionBarActivity
         startActivityForResult(intent, REQUEST_CODE);
     }
 
+    /* Gallery Intent */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -235,6 +234,7 @@ public class mainActivity extends ActionBarActivity
             pdLoading.setMessage("\tEmbedding...");
             pdLoading.show();
         }
+
         @Override
         protected Void doInBackground(Void... params)
         {
@@ -276,14 +276,6 @@ public class mainActivity extends ActionBarActivity
                         @Override
                         public void onClick(DialogInterface dialog, int which)
                         {
-                            //Create New file
-//                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
-//                            String date = dateFormat.format(new Date());
-//                            String file = accountInfo.getFilePath();
-//                            filename = file.substring(0, file.length() - 4) + date + ".jpg";
-//                            Log.d("EMBED","Saving file at: " + filename);
-//                            SaveFile(filename, accountInfo.getBitmap());
-//                            accountInfo.getBitmap().recycle();
                             Toast.makeText(mainActivity.this, "Data was NOT saved", Toast.LENGTH_LONG).show();
                         }
                     })
@@ -376,19 +368,13 @@ public class mainActivity extends ActionBarActivity
 
             if(error) {
                 Toast.makeText(mainActivity.this, "No Data Found!", Toast.LENGTH_SHORT).show();
-
-                //Display to Main fragment
-                main fragment = new main();
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+            }
+            else {
+                //Main to Display fragment
+                AccountDisplay fragment = new AccountDisplay();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
             }
 
-
-            String account = accountInfo.getName();
-            String password = accountInfo.getPassword();
-            if (account != null)
-                ((TextView)findViewById(R.id.account)).setText(account);
-            if (password != null)
-                ((TextView)findViewById(R.id.pass)).setText(password);
             loader.dismiss();
             accountInfo.getBitmap().recycle();
         }
