@@ -1,7 +1,5 @@
 package com.droidcrypt;
 
-import android.app.Activity;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
@@ -61,5 +59,4 @@ public class Embed extends android.support.v4.app.Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.embed_fragment, container, false);
     }
-
 }

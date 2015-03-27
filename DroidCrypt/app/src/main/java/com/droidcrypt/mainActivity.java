@@ -11,7 +11,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -23,15 +22,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import org.opencv.android.OpenCVLoader;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 
 public class mainActivity extends ActionBarActivity
@@ -51,6 +45,7 @@ public class mainActivity extends ActionBarActivity
     private String info;
     private AccountInfo accountInfo;
     private boolean embed = true;
+    private boolean valid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +57,9 @@ public class mainActivity extends ActionBarActivity
         ActionBar bar = getSupportActionBar();
         bar.setBackgroundDrawable(new ColorDrawable(R.color.indigo_500));
         setTitle("Stegosaurus");
+
+        //Initially No Picture selected
+        valid = false;
 
         main MainFragment = new main();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, MainFragment).commit();
@@ -90,6 +88,53 @@ public class mainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        //Should come to this function after onActivityResult returns
+        if(valid && embed)
+        {
+            Log.d("RESUME","Switch to Embed");
+            valid = false;
+            //Main to Embed Fragment
+            Embed fragment = new Embed();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+        }
+        else if (valid && !embed)
+        {
+            Log.d("RESUME", "Switch to Extract");
+            valid = false;
+            //Main to Display fragment
+            AccountDisplay fragment = new AccountDisplay();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+        }
+        Log.d("RESUME", "No Picture Returned");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (embedCaller!= null && embedCaller.pdLoading != null) {
+            embedCaller.pdLoading.dismiss();
+        }
+        embedCaller = null;
+        if (extractCaller != null && extractCaller.loader != null) {
+            extractCaller.loader.dismiss();
+
+        }
+        extractCaller = null;
+        Bitmap b = AccountInfo.getInstance().getBitmap();
+        if (b!= null && !b.isRecycled()) {
+            b.recycle();
+            b = null;
+        }
+        if (bitmap != null && !bitmap.isRecycled()) {
+            bitmap.recycle();
+            bitmap = null;
+        }
+    }
+
     /* Buttons Clicked */
     public void onClickEmbed (View view)
     {
@@ -100,10 +145,6 @@ public class mainActivity extends ActionBarActivity
         intent.setAction(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, REQUEST_CODE);
-
-        //Main to Embed Fragment
-        Embed fragment = new Embed();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
     }
 
     public void onClickHugoStart (View view)
@@ -126,6 +167,17 @@ public class mainActivity extends ActionBarActivity
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 
+    public void onClickExtract (View view)
+    {
+        embed = false;
+        //Send intent to Gallery
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_CODE);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -136,6 +188,9 @@ public class mainActivity extends ActionBarActivity
                     bitmap.recycle();
 
                 Log.d("EMBED","Return from Gallery");
+
+                //Picture Valid
+                valid = true;
 
                 //Find File Path
                 Uri imageURI = data.getData();
@@ -163,53 +218,11 @@ public class mainActivity extends ActionBarActivity
 
             } catch (Exception e) { e.printStackTrace(); }
         }
-//        else {
-//            //Switch to Main Fragment on Error
-//            main fragment = new main();
-//            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
-//        }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    public void onClickExtract (View view)
-    {
-        embed = false;
 
-        //Send intent to Gallery
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(intent, REQUEST_CODE);
-
-        //Main to Display fragment
-        AccountDisplay fragment = new AccountDisplay();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
-    }
-
-    @Override
-     public void onDestroy() {
-        super.onDestroy();
-        if (embedCaller!= null && embedCaller.pdLoading != null) {
-            embedCaller.pdLoading.dismiss();
-        }
-        embedCaller = null;
-        if (extractCaller != null && extractCaller.loader != null) {
-            extractCaller.loader.dismiss();
-
-        }
-        extractCaller = null;
-        Bitmap b = AccountInfo.getInstance().getBitmap();
-        if (b!= null && !b.isRecycled()) {
-            b.recycle();
-            b = null;
-        }
-        if (bitmap != null && !bitmap.isRecycled()) {
-            bitmap.recycle();
-            bitmap = null;
-        }
-    }
-
+    /* Async Tasks */
     private class EmbedCaller extends AsyncTask<Void, Void, Void>
     {
         private ProgressDialog pdLoading = new ProgressDialog(mainActivity.this);
