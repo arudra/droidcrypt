@@ -221,7 +221,7 @@ public class mainActivity extends ActionBarActivity
         protected void onPreExecute()
         {
             super.onPreExecute();
-            pdLoading.setMessage("\tEmbeding...");
+            pdLoading.setMessage("\tEmbedding...");
             pdLoading.show();
         }
         @Override
@@ -239,14 +239,6 @@ public class mainActivity extends ActionBarActivity
 
             //Save num_bits
             accountInfo.setHugoBits(hugo.num_bits_used);
-//            int delay = (input.getWidth()* input.getHeight())/4;
-//            try {
-//                Thread.sleep(delay);
-//            }
-//            catch (Exception e)
-//            {
-//                e.printStackTrace();
-//            }
             hugo = null;
             return null;
         }
@@ -258,8 +250,8 @@ public class mainActivity extends ActionBarActivity
             pdLoading.dismiss();
 
             new AlertDialog.Builder(mainActivity.this)
-                    .setTitle("Overwrite Image")
-                    .setMessage("Do you want to overwrite the original image?")
+                    .setTitle("Saving Data")
+                    .setMessage("Do you want to save your data?")
                     .setPositiveButton(R.string.overwrite, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which)
@@ -269,18 +261,19 @@ public class mainActivity extends ActionBarActivity
                             SaveFile(filename, accountInfo.getBitmap());
                         }
                     })
-                    .setNegativeButton(R.string.newfile, new DialogInterface.OnClickListener() {
+                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which)
                         {
                             //Create New file
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
-                            String date = dateFormat.format(new Date());
-                            String file = accountInfo.getFilePath();
-                            filename = file.substring(0, file.length() - 4) + date + ".jpg";
-                            Log.d("EMBED","Saving file at: " + filename);
-                            SaveFile(filename, accountInfo.getBitmap());
-                            accountInfo.getBitmap().recycle();
+//                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
+//                            String date = dateFormat.format(new Date());
+//                            String file = accountInfo.getFilePath();
+//                            filename = file.substring(0, file.length() - 4) + date + ".jpg";
+//                            Log.d("EMBED","Saving file at: " + filename);
+//                            SaveFile(filename, accountInfo.getBitmap());
+//                            accountInfo.getBitmap().recycle();
+                            Toast.makeText(mainActivity.this, "Data was NOT saved", Toast.LENGTH_LONG).show();
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_alert).show();
@@ -294,8 +287,8 @@ public class mainActivity extends ActionBarActivity
 
         try {
             out = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // PNG is a lossless format, the compression factor (100) is ignored
-            Log.d("EMBED", "Bitmap File saved at: " + file);
+            // PNG is a lossless format, the compression factor (100) is ignored
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
 
             //Scan file so it shows up in Gallery
             File check = new File(file);
@@ -305,14 +298,10 @@ public class mainActivity extends ActionBarActivity
             SharedPreferences.Editor sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE).edit();
             String filename = file.substring(file.lastIndexOf('/') + 1);
             String value = accountInfo.getHugoBits()[0] + "#" + accountInfo.getHugoBits()[1];
-            Log.d("HUGO_EMBED", value);
             sharedPrefs.putString(filename, value);
-//            sharedPrefs.putString(filename, accountInfo.getName() + " " + accountInfo.getPassword());
             sharedPrefs.apply();
-            Toast.makeText(mainActivity.this, "File saved at: " + filename, Toast.LENGTH_LONG).show();
-
-//            Log.d("EMBED","SharedPref: " + filename + " " + accountInfo.getHugoBits()[0] + " " + accountInfo.getHugoBits()[1]);
-            Toast.makeText(mainActivity.this, "File saved: " + filename, Toast.LENGTH_LONG).show();
+            Toast.makeText(mainActivity.this, "Data saved in file: " + filename, Toast.LENGTH_LONG).show();
+            Log.d("EMBED","SharedPref: " + filename + " " + value);
 
         } catch (Exception e) {
             Log.d("EMBED", "Bitmap File not saved!");
@@ -356,26 +345,15 @@ public class mainActivity extends ActionBarActivity
             {
                 bits[0] = Integer.parseInt(result.split("#")[0]);
                 bits[1] = Integer.parseInt(result.split("#")[1]);
-//                accountInfo.setName(result.split(" ")[0]);
-//                accountInfo.setPassword(result.split(" ")[1]);
             }
             else
             {
                 error = true;
             }
 
+            //Extract
             HUGO hugo = new HUGO("", accountInfo.getBitmap(), bits);
-
             info = hugo.extract();
-//            Bitmap bmp = accountInfo.getBitmap();
-//            int delay = (bmp.getWidth()*bmp.getHeight())/8;
-//            try {
-//                Thread.sleep(delay);
-//            }
-//            catch (Exception e)
-//            {
-//                e.printStackTrace();
-//            }
 
             return null;
         }

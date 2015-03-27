@@ -13,7 +13,6 @@ public class AccountInfo
     private Bitmap bitmap;
     private String name;
     private String password;
-    private byte[] HugoArray;
     private int[] HugoBits;
     private String FilePath;
 
@@ -44,18 +43,6 @@ public class AccountInfo
     public void setPassword (String password) { this.password = password; }
 
     public String getPassword () { return password; }
-
-//    public void setHugoArray (byte[] array)
-//    {
-//        HugoArray = null;
-//        HugoArray = array;
-//        //Copy Array after embedding
-//        Log.d("GLOBAL", "Setting GrayArray");
-//        HugoArray = new byte[array.length];
-//        System.arraycopy(array, 0, HugoArray, 0, array.length);
-//    }
-
-//    public byte[] getHugoArray () { return HugoArray; }
 
     public void setHugoBits (int[] bits)
     {

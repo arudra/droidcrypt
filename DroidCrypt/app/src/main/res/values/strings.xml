@@ -11,7 +11,7 @@
     <string name="pass">Enter password</string>
     <string name="image">Select Image</string>
     <string name="start">Start</string>
-    <string name="overwrite">Overwrite File</string>
-    <string name="newfile">Create New File</string>
+    <string name="overwrite">Proceed</string>
+    <string name="cancel">Cancel</string>
 
 </resources>
