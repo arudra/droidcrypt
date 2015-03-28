@@ -49,6 +49,8 @@ public class AccountDisplay extends android.support.v4.app.Fragment {
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
         }
+        getActivity().setTitle("Account Info");
+
     }
 
     @Override

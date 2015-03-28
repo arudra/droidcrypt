@@ -5,4 +5,5 @@
     android:layout_height="match_parent"
     tools:context=".mainActivity"
     android:id="@+id/fragment_container"
+    android:windowSoftInputMode="adjustResize"
 />

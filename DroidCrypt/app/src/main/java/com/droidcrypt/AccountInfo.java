@@ -15,12 +15,19 @@ public class AccountInfo
     private String password;
     private int[] HugoBits;
     private String FilePath;
+    private String accountType;
 
     private static AccountInfo ourInstance = new AccountInfo();
 
     public static AccountInfo getInstance() { return ourInstance; }
 
     private AccountInfo() {
+        bitmap = null;
+        name = null;
+        password = null;
+        HugoBits = null;
+        FilePath = null;
+        accountType = null;
     }
 
     public void setBitmap (Bitmap bmp)
@@ -55,5 +62,15 @@ public class AccountInfo
     public void setFilePath (String filepath) { FilePath = filepath; Log.d("GLOBAL", "Setting file path: " + filepath); }
 
     public String getFilePath () { Log.d("GLOBAL", "Return file path: " + FilePath); return FilePath; }
+
+
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
+    }
+
 
 }

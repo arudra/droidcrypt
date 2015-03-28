@@ -139,7 +139,13 @@ public class HUGO
         output = Embedder.extract(/*toGrayscaleExtract(accountInfo.getBitmap())*/ matToByteArray(rgbToMat(accountInfo.getBitmap())), accountInfo.getBitmap().getWidth(),
                 accountInfo.getBitmap().getHeight(), num_bits_used, 7);
         if (output.equals("")) {
-            return "No Password Found!";
+            // "No Password Found!"
+            return null;
+        }
+        String accountType = output.split("#")[2];
+        if (!accountType.equals(accountInfo.getAccountType())) {
+            // mismatch with the account
+            return null;
         }
         accountInfo.setName(output.split("#")[0]);
         accountInfo.setPassword(output.split("#")[1]);

@@ -1,5 +1,6 @@
 package com.droidcrypt;
 
+import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -28,7 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 
-public class mainActivity extends ActionBarActivity
+public class mainActivity extends ActionBarActivity implements AccountFragment.ActivityFragmentCallback
 {
 
     static {
@@ -39,13 +40,20 @@ public class mainActivity extends ActionBarActivity
 
     private EmbedCaller embedCaller;
     private ExtractCaller extractCaller;
-
     private static final int REQUEST_CODE = 1;
     private Bitmap bitmap;
-    private String info;
     private AccountInfo accountInfo;
     private boolean embed = true;
     private boolean valid;
+
+
+    public boolean isEmbed() {
+        return embed;
+    }
+
+    public void setEmbed(boolean embed) {
+        this.embed = embed;
+    }
 
     /* Android State Functions */
     @Override
@@ -57,7 +65,6 @@ public class mainActivity extends ActionBarActivity
 
         ActionBar bar = getSupportActionBar();
         bar.setBackgroundDrawable(new ColorDrawable(R.color.indigo_500));
-        setTitle("Stegosaurus");
 
         //Initially No Picture selected
         valid = false;
@@ -70,7 +77,7 @@ public class mainActivity extends ActionBarActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        //getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -93,21 +100,31 @@ public class mainActivity extends ActionBarActivity
     public void onResume()
     {
         super.onResume();
+
+        setTitle("Stegosaurus");
+
         //Should come to this function after onActivityResult returns
-        if(valid && embed)  //Called by Embed
-        {
-            Log.d("RESUME","Switch to Embed");
+        if (valid) {
+
+            AccountFragment accountList = new AccountFragment();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, accountList).addToBackStack(null).commit();
             valid = false;
-            //Main to Embed Fragment
-            Embed fragment = new Embed();
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+//            if (valid && embed)  //Called by Embed
+//            {
+//                Log.d("RESUME", "Switch to Embed");
+//                valid = false;
+//                //Main to Embed Fragment
+////                Embed fragment = new Embed();
+////                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+//
+//            } else if (valid && !embed)   //Called by Extract
+//            {
+//                Log.d("RESUME", "Switch to Extract");
+//                valid = false;
+//            }
+        } else {
+            Log.d("RESUME", "No Picture Returned");
         }
-        else if (valid && !embed)   //Called by Extract
-        {
-            Log.d("RESUME", "Switch to Extract");
-            valid = false;
-        }
-        Log.d("RESUME", "No Picture Returned");
     }
 
     @Override
@@ -211,13 +228,28 @@ public class mainActivity extends ActionBarActivity
 
                 if(!embed)    //Call Extract
                 {
-                    extractCaller = new ExtractCaller();
-                    extractCaller.execute();
+//                    extractCaller = new ExtractCaller();
+//                    extractCaller.execute();
                 }
 
             } catch (Exception e) { e.printStackTrace(); }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onActivityFragmentCallback() {
+
+        if (embed) {
+            // Embed
+            Embed fragment = new Embed();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+        }
+        else {
+            // Extract
+            extractCaller = new ExtractCaller();
+            extractCaller.execute();
+        }
     }
 
 
@@ -245,7 +277,7 @@ public class mainActivity extends ActionBarActivity
 //            Bitmap bitmap1= BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
 
             int[] num_bits = new int[2];
-            HUGO hugo = new HUGO(accountInfo.getName() + "#" + accountInfo.getPassword(), input, num_bits);
+            HUGO hugo = new HUGO(accountInfo.getName() + "#" + accountInfo.getPassword() + "#" +accountInfo.getAccountType(), input, num_bits);
             hugo.embed();
 
             //Save num_bits
@@ -304,7 +336,7 @@ public class mainActivity extends ActionBarActivity
             sharedPrefs.putString(filename, value);
             sharedPrefs.apply();
             Toast.makeText(mainActivity.this, "Data saved in file: " + filename, Toast.LENGTH_LONG).show();
-            Log.d("EMBED","SharedPref: " + filename + " " + value);
+            Log.d("EMBED", "SharedPref: " + filename + " " + value);
 
         } catch (Exception e) {
             Log.d("EMBED", "Bitmap File not saved!");
@@ -356,8 +388,10 @@ public class mainActivity extends ActionBarActivity
 
             //Extract
             HUGO hugo = new HUGO("", accountInfo.getBitmap(), bits);
-            info = hugo.extract();
-
+            String output = hugo.extract();
+            if (output == null) {
+                error = true;
+            }
             return null;
         }
 

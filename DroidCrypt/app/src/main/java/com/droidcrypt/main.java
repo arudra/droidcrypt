@@ -60,4 +60,11 @@ public class main extends android.support.v4.app.Fragment {
         return inflater.inflate(R.layout.main_fragment, container, false);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        getActivity().setTitle("Stegosaurus");
+    }
+
 }
