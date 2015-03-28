@@ -1,6 +1,5 @@
 package com.droidcrypt;
 
-import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -21,7 +20,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 import org.opencv.android.OpenCVLoader;
 import java.io.File;
@@ -47,13 +45,9 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
     private boolean valid;
 
 
-    public boolean isEmbed() {
-        return embed;
-    }
+    public boolean isEmbed() { return embed; }
 
-    public void setEmbed(boolean embed) {
-        this.embed = embed;
-    }
+    public void setEmbed(boolean embed) { this.embed = embed; }
 
     /* Android State Functions */
     @Override
@@ -103,25 +97,11 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
 
         setTitle("Stegosaurus");
 
-        //Should come to this function after onActivityResult returns
         if (valid) {
-
+            //Main to Account Fragment
             AccountFragment accountList = new AccountFragment();
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, accountList).addToBackStack(null).commit();
             valid = false;
-//            if (valid && embed)  //Called by Embed
-//            {
-//                Log.d("RESUME", "Switch to Embed");
-//                valid = false;
-//                //Main to Embed Fragment
-////                Embed fragment = new Embed();
-////                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
-//
-//            } else if (valid && !embed)   //Called by Extract
-//            {
-//                Log.d("RESUME", "Switch to Extract");
-//                valid = false;
-//            }
         } else {
             Log.d("RESUME", "No Picture Returned");
         }
@@ -168,18 +148,26 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
         //Read account + password input (new fragment)
         String name = ((EditText)findViewById(R.id.account)).getText().toString();
         String pass = ((EditText)findViewById(R.id.password)).getText().toString();
+        String confirm = ((EditText)findViewById(R.id.editText_confirmPass)).getText().toString();
 
-        //Set name + pass in global class
-        accountInfo.setName(name);
-        accountInfo.setPassword(pass);
+        if (pass.equals(confirm)) { //Passwords match
+            //Set name + pass in global class
+            accountInfo.setName(name);
+            accountInfo.setPassword(pass);
 
-        Log.d("EMBED", "Embedding started");
-        embedCaller = new EmbedCaller();
-        embedCaller.execute();
+            Log.d("EMBED", "Embedding started");
+            embedCaller = new EmbedCaller();
+            embedCaller.execute();
 
-        //Embed to Main fragment
-        main fragment = new main();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+            //Embed to Main fragment
+            main fragment = new main();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+        }
+        else    //Passwords don't match
+        {
+            Toast.makeText(mainActivity.this, "Passwords don't match! Please enter your password and confirm it!",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     public void onClickExtract (View view)
@@ -225,12 +213,6 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
 
                 //Set Image in global class
                 accountInfo.setBitmap(bitmap);
-
-                if(!embed)    //Call Extract
-                {
-//                    extractCaller = new ExtractCaller();
-//                    extractCaller.execute();
-                }
 
             } catch (Exception e) { e.printStackTrace(); }
         }
