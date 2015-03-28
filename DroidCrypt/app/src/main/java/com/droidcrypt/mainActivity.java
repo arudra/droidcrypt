@@ -36,22 +36,26 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
         }
     }
 
+    private static final int REQUEST_CODE = 1;
+
+    //APP STATES
+    private static final int SETUP = 0;     //First time app is opened
+    private static final int INIT = 1;      //Default state
+    private static final int EMBED = 2;     //Embed state
+    private static final int EXTRACT = 3;   //Extract state
+
+
     private EmbedCaller embedCaller;
     private ExtractCaller extractCaller;
-    private static final int REQUEST_CODE = 1;
     private Bitmap bitmap;
     private AccountInfo accountInfo;
-    private boolean embed = true;
     private boolean valid;
-
-
-    public boolean isEmbed() { return embed; }
-
-    public void setEmbed(boolean embed) { this.embed = embed; }
+    private int state = INIT;
 
     /* Android State Functions */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -62,6 +66,9 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
 
         //Initially No Picture selected
         valid = false;
+
+        //Authentication
+
 
         main MainFragment = new main();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, MainFragment).commit();
@@ -134,7 +141,7 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
     /* Buttons Clicked */
     public void onClickEmbed (View view)
     {
-        embed = true;
+        state = EMBED;
         //Send intent to Gallery
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -172,7 +179,7 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
 
     public void onClickExtract (View view)
     {
-        embed = false;
+        state = EXTRACT;
         //Send intent to Gallery
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -191,7 +198,7 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
                 if (bitmap!=null)
                     bitmap.recycle();
 
-                Log.d("EMBED","Return from Gallery");
+                Log.d("ActivityResult","Return from Gallery");
 
                 //Picture Valid
                 valid = true;
@@ -200,12 +207,12 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
                 Uri imageURI = data.getData();
                 File filepath = new File(imageURI.toString());
                 String file = filepath.getAbsolutePath().split(":")[1];
-                Log.d("EMBED", "" + file);
+                Log.d("ActivityResult", "" + file);
 
                 String result = "";
                 result = FullPath.getPath(this, imageURI);
 
-                Log.d("EMBED", "Full Path: " + result);
+                Log.d("ActivityResult", "Full Path: " + result);
                 accountInfo.setFilePath(result);
 
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageURI);
@@ -221,13 +228,18 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
 
     @Override
     public void onActivityFragmentCallback() {
-
-        if (embed) {
+        if (state == SETUP)
+        {
+            //Init
+        }
+        else if (state == EMBED)
+        {
             // Embed
             Embed fragment = new Embed();
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
         }
-        else {
+        else if (state == EXTRACT)
+        {
             // Extract
             extractCaller = new ExtractCaller();
             extractCaller.execute();
