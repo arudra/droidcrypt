@@ -63,7 +63,7 @@
         <TextView
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:text="Enter Password"
+            android:text="@string/pass"
             android:id="@+id/textView_passView"
             android:layout_gravity="center"
             android:height="35dp"

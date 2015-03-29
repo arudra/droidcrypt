@@ -5,13 +5,36 @@
     <string name="toggle">Toggle Image</string>
     <string name="action_settings">Settings</string>
     <string name="embed">Store Password</string>
-    <string name="extract">Get Password</string>
+    <string name="extract">Retrieve Password</string>
     <string name="settings">Settings</string>
     <string name="account">Enter Account Name</string>
-    <string name="pass">Enter password</string>
+    <string name="pass">Enter Password</string>
     <string name="image">Select Image</string>
     <string name="start">Start</string>
     <string name="overwrite">Proceed</string>
     <string name="cancel">Cancel</string>
+    <string name="begin">Begin</string>
+    <string name="login">Login</string>
+    <string name="retry">Retry</string>
+    <string name="init1">
+        Welcome to Stegosaurus!
+    </string>
+    <string name="init2">
+        This app is a new kind of password manager
+        which hides your accounts and passwords
+        inside pictures!
+    </string>
+    <string name="init3">
+        To use this app, please select a Master
+        Picture and Master Password. These will be
+        used for authentication when you open the
+        app next time.
+    </string>
+
+    <string name="masterimage">Select Master Picture</string>
+    <string name="masterpass">Enter Master Password</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

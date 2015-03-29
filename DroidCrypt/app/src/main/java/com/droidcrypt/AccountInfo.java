@@ -16,6 +16,7 @@ public class AccountInfo
     private int[] HugoBits;
     private String FilePath;
     private String accountType;
+    private String masterPassword;
 
     private static AccountInfo ourInstance = new AccountInfo();
 
@@ -28,7 +29,12 @@ public class AccountInfo
         HugoBits = null;
         FilePath = null;
         accountType = null;
+        masterPassword = null;
     }
+
+    public void setMasterPassword (String password) { masterPassword = password; }
+
+    public String getMasterPassword () { return masterPassword; }
 
     public void setBitmap (Bitmap bmp)
     {

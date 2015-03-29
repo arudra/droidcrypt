@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import org.opencv.android.OpenCVLoader;
@@ -50,7 +51,7 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
     private Bitmap bitmap;
     private AccountInfo accountInfo;
     private boolean valid;
-    private int state = INIT;
+    private int state;
 
     /* Android State Functions */
     @Override
@@ -68,10 +69,30 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
         valid = false;
 
         //Authentication
+        SharedPreferences sharedPreferences = getSharedPreferences("Auth", MODE_PRIVATE);
+        String hugoBits = sharedPreferences.getString("HugoBits", null);
 
+        if (hugoBits == null)
+        {
+            state = SETUP;
+            //Start Setup Fragment
+            Setup fragment = new Setup();
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment).commit();
+        }
+        else
+        {
+            state = INIT;
+            //Send intent to Gallery
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            startActivityForResult(intent, REQUEST_CODE);
 
-        main MainFragment = new main();
-        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, MainFragment).commit();
+            Login fragment = new Login();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+        }
+
 
     }
 
@@ -104,12 +125,24 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
 
         setTitle("Stegosaurus");
 
-        if (valid) {
+        if (valid && state == SETUP)
+        {
+            //Setup
+            valid = false;
+            //Switch to Login fragment
+            Log.d("Setup", "Switching to Login fragment");
+            Login fragment = new Login();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+        }
+        else if (valid && state != INIT) {
             //Main to Account Fragment
+            Log.d("onResume","Switching to Account Fragment");
             AccountFragment accountList = new AccountFragment();
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, accountList).addToBackStack(null).commit();
             valid = false;
-        } else {
+        }
+        else if (!valid)
+        {
             Log.d("RESUME", "No Picture Returned");
         }
     }
@@ -188,6 +221,96 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
         startActivityForResult(intent, REQUEST_CODE);
     }
 
+    public void onClickBegin (View view)
+    {
+        //Send intent to Gallery
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_CODE);
+    }
+
+    public void onClickLogin (View view)
+    {
+        boolean login = true;
+        String password = ((EditText)findViewById(R.id.userPassword)).getText().toString();
+
+        if(state == SETUP)  //First time login, embed info
+        {
+            //Prep for Embed
+            accountInfo.setAccountType("login");    //dummy value
+            accountInfo.setName("user");            //dummy value
+            accountInfo.setPassword(password);
+
+            //Save Auth file
+            SharedPreferences.Editor sharedPrefs = getSharedPreferences("Auth", MODE_PRIVATE).edit();
+            String file = accountInfo.getFilePath();
+            String filename = file.substring(file.lastIndexOf('/') + 1);
+            sharedPrefs.putString("file", filename);
+            sharedPrefs.apply();
+
+            Log.d("Setup","Auth file: " + filename);
+            embedCaller = new EmbedCaller();
+            embedCaller.execute();
+            embedCaller = null;
+            //Login to Main fragment
+            main fragment = new main();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+        }
+        else    //Default Login, extract info
+        {
+            SharedPreferences sharedPreferences = getSharedPreferences("Auth", MODE_PRIVATE);
+            String file = sharedPreferences.getString("file", null);
+
+
+            String choosePath = accountInfo.getFilePath();
+
+            if(file != null && choosePath != null)
+            {
+                String chosenFile = choosePath.substring(choosePath.lastIndexOf('/') + 1);
+
+                if(file.equals(chosenFile)) {
+                    accountInfo.setMasterPassword(password);
+                    accountInfo.setAccountType("login");
+
+                    Log.d("Login", "Extracting password");
+
+                    extractCaller = new ExtractCaller();
+                    extractCaller.execute();
+                }
+                else
+                {
+                    login = false;
+                }
+            }
+            else
+            {
+                login = false;
+            }
+
+            if (!login)
+            {
+                Toast.makeText(mainActivity.this, "Login Failed!", Toast.LENGTH_SHORT).show();
+                findViewById(R.id.login).setVisibility(View.GONE);
+                findViewById(R.id.retry).setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    public void onClickRetry (View view)
+    {
+        findViewById(R.id.retry).setVisibility(View.GONE);
+        findViewById(R.id.login).setVisibility(View.VISIBLE);
+
+        //Send intent to Gallery
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_CODE);
+    }
+
     /* Gallery Intent */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -205,9 +328,9 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
 
                 //Find File Path
                 Uri imageURI = data.getData();
-                File filepath = new File(imageURI.toString());
+                /*File filepath = new File(imageURI.toString());
                 String file = filepath.getAbsolutePath().split(":")[1];
-                Log.d("ActivityResult", "" + file);
+                Log.d("ActivityResult", "" + file);*/
 
                 String result = "";
                 result = FullPath.getPath(this, imageURI);
@@ -227,12 +350,9 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
     }
 
     @Override
-    public void onActivityFragmentCallback() {
-        if (state == SETUP)
-        {
-            //Init
-        }
-        else if (state == EMBED)
+    public void onActivityFragmentCallback()
+    {
+        if (state == EMBED)
         {
             // Embed
             Embed fragment = new Embed();
@@ -271,7 +391,7 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
 //            Bitmap bitmap1= BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
 
             int[] num_bits = new int[2];
-            HUGO hugo = new HUGO(accountInfo.getName() + "#" + accountInfo.getPassword() + "#" +accountInfo.getAccountType(), input, num_bits);
+            HUGO hugo = new HUGO(accountInfo.getName() + "#" + accountInfo.getPassword() + "#" + accountInfo.getAccountType(), input, num_bits);
             hugo.embed();
 
             //Save num_bits
@@ -286,26 +406,30 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
             super.onPostExecute(result);
             pdLoading.dismiss();
 
-            new AlertDialog.Builder(mainActivity.this)
-                    .setTitle("Saving Data")
-                    .setMessage("Do you want to save your data?")
-                    .setPositiveButton(R.string.overwrite, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which)
-                        {
-                            //Overwrite file
-                            filename = accountInfo.getFilePath();
-                            SaveFile(filename, accountInfo.getBitmap());
-                        }
-                    })
-                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which)
-                        {
-                            Toast.makeText(mainActivity.this, "Data was NOT saved", Toast.LENGTH_LONG).show();
-                        }
-                    })
-                    .setIcon(android.R.drawable.ic_dialog_alert).show();
+            //Overwrite file
+            filename = accountInfo.getFilePath();
+            SaveFile(filename, accountInfo.getBitmap());
+
+//            new AlertDialog.Builder(mainActivity.this)
+//                    .setTitle("Saving Data")
+//                    .setMessage("Do you want to save your data?")
+//                    .setPositiveButton(R.string.overwrite, new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which)
+//                        {
+//                            //Overwrite file
+//                            filename = accountInfo.getFilePath();
+//                            SaveFile(filename, accountInfo.getBitmap());
+//                        }
+//                    })
+//                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which)
+//                        {
+//                            Toast.makeText(mainActivity.this, "Data was NOT saved", Toast.LENGTH_LONG).show();
+//                        }
+//                    })
+//                    .setIcon(android.R.drawable.ic_dialog_alert).show();
         }
 
     }
@@ -324,13 +448,25 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
             SingleMediaScanner singleMediaScanner = new SingleMediaScanner(mainActivity.this, check);
 
             //Save Filename + bits to SharedPrefs
-            SharedPreferences.Editor sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE).edit();
-            String filename = file.substring(file.lastIndexOf('/') + 1);
-            String value = accountInfo.getHugoBits()[0] + "#" + accountInfo.getHugoBits()[1];
-            sharedPrefs.putString(filename, value);
-            sharedPrefs.apply();
-            Toast.makeText(mainActivity.this, "Data saved in file: " + filename, Toast.LENGTH_LONG).show();
-            Log.d("EMBED", "SharedPref: " + filename + " " + value);
+            SharedPreferences.Editor sharedPrefs;
+            if(state == SETUP)
+            {
+                //Authentication
+                sharedPrefs = getSharedPreferences("Auth", MODE_PRIVATE).edit();
+                sharedPrefs.putString("HugoBits", accountInfo.getHugoBits()[0] + "#" + accountInfo.getHugoBits()[1]);
+                sharedPrefs.apply();
+                Log.d("Setup", "Logged in!");
+            }
+            else
+            {
+                sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE).edit();
+                String filename = file.substring(file.lastIndexOf('/') + 1);
+                String value = accountInfo.getHugoBits()[0] + "#" + accountInfo.getHugoBits()[1];
+                sharedPrefs.putString(filename, value);
+                sharedPrefs.apply();
+                Toast.makeText(mainActivity.this, "Data saved in file: " + filename, Toast.LENGTH_LONG).show();
+                Log.d("EMBED", "SharedPref: " + filename + " " + value);
+            }
 
         } catch (Exception e) {
             Log.d("EMBED", "Bitmap File not saved!");
@@ -363,11 +499,21 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
         protected Void doInBackground(Void ... params)
         {
             int[] bits = new int[2];
-            SharedPreferences sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE);
+            SharedPreferences sharedPrefs;
+            String result;
 
-            String file = accountInfo.getFilePath();
-            String filename = file.substring(file.lastIndexOf('/') + 1);
-            String result = sharedPrefs.getString(filename, null);
+            if(state == INIT)
+            {
+                sharedPrefs = getSharedPreferences("Auth", MODE_PRIVATE);
+                result = sharedPrefs.getString("HugoBits", null);
+            }
+            else
+            {
+                sharedPrefs = getSharedPreferences("EmbedInfo", MODE_PRIVATE);
+                String file = accountInfo.getFilePath();
+                String filename = file.substring(file.lastIndexOf('/') + 1);
+                result = sharedPrefs.getString(filename, null);
+            }
 
             //File found
             if(result != null)
@@ -381,10 +527,12 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
             }
 
             //Extract
-            HUGO hugo = new HUGO("", accountInfo.getBitmap(), bits);
-            String output = hugo.extract();
-            if (output == null) {
-                error = true;
+            if (!error) {
+                HUGO hugo = new HUGO("", accountInfo.getBitmap(), bits);
+                String output = hugo.extract();
+                if (output == null) {
+                    error = true;
+                }
             }
             return null;
         }
@@ -398,9 +546,29 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
                 Toast.makeText(mainActivity.this, "No Data Found!", Toast.LENGTH_SHORT).show();
             }
             else {
-                //Main to Display fragment
-                AccountDisplay fragment = new AccountDisplay();
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+
+                if(state == INIT)
+                {
+                    //Compare master password to extracted password
+                    if(accountInfo.getPassword().equals(accountInfo.getMasterPassword()))
+                    {
+                        //Switch to Main
+                        main fragment = new main();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+                    }
+                    else
+                    {
+                        Toast.makeText(mainActivity.this, "Login Failed!", Toast.LENGTH_SHORT).show();
+                        findViewById(R.id.login).setVisibility(View.GONE);
+                        findViewById(R.id.retry).setVisibility(View.VISIBLE);
+                    }
+                }
+                else
+                {
+                    //Main to Display fragment
+                    AccountDisplay fragment = new AccountDisplay();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+                }
             }
 
             loader.dismiss();
