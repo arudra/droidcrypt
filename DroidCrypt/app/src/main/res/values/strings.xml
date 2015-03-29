@@ -16,6 +16,11 @@
     <string name="begin">Begin</string>
     <string name="login">Login</string>
     <string name="retry">Retry</string>
+    <string name="copy">Copy Password to Clipboard</string>
+    <string name="show">Show Password</string>
+    <string name="userpass">Your Password:</string>
+    <string name="useraccount">Your Account Name:</string>
+
     <string name="init1">
         Welcome to Stegosaurus!
     </string>

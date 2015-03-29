@@ -3,6 +3,7 @@ package com.droidcrypt;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,12 +16,15 @@ import android.provider.MediaStore;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import org.opencv.android.OpenCVLoader;
 import java.io.File;
@@ -310,6 +314,39 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, REQUEST_CODE);
     }
+
+    public void onClickCopy (View view)
+    {
+        CheckBox checkBox = ((CheckBox)findViewById(R.id.copy));
+
+        if(checkBox.isChecked())
+        {
+            //Copy password to clipboard
+            try
+            {
+                String text = ((TextView)findViewById(R.id.pass)).getText().toString();
+                android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                android.content.ClipData clip = android.content.ClipData.newPlainText("password", text);
+                clipboard.setPrimaryClip(clip);
+            } catch (Exception e) { e.printStackTrace(); }
+        }
+    }
+
+    public void onClickShow (View view)
+    {
+        CheckBox checkBox = ((CheckBox)findViewById(R.id.show));
+
+        if(checkBox.isChecked())
+        {
+            ((TextView) findViewById(R.id.pass)).setTransformationMethod(null);
+        }
+        else
+        {
+            ((TextView) findViewById(R.id.pass)).setTransformationMethod(new PasswordTransformationMethod());
+        }
+
+    }
+
 
     /* Gallery Intent */
     @Override
