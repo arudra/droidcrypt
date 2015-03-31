@@ -467,30 +467,31 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
             super.onPostExecute(result);
             pdLoading.dismiss();
 
-            //Overwrite file
-            filename = accountInfo.getFilePath();
-            SaveFile(filename, accountInfo.getBitmap());
-
-//            new AlertDialog.Builder(mainActivity.this)
-//                    .setTitle("Saving Data")
-//                    .setMessage("Do you want to save your data?")
-//                    .setPositiveButton(R.string.overwrite, new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which)
-//                        {
-//                            //Overwrite file
-//                            filename = accountInfo.getFilePath();
-//                            SaveFile(filename, accountInfo.getBitmap());
-//                        }
-//                    })
-//                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which)
-//                        {
-//                            Toast.makeText(mainActivity.this, "Data was NOT saved", Toast.LENGTH_LONG).show();
-//                        }
-//                    })
-//                    .setIcon(android.R.drawable.ic_dialog_alert).show();
+            if(state != SETUP) {
+                new AlertDialog.Builder(mainActivity.this)
+                        .setTitle("Saving Data")
+                        .setMessage("Do you want to save your data?")
+                        .setPositiveButton(R.string.proceed, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //Overwrite file
+                                filename = accountInfo.getFilePath();
+                                SaveFile(filename, accountInfo.getBitmap());
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(mainActivity.this, "Data was NOT saved", Toast.LENGTH_LONG).show();
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert).show();
+            }
+            else
+            {
+                filename = accountInfo.getFilePath();
+                SaveFile(filename, accountInfo.getBitmap());
+            }
         }
 
     }
