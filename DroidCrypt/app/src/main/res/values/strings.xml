@@ -22,19 +22,14 @@
     <string name="userpass">Your Password:</string>
     <string name="useraccount">Your Account Name:</string>
 
-    <string name="init1">
+    <string name="greeting">
         Welcome to Stegosaurus!
     </string>
-    <string name="init2">
-        This app is a new kind of password manager
-        which hides your accounts and passwords
-        inside pictures!
-    </string>
-    <string name="init3">
+    <string name="init">
         To use this app, please select a Master
         Picture and Master Password. These will be
-        used for authentication when you open the
-        app next time.
+        used for authentication to access the
+        app.
     </string>
 
     <string name="masterimage">Select Master Picture</string>

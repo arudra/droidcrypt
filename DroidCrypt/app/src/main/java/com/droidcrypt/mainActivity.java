@@ -293,27 +293,31 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
                 login = false;
             }
 
-            if (!login)
-            {
+            if (!login) {
                 Toast.makeText(mainActivity.this, "Login Failed!", Toast.LENGTH_SHORT).show();
-                findViewById(R.id.login).setVisibility(View.GONE);
-                findViewById(R.id.retry).setVisibility(View.VISIBLE);
+
+                //Send intent to Gallery
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                startActivityForResult(intent, REQUEST_CODE);
             }
         }
     }
 
-    public void onClickRetry (View view)
-    {
-        findViewById(R.id.retry).setVisibility(View.GONE);
-        findViewById(R.id.login).setVisibility(View.VISIBLE);
-
-        //Send intent to Gallery
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(intent, REQUEST_CODE);
-    }
+//    public void onClickRetry (View view)
+//    {
+//        findViewById(R.id.retry).setVisibility(View.GONE);
+//        findViewById(R.id.login).setVisibility(View.VISIBLE);
+//
+//        //Send intent to Gallery
+//        Intent intent = new Intent();
+//        intent.setType("image/*");
+//        intent.setAction(Intent.ACTION_GET_CONTENT);
+//        intent.addCategory(Intent.CATEGORY_OPENABLE);
+//        startActivityForResult(intent, REQUEST_CODE);
+//    }
 
     public void onClickCopy (View view)
     {
@@ -334,7 +338,7 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
             //Copy Empty string to clipboard
             try{
                 android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                android.content.ClipData clip = android.content.ClipData.newPlainText("clear", "");
+                android.content.ClipData clip = android.content.ClipData.newPlainText("password", "");
                 clipboard.setPrimaryClip(clip);
             } catch (Exception e) { e.printStackTrace(); }
         }
@@ -373,10 +377,6 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
 
                 //Find File Path
                 Uri imageURI = data.getData();
-                /*File filepath = new File(imageURI.toString());
-                String file = filepath.getAbsolutePath().split(":")[1];
-                Log.d("ActivityResult", "" + file);*/
-
                 String result = "";
                 result = FullPath.getPath(this, imageURI);
 
@@ -629,8 +629,13 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
                     else
                     {
                         Toast.makeText(mainActivity.this, "Login Failed!", Toast.LENGTH_SHORT).show();
-                        findViewById(R.id.login).setVisibility(View.GONE);
-                        findViewById(R.id.retry).setVisibility(View.VISIBLE);
+
+                        //Send intent to Gallery
+                        Intent intent = new Intent();
+                        intent.setType("image/*");
+                        intent.setAction(Intent.ACTION_GET_CONTENT);
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        startActivityForResult(intent, REQUEST_CODE);
                     }
                 }
                 else

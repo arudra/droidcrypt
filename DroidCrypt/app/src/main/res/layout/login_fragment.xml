@@ -48,20 +48,4 @@
         android:layout_marginTop="70dp"
     />
 
-    <Button
-        android:id="@+id/retry"
-        android:onClick="onClickRetry"
-        android:text="@string/retry"
-        android:textSize="22sp"
-        android:layout_width="187dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:textColor="@color/white_text"
-        android:background="@color/indigo_400"
-        android:height="25dp"
-        android:layout_marginTop="70dp"
-        android:visibility="gone"
-    />
-
-
 </LinearLayout>
