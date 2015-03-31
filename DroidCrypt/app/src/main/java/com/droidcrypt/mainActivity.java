@@ -415,6 +415,9 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
         {
             super.onPreExecute();
             pdLoading.setMessage("\tEmbedding...");
+            pdLoading.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            pdLoading.setProgress(0);
+            //pdLoading.setIndeterminate(true);
             pdLoading.show();
         }
 
@@ -425,6 +428,27 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
             opt.inScaled = false;
 //            opt.inSampleSize = 8;
             Bitmap input = accountInfo.getBitmap();
+            final int maxTime = input.getWidth()* input.getHeight()/4000 + 1;
+            //pdLoading.setMax(maxTime);
+            final Thread t = new Thread(){
+                @Override
+                public void run(){
+                    float jumpTime = 0;
+                    while(jumpTime < 100){
+                        try {
+                            sleep(1000);
+//                            pdLoading.incrementProgressBy(100.0f/(float)maxTime);
+                            jumpTime += 100.0f/(float)maxTime;
+                            pdLoading.setProgress((int)jumpTime);
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
+            t.start();
+
 //            Bitmap bitmap1= BitmapFactory.decodeResource(getResources(), R.drawable.image5, opt);
 
             int[] num_bits = new int[2];
