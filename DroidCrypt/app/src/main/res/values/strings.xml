@@ -11,7 +11,7 @@
     <string name="pass">Enter Password</string>
     <string name="image">Select Image</string>
     <string name="start">Start</string>
-    <string name="overwrite">Proceed</string>
+    <string name="proceed">Proceed</string>
     <string name="cancel">Cancel</string>
     <string name="begin">Begin</string>
     <string name="login">Login</string>
