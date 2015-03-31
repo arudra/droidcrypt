@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import java.io.File;
+import java.security.SecureRandom;
 
 /**
  * Created by Abhishek on 3/15/2015.
@@ -21,6 +22,8 @@ public class AccountInfo
     private static AccountInfo ourInstance = new AccountInfo();
 
     public static AccountInfo getInstance() { return ourInstance; }
+    private static final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static SecureRandom rnd = new SecureRandom();
 
     private AccountInfo() {
         bitmap = null;
@@ -78,5 +81,11 @@ public class AccountInfo
         this.accountType = accountType;
     }
 
-
+    public String randomPassword( int len )
+    {
+        StringBuilder sb = new StringBuilder( len );
+        for( int i = 0; i < len; i++ )
+            sb.append( AB.charAt( rnd.nextInt(AB.length()) ) );
+        return sb.toString();
+    }
 }

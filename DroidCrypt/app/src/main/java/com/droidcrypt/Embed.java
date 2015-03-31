@@ -61,6 +61,9 @@ public class Embed extends android.support.v4.app.Fragment {
         View view = inflater.inflate(R.layout.embed_fragment, container, false);
 
         EditText accountType = (EditText) view.findViewById(R.id.editText_accountType);
+        EditText passField = (EditText) view.findViewById(R.id.editText_password);
+        EditText confirmPassField = (EditText) view.findViewById(R.id.editText_confirmPass);
+
         String accountTypeName = AccountInfo.getInstance().getAccountType();
         if (accountTypeName != null && !accountTypeName.equals("Other")) {
             accountType.setEnabled(false);
@@ -68,6 +71,10 @@ public class Embed extends android.support.v4.app.Fragment {
         }
         accountType.setText(accountTypeName);
 
+        int len = 8;
+        passField.setText(AccountInfo.getInstance().randomPassword(len));
+        confirmPassField.setText(AccountInfo.getInstance().randomPassword(len));
+        
         return view;
     }
 
