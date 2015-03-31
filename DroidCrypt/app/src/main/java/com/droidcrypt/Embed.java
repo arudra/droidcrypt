@@ -2,10 +2,13 @@ package com.droidcrypt;
 
 import android.os.Bundle;
 import android.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 
 /**
@@ -58,7 +61,7 @@ public class Embed extends android.support.v4.app.Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.embed_fragment, container, false);
+        final View view = inflater.inflate(R.layout.embed_fragment, container, false);
 
         EditText accountType = (EditText) view.findViewById(R.id.editText_accountType);
         String accountTypeName = AccountInfo.getInstance().getAccountType();
@@ -67,6 +70,78 @@ public class Embed extends android.support.v4.app.Fragment {
             accountType.setFocusable(false);
         }
         accountType.setText(accountTypeName);
+
+        /* Listeners for EditText fields */
+        final EditText account = (EditText)view.findViewById(R.id.account);
+        final EditText pass = (EditText)view.findViewById(R.id.password);
+        final EditText confirm = (EditText)view.findViewById(R.id.editText_confirmPass);
+
+        account.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (count > 0)  //If field is not empty
+                {
+                    //make check mark green
+                    ImageView imageView = (ImageView)view.findViewById(R.id.accountImage);
+                    imageView.setImageResource(R.drawable.green);
+
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        pass.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(count > 0)   //If field is not empty
+                {
+                    //make check mark green
+                    ImageView imageView = (ImageView)view.findViewById(R.id.passImage);
+                    imageView.setImageResource(R.drawable.green);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        confirm.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(s.toString().equals(pass.getText().toString()))  //Compare this text to original password field
+                {
+                    //make check mark green
+                    ImageView imageView = (ImageView)view.findViewById(R.id.confirmImage);
+                    imageView.setImageResource(R.drawable.green);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
 
         return view;
     }

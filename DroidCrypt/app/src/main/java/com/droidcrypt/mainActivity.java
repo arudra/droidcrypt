@@ -209,7 +209,7 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
         }
         else    //Passwords don't match
         {
-            Toast.makeText(mainActivity.this, "Passwords don't match! Please enter your password and confirm it!",
+            Toast.makeText(mainActivity.this, "Passwords don't match!",
                     Toast.LENGTH_LONG).show();
         }
     }
@@ -322,11 +322,19 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
         if(checkBox.isChecked())
         {
             //Copy password to clipboard
-            try
-            {
+            try {
                 String text = ((TextView)findViewById(R.id.pass)).getText().toString();
                 android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 android.content.ClipData clip = android.content.ClipData.newPlainText("password", text);
+                clipboard.setPrimaryClip(clip);
+            } catch (Exception e) { e.printStackTrace(); }
+        }
+        else
+        {
+            //Copy Empty string to clipboard
+            try{
+                android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                android.content.ClipData clip = android.content.ClipData.newPlainText("clear", "");
                 clipboard.setPrimaryClip(clip);
             } catch (Exception e) { e.printStackTrace(); }
         }
