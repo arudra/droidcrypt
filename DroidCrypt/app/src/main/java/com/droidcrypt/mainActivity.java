@@ -338,7 +338,7 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
             //Copy Empty string to clipboard
             try{
                 android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                android.content.ClipData clip = android.content.ClipData.newPlainText("password", "");
+                android.content.ClipData clip = android.content.ClipData.newPlainText("password", null);
                 clipboard.setPrimaryClip(clip);
             } catch (Exception e) { e.printStackTrace(); }
         }
@@ -346,15 +346,17 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
 
     public void onClickShow (View view)
     {
-        CheckBox checkBox = ((CheckBox)findViewById(R.id.show));
+        CheckBox checkBox = ((CheckBox)findViewById(R.id.checkBox));
 
         if(checkBox.isChecked())
         {
-            ((TextView) findViewById(R.id.pass)).setTransformationMethod(null);
+            ((TextView) findViewById(R.id.userPassword)).setTransformationMethod(null);
+            ((TextView) findViewById(R.id.userConfirmPassword)).setTransformationMethod(null);
         }
         else
         {
-            ((TextView) findViewById(R.id.pass)).setTransformationMethod(new PasswordTransformationMethod());
+            ((TextView) findViewById(R.id.userPassword)).setTransformationMethod(new PasswordTransformationMethod());
+            ((TextView) findViewById(R.id.userConfirmPassword)).setTransformationMethod(new PasswordTransformationMethod());
         }
 
     }
@@ -374,6 +376,20 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
             ((TextView) findViewById(R.id.editText_confirmPass)).setTransformationMethod(new PasswordTransformationMethod());
         }
 
+    }
+
+    public void onClickDisplayShow (View view)
+    {
+        CheckBox checkBox = ((CheckBox)findViewById(R.id.show));
+
+        if(checkBox.isChecked())
+        {
+            ((TextView)findViewById(R.id.pass)).setTransformationMethod(null);
+        }
+        else
+        {
+            ((TextView)findViewById(R.id.pass)).setTransformationMethod(new PasswordTransformationMethod());
+        }
     }
 
 

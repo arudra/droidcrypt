@@ -70,7 +70,7 @@
         android:layout_below="@+id/pass"
         android:layout_alignStart="@+id/pass"
         android:layout_marginTop="30dp"
-        android:onClick="onClickShow"
+        android:onClick="onClickDisplayShow"
     />
 
     <CheckBox
@@ -81,6 +81,6 @@
         android:layout_below="@+id/show"
         android:layout_alignStart="@+id/show"
         android:onClick="onClickCopy"
-        />
+    />
 
 </RelativeLayout>
