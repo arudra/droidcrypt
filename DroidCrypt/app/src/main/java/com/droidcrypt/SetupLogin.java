@@ -1,5 +1,7 @@
 package com.droidcrypt;
 
+import android.app.Activity;
+import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.text.Editable;
@@ -13,10 +15,12 @@ import android.widget.ImageView;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link Embed#newInstance} factory method to
+ * Activities that contain this fragment must implement the
+ * to handle interaction events.
+ * Use the {@link SetupLogin#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class Embed extends android.support.v4.app.Fragment {
+public class SetupLogin extends android.support.v4.app.Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -26,17 +30,18 @@ public class Embed extends android.support.v4.app.Fragment {
     private String mParam1;
     private String mParam2;
 
+
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment Embed.
+     * @return A new instance of fragment SetupLogin.
      */
     // TODO: Rename and change types and number of parameters
-    public static Embed newInstance(String param1, String param2) {
-        Embed fragment = new Embed();
+    public static SetupLogin newInstance(String param1, String param2) {
+        SetupLogin fragment = new SetupLogin();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -44,7 +49,7 @@ public class Embed extends android.support.v4.app.Fragment {
         return fragment;
     }
 
-    public Embed() {
+    public SetupLogin() {
         // Required empty public constructor
     }
 
@@ -60,55 +65,12 @@ public class Embed extends android.support.v4.app.Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        final View view = inflater.inflate(R.layout.embed_fragment, container, false);
+        // Inflate the layout for this fragment// Inflate the layout for this fragment
+        final View view = inflater.inflate(R.layout.setup_login_fragment, container, false);
 
-        EditText accountType = (EditText) view.findViewById(R.id.editText_accountType);
         /* Listeners for EditText fields */
-        final EditText account = (EditText)view.findViewById(R.id.account);
-        final EditText pass = (EditText)view.findViewById(R.id.editText_password);
-        final EditText confirm = (EditText)view.findViewById(R.id.editText_confirmPass);
-
-        String accountTypeName = AccountInfo.getInstance().getAccountType();
-        if (accountTypeName != null && !accountTypeName.equals("Other")) {
-            accountType.setEnabled(false);
-            accountType.setFocusable(false);
-        }
-        accountType.setText(accountTypeName);
-
-        int len = 8;
-        String randPass = AccountInfo.getInstance().randomPassword(len);
-        pass.setText(randPass);
-        confirm.setText(randPass);
-
-        account.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (!s.equals(""))  //If field is not empty
-                {
-                    //make check mark green
-                    ImageView imageView = (ImageView)view.findViewById(R.id.accountImage);
-                    imageView.setImageResource(R.drawable.green);
-
-                }
-                else
-                {
-                    //display red x
-                    ImageView imageView = (ImageView)view.findViewById(R.id.accountImage);
-                    imageView.setImageResource(R.drawable.red);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
+        final EditText pass = (EditText)view.findViewById(R.id.userPassword);
+        final EditText confirm = (EditText)view.findViewById(R.id.userConfirmPassword);
 
         pass.addTextChangedListener(new TextWatcher() {
             @Override
@@ -166,11 +128,9 @@ public class Embed extends android.support.v4.app.Fragment {
 
         return view;
     }
-
     @Override
-    public void onResume() {
-        super.onResume();
-
-        getActivity().setTitle("Enter Account Info");
+    public void onDetach() {
+        super.onDetach();
     }
+
 }

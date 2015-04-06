@@ -135,7 +135,7 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
             valid = false;
             //Switch to Login fragment
             Log.d("Setup", "Switching to Login fragment");
-            Login fragment = new Login();
+            SetupLogin fragment = new SetupLogin();
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
         }
         else if (valid && state != INIT) {
@@ -191,7 +191,7 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
     {
         //Read account + password input (new fragment)
         String name = ((EditText)findViewById(R.id.account)).getText().toString();
-        String pass = ((EditText)findViewById(R.id.password)).getText().toString();
+        String pass = ((EditText)findViewById(R.id.editText_password)).getText().toString();
         String confirm = ((EditText)findViewById(R.id.editText_confirmPass)).getText().toString();
 
         if (pass.equals(confirm)) { //Passwords match
@@ -355,6 +355,23 @@ public class mainActivity extends ActionBarActivity implements AccountFragment.A
         else
         {
             ((TextView) findViewById(R.id.pass)).setTransformationMethod(new PasswordTransformationMethod());
+        }
+
+    }
+
+    public void onClickEmbedShow (View view)
+    {
+        CheckBox checkBox = ((CheckBox)findViewById(R.id.Embedshow));
+
+        if(checkBox.isChecked())
+        {
+            ((TextView) findViewById(R.id.editText_password)).setTransformationMethod(null);
+            ((TextView) findViewById(R.id.editText_confirmPass)).setTransformationMethod(null);
+        }
+        else
+        {
+            ((TextView) findViewById(R.id.editText_password)).setTransformationMethod(new PasswordTransformationMethod());
+            ((TextView) findViewById(R.id.editText_confirmPass)).setTransformationMethod(new PasswordTransformationMethod());
         }
 
     }
